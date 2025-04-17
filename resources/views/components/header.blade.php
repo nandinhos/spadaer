@@ -16,11 +16,13 @@
 
             {{-- Informações do Usuário e Dark Mode Toggle --}}
             <div class="flex items-center space-x-2">
+                @auth
                 <div class="text-right hidden md:block">
                     <p class="font-medium text-sm">{{ Auth::user()->name }}</p>
                      {{-- Cargo/Email --}}
                     <p class="text-xs text-gray-200">{{ Auth::user()->email }}</p>
                 </div>
+                @endauth
                 {{-- Dark Mode Toggle Button --}}
                 <button @click="toggleDarkMode()" class="p-2 text-white hover:text-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-primary-dark focus:ring-white" aria-label="Alternar modo escuro">
                     <i x-bind:class="darkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>

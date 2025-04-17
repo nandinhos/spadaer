@@ -14,7 +14,7 @@ class CommissionController extends Controller
      */
     public function index()
     {
-        $commissions = Commission::orderBy('name')->paginate(10);
+        $commissions = Commission::orderBy('id')->paginate(10);
         return view('commissions.index', compact('commissions'));
     }
 

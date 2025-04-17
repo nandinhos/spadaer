@@ -10,10 +10,11 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-         User::factory()->create([
-             'name' => 'Nando Dev',
-             'email' => 'nandinhos@gmail.com',
-         ]);
-         $this->call(DocumentSeeder::class); // Adicione esta linha
+         //User::factory()->create([
+           //  'name' => 'Nando Dev',
+             //'email' => 'nandinhos@gmail.com',
+         //]);
+         //$this->call(DocumentSeeder::class);
+         $this->call(UserSeeder::class); // Adiciona o seeder de usuários
     }
 }

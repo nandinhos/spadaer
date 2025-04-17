@@ -39,7 +39,8 @@ class Commission extends Model
     {
         return $this->belongsToMany(User::class, 'commission_members')
             ->withPivot('role')
-            ->withTimestamps();
+            ->withTimestamps()
+            ->orderBy('users.id'); // Ordena os membros pelo ID do usuário
     }
 
     /**

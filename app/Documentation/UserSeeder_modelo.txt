@@ -1,0 +1,74 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+
+class UserSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $usuarios = [
+            ['idx' => 1, 'posto' => "Cel Av", 'nome' => "Diogo Silva CASTILHO", 'login' => "castilhodsc@fab.mil.br", 'senha' => "3047512", 'cpf' => "267.387.188-88"],
+            ['idx' => 2, 'posto' => "Ten Cel Eng", 'nome' => "PAULO CÉSAR da Silva Guimarães", 'login' => "paulocesarpcsg@fab.mil.br", 'senha' => "3432831", 'cpf' => "599.419.012-87"],
+            ['idx' => 3, 'posto' => "Ten Cel Eng", 'nome' => "Francisco de MATTOS BRITO Junior", 'login' => "mattosbritofmbj@fab.mil.br", 'senha' => "3686515", 'cpf' => "857.023.823-15"],
+            ['idx' => 4, 'posto' => "Maj QOAV NTE", 'nome' => "Thiago Romeiro CAPUCHINHO", 'login' => "capuchinhotrc@fab.mil.br", 'senha' => "3490351", 'cpf' => "014.525.726-66"],
+            ['idx' => 5, 'posto' => "Cap Int", 'nome' => "Renan de LACERDA Lima Gonçalves", 'login' => "lacerdarllg@fab.mil.br", 'senha' => "4111281", 'cpf' => "114.558.897-25"],
+            ['idx' => 6, 'posto' => "Cap Int", 'nome' => "CHEYLA Cristina Silva Salvador", 'login' => "cheylaccss@fab.mil.br", 'senha' => "6156550", 'cpf' => "078.783.374-62"],
+            ['idx' => 7, 'posto' => "Cap Eng  ELN", 'nome' => "Rafael MACÊDO Trindade", 'login' => "macedormt@fab.mil.br", 'senha' => "6123120", 'cpf' => "029.758.385-90"],
+            ['idx' => 8, 'posto' => "1° Ten QOCon ADM", 'nome' => "CATIANA FARIA dos Santos", 'login' => "catianacfs@fab.mil.br", 'senha' => "7391110", 'cpf' => "218.177.958-99"],
+            ['idx' => 9, 'posto' => "1° Ten QOCon ADM", 'nome' => "ANGELA de Lima MILITÃO", 'login' => "angelamilitaoalm@fab.mil.br", 'senha' => "7391188", 'cpf' => "313.943.348-42"],
+            ['idx' => 10, 'posto' => "2° Ten QOCon CCO", 'nome' => "TATIANA Sousa da ROCHA", 'login' => "tatianarochatsr@fab.mil.br", 'senha' => "7433794", 'cpf' => "302.722.698-32"],
+            ['idx' => 11, 'posto' => "2° Ten QOCon CCO", 'nome' => "MARIANA RODRIGUES Queiroz Moreira", 'login' => "marianarodriguesmrqm@fab.mil.br", 'senha' => "7432445", 'cpf' => "384.947.948-09"],
+            ['idx' => 12, 'posto' => "2° Ten QOCon PRU", 'nome' => "Matheus PRADO", 'login' => "pradomp@fab.mil.br", 'senha' => "7534710", 'cpf' => "092.817.826-93"],
+            ['idx' => 13, 'posto' => "2° Ten QOCon CCO", 'nome' => "ANA Cláudia Aparecida PRIANTE", 'login' => "anaprianteacap@fab.mil.br", 'senha' => "7537301", 'cpf' => "379.938.888-59"],
+            ['idx' => 14, 'posto' => "2° Ten QOCon ADM", 'nome' => "CARLA Pereira Machado Homem", 'login' => "carlacpmh@fab.mil.br", 'senha' => "7623070", 'cpf' => "060.279.676-84"],
+            ['idx' => 15, 'posto' => "SO BMA", 'nome' => "Flávio de Souza MARTINO", 'login' => "martinofsm@fab.mil.br", 'senha' => "2086735", 'cpf' => "003.530.637-89"],
+            ['idx' => 16, 'posto' => "SO BMA", 'nome' => "Marcos Antonio Muniz LOBO", 'login' => "lobomaml@fab.mil.br", 'senha' => "2345560", 'cpf' => "009.459.487-27"],
+            ['idx' => 17, 'posto' => "SO BMA", 'nome' => "Roberval Corrêa ESPADIM", 'login' => "espadimrce@fab.mil.br", 'senha' => "2477351", 'cpf' => "631.756.490-68"],
+            ['idx' => 18, 'posto' => "SO SAD", 'nome' => "Gilson CLEI José Barreto", 'login' => "cleigcjb@fab.mil.br", 'senha' => "2961849", 'cpf' => "037.787.067-64"],
+            ['idx' => 19, 'posto' => "SO BMA", 'nome' => "MICHEL da Silva Soares", 'login' => "michelmss@fab.mil.br", 'senha' => "3288536", 'cpf' => "075.466.337-02"],
+            ['idx' => 20, 'posto' => "SO BET", 'nome' => "Filipe ESTRELA Nunes", 'login' => "estrelafen@fab.mil.br", 'senha' => "3381218", 'cpf' => "083.847.957-03"],
+            ['idx' => 21, 'posto' => "SO SAD", 'nome' => "Eduardo dos Santos ROCHA", 'login' => "rochaesr@fab.mil.br", 'senha' => "4069390", 'cpf' => "092.174.917-13"],
+            ['idx' => 22, 'posto' => "SO BET", 'nome' => "DARIELE Elisa Reis Breginski", 'login' => "darielederb@fab.mil.br", 'senha' => "4069323", 'cpf' => "328.697.938-47"],
+            ['idx' => 23, 'posto' => "1S SAD", 'nome' => "Anderson RUBIM Musi Dias", 'login' => "rubimarmd@fab.mil.br", 'senha' => "3210685", 'cpf' => "079.196.497-30"],
+            ['idx' => 24, 'posto' => "1S SAD", 'nome' => "Raquel QUINTELA Gomes do Nascimento", 'login' => "quintelarqgn@fab.mil.br", 'senha' => "4039769", 'cpf' => "056.401.157-69"],
+            ['idx' => 25, 'posto' => "1S SAD", 'nome' => "André da Silva BEMFICA", 'login' => "bemficaasb@fab.mil.br", 'senha' => "3034968", 'cpf' => "712.019.550-68"],
+            ['idx' => 26, 'posto' => "1S BMA", 'nome' => "MOISES Ferreira da Silva", 'login' => "moisesmfs@fab.mil.br", 'senha' => "2709988", 'cpf' => "033.671.087-90"],
+            ['idx' => 27, 'posto' => "1S BMA", 'nome' => "Francisco Lucivany FONTENELE Dias", 'login' => "fonteneleflfd@fab.mil.br", 'senha' => "3424146", 'cpf' => "615.084.543-53"],
+            ['idx' => 28, 'posto' => "1S BSP", 'nome' => "Vagner de Oliveira BRASIL", 'login' => "brasilvob@fab.mil.br", 'senha' => "3463907", 'cpf' => "091.385.737-84"],
+            ['idx' => 29, 'posto' => "1S BSP", 'nome' => "GISELE SILVA Odilon", 'login' => "giselesilvagso@fab.mil.br", 'senha' => "4360389", 'cpf' => "128.287.277-00"],
+            ['idx' => 30, 'posto' => "1S SAD", 'nome' => "Marcelo LIMA da Silva", 'login' => "limamls@fab.mil.br", 'senha' => "3467317", 'cpf' => "223.684.808-03"],
+            ['idx' => 31, 'posto' => "2S BMB", 'nome' => "FERNANDO dos Santos Souza", 'login' => "fernandofss@fab.mil.br", 'senha' => "4112695", 'cpf' => "340.056.628-46"],
+            ['idx' => 32, 'posto' => "2S BMA", 'nome' => "Eric Tiago Zuchi de Andrade BRUM", 'login' => "brumetzab@fab.mil.br", 'senha' => "6323847", 'cpf' => "145.069.957-08"],
+            ['idx' => 33, 'posto' => "2S SAD", 'nome' => "Maicon Fonseca AMADOR", 'login' => "amadormfa@fab.mil.br", 'senha' => "4157940", 'cpf' => "007.995.950-47"],
+            ['idx' => 34, 'posto' => "2S SAD", 'nome' => "ROSEMERY de Cavalho Santos", 'login' => "rosemeryrcs@fab.mil.br", 'senha' => "6450652", 'cpf' => "410.844.498-11"],
+            ['idx' => 35, 'posto' => "3S TAD", 'nome' => "Pedro Henrique dos Santos AMARO", 'login' => "amarophsa@fab.mil.br", 'senha' => "6853501", 'cpf' => "475.242.428-24"],
+            ['idx' => 36, 'posto' => "3S TIN", 'nome' => "Paulo de Tarso Freitas BARBOSA", 'login' => "barbosaptfb@fab.mil.br", 'senha' => "7419384", 'cpf' => "325.921.768-10"],
+            ['idx' => 37, 'posto' => "CB SAD", 'nome' => "João ANTONIO Teixeira", 'login' => "tp.antoniojat@fab.mil.br", 'senha' => "7228678", 'cpf' => "458.956.208.17"],
+            ['idx' => 38, 'posto' => "S1 SGS", 'nome' => "Lucas Marques CAETANO", 'login' => "tp.caetanolmc@fab.mil.br", 'senha' => "7264852", 'cpf' => "446.724.818-83"],
+            ['idx' => 39, 'posto' => "S1 SAD", 'nome' => "Gabriel Silva do NASCIMENTO", 'login' => "tp.nascimentogsn1@fab.mil.br", 'senha' => "7326777", 'cpf' => "495.426.428-65"],
+            ['idx' => 40, 'posto' => "S1 SAD", 'nome' => "Caio Henrique SILVÉRIO da SILVA", 'login' => "tp.silveriosilvachss@fab.mil.br", 'senha' => "7404409", 'cpf' => "517.017.008-40"],
+            ['idx' => 41, 'posto' => "S1 SAD", 'nome' => "Rodrigo VIEIRA de Oliveira", 'login' => "tp.rvieirarvo@fab.mil.br", 'senha' => "7403526", 'cpf' => "480.535.868-80"],
+            ['idx' => 42, 'posto' => "S2 SNE", 'nome' => "Pedro HENRIQUE de Paula", 'login' => "phenriquephp@fab.mil.br", 'senha' => "7402759", 'cpf' => "366.341.258-05"],
+            ['idx' => 43, 'posto' => "S2 SNE", 'nome' => "CASSIANO dos Santos Queiroz de Souza", 'login' => "tp.cassianocsqs@fab.mil.br", 'senha' => "7515910", 'cpf' => "528.165.338-59"],
+            ['idx' => 44, 'posto' => "S2 SNE", 'nome' => "CAUÊ Irmão Firmino da Silva", 'login' => "tp.cauecifs@fab.mil.br", 'senha' => "7605161", 'cpf' => "480.700.958-30"]
+        ];
+
+        foreach ($usuarios as $userData) {
+            User::updateOrCreate(
+                ['cpf' => $userData['cpf']], // Usar CPF como chave única para evitar duplicados
+                [
+                    'name' => $userData['nome'],
+                    'posto' => $userData['posto'],
+                    'email' => $userData['login'], // Mapeando 'login' para 'email'
+                    'cpf' => $userData['cpf'],
+                    'password' => Hash::make($userData['senha']), // **IMPORTANTE: HASH SENHAS!**
+                ]
+            );
+        }
+    }
+}

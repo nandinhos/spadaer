@@ -7,10 +7,10 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    {{ __("You're logged in!") }}
-                </div>
+            <div class="p-8">
+                <h3 class="text-2xl font-bold text-gray-800">Bem-vindo ao DocBox SPADAER!</h3>
+                <p class="mt-4 text-gray-600">Sistema de Consulta e Gerenciamento de Documentos da Subcomissão Permanente de Avaliação de Documentos (SPADAER) do GAC-PAC.</p>
+                <p class="mt-2 text-sm text-gray-500">Gerencie e consulte os documentos relevantes acessando no botão ENTRAR, no menu ao lado.</p>
             </div>
         </div>
     </div>
