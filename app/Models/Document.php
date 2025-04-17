@@ -29,20 +29,12 @@ class Document extends Model
     ];
 
     protected $casts = [
-        'document_date' => 'date:Y-m-d',
-        'is_copy' => 'boolean',
+        // 'document_date' => 'date:Y-m-d', // Removido pois agora é string
+        // 'is_copy' => 'boolean', // Removido pois agora é string
     ];
     
-    // Add a mutator to handle secrecy values
-    public function setSecrecyAttribute($value)
-    {
-        // If the value is too long, truncate it or map it to an allowed value
-        if ($value === 'COMPANY CONFIDENTIAL') {
-            $this->attributes['confidentiality'] = 'CONFIDENTIAL';
-        } else {
-            $this->attributes['confidentiality'] = $value;
-        }
-    }
+    // O mutator setSecrecyAttribute foi removido pois o campo confidentiality agora é string
+    // A lógica de mapeamento pode ser feita na importação ou em outra camada, se necessário.
 
     // Relacionamentos (opcional, se criar models Box, Project, User)
     // public function user() { return $this->belongsTo(User::class); }

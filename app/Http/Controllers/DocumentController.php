@@ -64,9 +64,11 @@ class DocumentController extends Controller
         if ($filterProject) {
             $query->where('project', $filterProject);
         }
-        if ($filterYear) {
-            $query->whereYear('document_date', $filterYear);
-        }
+        // if ($filterYear) {
+        //     // Filtrar por ano em um campo string é complexo e depende do formato.
+        //     // Considere implementar uma busca textual ou normalizar o formato da data.
+        //     // $query->where('document_date', 'like', $filterYear . '-%'); // Exemplo simples se o formato for YYYY-MM-DD
+        // }
 
         // Aplicar ordenação
         $query->orderBy($sortBy, $sortDir);
@@ -77,21 +79,22 @@ class DocumentController extends Controller
         // Obter dados para os filtros (otimizado para buscar apenas o necessário)
         $availableProjects = Document::query()
             ->when($filterBox, fn($q) => $q->where('box_number', 'like', "%{$filterBox}%")) // Filtra projetos baseados em outros filtros ativos? Opcional.
-            ->when($filterYear, fn($q) => $q->whereYear('document_date', $filterYear))
+            // ->when($filterYear, fn($q) => $q->whereYear('document_date', $filterYear)) // Removido devido à data ser string
             ->select('project')
             ->whereNotNull('project')
             ->distinct()
             ->orderBy('project')
             ->pluck('project');
 
-        $availableYears = Document::query()
-            ->when($filterBox, fn($q) => $q->where('box_number', 'like', "%{$filterBox}%")) // Filtra anos baseados em outros filtros ativos? Opcional.
-            ->when($filterProject, fn($q) => $q->where('project', $filterProject))
-            ->select(DB::raw('YEAR(document_date) as year'))
-            ->whereNotNull('document_date')
-            ->distinct()
-            ->orderBy('year', 'desc')
-            ->pluck('year');
+        // $availableYears = Document::query()
+        //     ->when($filterBox, fn($q) => $q->where('box_number', 'like', "%{$filterBox}%"))
+        //     ->when($filterProject, fn($q) => $q->where('project', $filterProject))
+        //     // ->select(DB::raw('YEAR(document_date) as year')) // Removido devido à data ser string
+        //     ->whereNotNull('document_date')
+        //     ->distinct()
+        //     // ->orderBy('year', 'desc') // Removido
+        //     // ->pluck('year'); // Removido
+        $availableYears = collect(); // Define como coleção vazia por enquanto
 
          // Dados para as Estatísticas (Exemplo - pode ser mais elaborado)
          $totalDocuments = Document::count(); // Total geral
@@ -106,11 +109,10 @@ class DocumentController extends Controller
          $filteredBoxesCount = $documents->pluck('box_number')->unique()->count();
          $filteredProjectsCount = $documents->pluck('project')->filter()->unique()->count(); // filter() remove nulls
 
-         // Calcula o intervalo de anos para os documentos filtrados
-         $yearsData = $documents->pluck('document_date')->map(fn($date) => $date?->year)->filter()->unique()->sort();
-         $yearRange = $yearsData->isNotEmpty()
-             ? ($yearsData->first() === $yearsData->last() ? $yearsData->first() : $yearsData->first() . ' - ' . $yearsData->last())
-             : null;
+         // Calcula o intervalo de anos para os documentos filtrados - Removido/Simplificado devido à data ser string
+         // $yearsData = $documents->pluck('document_date')->map(fn($dateStr) => /* Lógica para extrair ano da string */ )->filter()->unique()->sort();
+         // $yearRange = ...
+         $yearRange = null; // Definido como null por enquanto
 
 
         return view('documents.index', [
@@ -141,12 +143,17 @@ class DocumentController extends Controller
     {
         // Validation and document creation logic here
         $validated = $request->validate([
-            'box_number' => 'required',
-            'item_number' => 'required',
-            'title' => 'required',
-            'document_date' => 'required|date',
-            'project' => 'required',
-            // Add other validation rules as needed
+            'box_number' => 'required|string|max:255',
+            'item_number' => 'required|string|max:255',
+            'code' => 'nullable|string|max:255',
+            'descriptor' => 'nullable|string|max:255',
+            'document_number' => 'nullable|string|max:255|unique:documents,document_number', // Adicionado unique
+            'title' => 'required|string',
+            'document_date' => 'required|string|max:255', // Alterado de date para string
+            'project' => 'nullable|string|max:255', // Alterado para nullable como no update
+            'confidentiality' => 'nullable|string|max:255',
+            'version' => 'nullable|string|max:255',
+            'is_copy' => 'nullable|string|max:255', // Alterado de boolean para string
         ]);
     
         // Create the document
@@ -174,13 +181,13 @@ class DocumentController extends Controller
             'item_number' => 'required|string|max:255',
             'code' => 'nullable|string|max:255',
             'descriptor' => 'nullable|string|max:255',
-            'document_number' => 'nullable|string|max:255',
-            'title' => 'required|string|max:255',
-            'document_date' => 'required|date',
-            'project' => 'required|string|max:255',
-            'confidentially' => 'nullable|string|max:255',
+            'document_number' => 'nullable|string|max:255|unique:documents,document_number,' . $document->id, // Adicionado unique e ignorar atual
+            'title' => 'required|string',
+            'document_date' => 'required|string|max:255', // Alterado de date para string
+            'project' => 'nullable|string|max:255',
+            'confidentiality' => 'nullable|string|max:255', // Corrigido typo e tipo
             'version' => 'nullable|string|max:255',
-            'is_copy' => 'nullable|boolean',
+            'is_copy' => 'nullable|string|max:255', // Alterado de boolean para string
         ]);
 
         // Atualiza o documento com os dados validados

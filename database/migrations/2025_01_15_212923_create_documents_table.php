@@ -16,11 +16,11 @@ return new class extends Migration
             $table->string('descriptor')->nullable(); // descritor
             $table->string('document_number')->unique(); // numero (considerar unique?)
             $table->text('title'); // titulo
-            $table->date('document_date'); // data
+            $table->string('document_date')->nullable(); // data (alterado para string)
             $table->string('project')->nullable(); // projeto
-            $table->enum('confidentiality', ['Público', 'Restrito', 'Confidencial'])->default('Público'); // sigilo
+            $table->string('confidentiality')->nullable(); // sigilo (alterado para string)
             $table->string('version')->nullable(); // versao
-            $table->boolean('is_copy')->default(false); // copia
+            $table->string('is_copy')->nullable(); // copia (alterado para string)
             // Adicione outras colunas se necessário (e.g., user_id, file_path)
             $table->timestamps(); // created_at, updated_at
         });

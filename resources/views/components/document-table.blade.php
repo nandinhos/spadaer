@@ -132,10 +132,24 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             @switch($column['key'])
                                 @case('document_date')
-                                    {{ $document->document_date ? $document->document_date->format('d/m/Y') : 'N/D' }}
+                                    {{-- Exibe a data como string, sem formatação --}}
+                                    {{ $document->document_date ?? 'N/D' }}
                                     @break
                                 @case('is_copy')
-                                    {{ $document->is_copy ? 'Sim' : 'Não' }}
+                                    {{-- Exibe o valor de is_copy como string --}}
+                                    {{ $document->is_copy ?? 'N/D' }}
+                                    {{-- Alternativa: Mapear strings comuns para Sim/Não se necessário --}}
+                                    {{-- @php
+                                        $isCopyDisplay = 'N/D';
+                                        if (strtolower($document->is_copy) === 'true' || $document->is_copy === '1') {
+                                            $isCopyDisplay = 'Sim';
+                                        } elseif (strtolower($document->is_copy) === 'false' || $document->is_copy === '0') {
+                                            $isCopyDisplay = 'Não';
+                                        } elseif ($document->is_copy !== null) {
+                                            $isCopyDisplay = $document->is_copy; // Exibe a string como está
+                                        }
+                                    @endphp
+                                    {{ $isCopyDisplay }} --}}
                                     @break
                                  @case('confidentiality')
                                      <span

@@ -24,81 +24,71 @@
                         <!-- Caixa e Item -->
                         <div class="col-span-1">
                             <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Caixa</h3>
-                            <p class="mt-1 text-lg font-semibold">{{ $document->caixa }}</p>
+                            <p class="mt-1 text-lg font-semibold">{{ $document->box_number }}</p>
                         </div>
 
                         <div class="col-span-1">
                             <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Item</h3>
-                            <p class="mt-1 text-lg font-semibold">{{ $document->item }}</p>
+                            <p class="mt-1 text-lg font-semibold">{{ $document->item_number }}</p>
                         </div>
 
                         <!-- Código e Descritor -->
                         <div class="col-span-1">
                             <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Código</h3>
-                            <p class="mt-1 text-lg font-semibold">{{ $document->codigo ?? 'N/A' }}</p>
+                            <p class="mt-1 text-lg font-semibold">{{ $document->code ?? 'N/A' }}</p>
                         </div>
 
                         <div class="col-span-1">
                             <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Descritor</h3>
-                            <p class="mt-1 text-lg font-semibold">{{ $document->descritor ?? 'N/A' }}</p>
+                            <p class="mt-1 text-lg font-semibold">{{ $document->descriptor ?? 'N/A' }}</p>
                         </div>
 
                         <!-- Número e Título -->
                         <div class="col-span-1">
                             <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Número</h3>
-                            <p class="mt-1 text-lg font-semibold">{{ $document->numero ?? 'N/A' }}</p>
+                            <p class="mt-1 text-lg font-semibold">{{ $document->document_number ?? 'N/A' }}</p>
                         </div>
 
                         <div class="col-span-2">
                             <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Título</h3>
-                            <p class="mt-1 text-lg font-semibold">{{ $document->titulo }}</p>
+                            <p class="mt-1 text-lg font-semibold">{{ $document->title }}</p>
                         </div>
 
                         <!-- Data e Projeto -->
                         <div class="col-span-1">
-                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Data</h3>
-                            <p class="mt-1 text-lg font-semibold">{{ $document->data->format('d/m/Y') }}</p>
+                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Data (Texto)</h3>
+                            <p class="mt-1 text-lg font-semibold">{{ $document->document_date ?? 'N/A' }}</p>
                         </div>
 
                         <div class="col-span-1">
                             <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Projeto</h3>
-                            <p class="mt-1 text-lg font-semibold">{{ $document->projeto }}</p>
+                            <p class="mt-1 text-lg font-semibold">{{ $document->project ?? 'N/A' }}</p>
                         </div>
 
                         <!-- Sigilo e Versão -->
                         <div class="col-span-1">
-                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Sigilo</h3>
+                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Sigilo (Texto)</h3>
                             <p class="mt-1 text-lg font-semibold">
-                                @if($document->sigilo)
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $document->sigilo == 'confidencial' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                        {{ ucfirst($document->sigilo) }}
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                        Público
-                                    </span>
-                                @endif
+                                {{-- Exibe o valor como string. A coloração pode ser ajustada aqui se necessário --}}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                    {{ $document->confidentiality ?? 'N/A' }}
+                                </span>
                             </p>
                         </div>
 
                         <div class="col-span-1">
                             <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Versão</h3>
-                            <p class="mt-1 text-lg font-semibold">{{ $document->versao ?? 'N/A' }}</p>
+                            <p class="mt-1 text-lg font-semibold">{{ $document->version ?? 'N/A' }}</p>
                         </div>
 
                         <!-- Cópia -->
                         <div class="col-span-1">
-                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</h3>
+                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">É Cópia? (Texto)</h3>
                             <p class="mt-1 text-lg font-semibold">
-                                @if($document->copia)
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        Cópia
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        Original
-                                    </span>
-                                @endif
+                                {{-- Exibe o valor como string. Pode adicionar lógica para 'Sim'/'Não' se preferir --}}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                    {{ $document->is_copy ?? 'N/A' }}
+                                </span>
                             </p>
                         </div>
                     </div>
