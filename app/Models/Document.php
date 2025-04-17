@@ -37,7 +37,7 @@ class Document extends Model
     // A lógica de mapeamento pode ser feita na importação ou em outra camada, se necessário.
 
     // Relacionamentos (opcional, se criar models Box, Project, User)
-    // public function user() { return $this->belongsTo(User::class); }
-    // public function box() { return $this->belongsTo(Box::class); }
-    // public function project() { return $this->belongsTo(Project::class); }
+    public function user() { return $this->belongsTo(User::class); }
+    //public function box() { return $this->belongsTo(Box::class); }
+    //public function project() { return $this->belongsTo(Project::class); }
 }

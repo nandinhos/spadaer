@@ -133,7 +133,10 @@ class DocumentController extends Controller
         // Dados para as Estatísticas (Exemplo - pode ser mais elaborado)
         $totalDocuments = Document::count(); // Total geral
         $totalBoxes = Document::distinct('box_number')->count('box_number'); // Total geral de caixas
-        $totalProjects = Document::whereNotNull('project')->distinct('project')->count('project');
+        $totalProjects = Document::query()
+            ->whereNotNull('project')
+            ->distinct('project')
+            ->count('project');
 
         // Estatísticas filtradas
         $filteredDocumentsCount = $documents->total();
@@ -157,7 +160,25 @@ class DocumentController extends Controller
             ->distinct('box_number')
             ->count('box_number');
             
-        $filteredProjectsCount = $documents->pluck('project')->filter()->unique()->count();
+        // Contagem de projetos filtrados usando uma query separada
+        $filteredProjectsCount = Document::query()
+            ->when($searchTerm, function($q) use ($searchTerm) {
+                $q->where(function($q) use ($searchTerm) {
+                    $q->where('box_number', 'like', "%{$searchTerm}%")
+                      ->orWhere('item_number', 'like', "%{$searchTerm}%")
+                      ->orWhere('code', 'like', "%{$searchTerm}%")
+                      ->orWhere('descriptor', 'like', "%{$searchTerm}%")
+                      ->orWhere('document_number', 'like', "%{$searchTerm}%")
+                      ->orWhere('title', 'like', "%{$searchTerm}%")
+                      ->orWhere('project', 'like', "%{$searchTerm}%")
+                      ->orWhere('confidentiality', 'like', "%{$searchTerm}%");
+                });
+            })
+            ->when($filterBox, fn($q) => $q->where('box_number', 'like', "%{$filterBox}%"))
+            ->when($filterProject, fn($q) => $q->where('project', $filterProject))
+            ->whereNotNull('project')
+            ->distinct('project')
+            ->count('project');
 
         // Calcula o intervalo de anos para os documentos filtrados
         $yearsData = $documents->pluck('document_date')
