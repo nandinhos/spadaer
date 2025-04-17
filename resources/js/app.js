@@ -13,13 +13,33 @@ function layout() {
         selectedDocument: {},
         loadingModal: false,
 
-        init() { /* ... inicialização ... */ },
+        init() {
+            this.updateDarkModeClass(); // Apply dark mode on initial load
+            // Add watcher for darkMode changes
+            this.$watch('darkMode', (value) => {
+                localStorage.setItem('darkMode', value);
+                this.updateDarkModeClass();
+            });
+            // Add watcher for sidebarOpen changes
+            this.$watch('sidebarOpen', (value) => {
+                localStorage.setItem('sidebarOpen', value);
+            });
+        },
         toggleSidebar() {
             this.sidebarOpen = !this.sidebarOpen;
-            localStorage.setItem('sidebarOpen', this.sidebarOpen);
+            // localStorage update is handled by the watcher now
         },
-        toggleDarkMode() { /* ... */ },
-        updateDarkModeClass() { /* ... */ },
+        toggleDarkMode() {
+            this.darkMode = !this.darkMode;
+            // localStorage update and class update are handled by the watcher
+        },
+        updateDarkModeClass() {
+            if (this.darkMode) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        },
         async openDocumentModal(documentId) { /* ... lógica AJAX ... */ },
         closeModal() { /* ... */ },
         formatDate(dateString) { /* ... */ },
