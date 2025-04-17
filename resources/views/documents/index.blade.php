@@ -35,6 +35,9 @@
             </div>
         </div>
 
+    {{-- Inclui o componente do modal --}}
+    <x-document-modal />
+
     {{-- </div> --}}
 
     {{-- Adiciona o script Alpine específico da página ou do layout --}}

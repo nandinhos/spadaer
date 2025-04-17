@@ -21,7 +21,7 @@
     </head>
     {{-- Adicione a classe bg-gray-100 dark:bg-gray-900 aqui ou no body do conteúdo --}}
     <body
-        class="h-full font-sans antialiased bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-200"
+        class="h-full font-sans antialiased bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-200"
         x-data="layout()" {{-- Alpine data for layout: sidebar, dark mode --}}
     >
         <div class="flex h-full overflow-hidden">

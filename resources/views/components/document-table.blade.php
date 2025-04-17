@@ -175,10 +175,9 @@
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
                             {{-- Chama a função Alpine para abrir o modal --}}
-                            @click="openDocumentModal({{ $document->id }})"
-                            class="text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-white font-medium"
+                            @click="openDocumentModal({{ $document->id }})" class="text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-white font-medium"
                         >
-                            <i class="fas fa-eye mr-1"></i> Ver
+                             <a href="{{ route('documents.show', $document) }}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-eye mr-1"></i>Ver</a>
                         </button>
                         {{-- Adicionar botões de Editar/Excluir aqui, se necessário --}}
                         {{-- <a href="{{ route('documents.edit', $document) }}" class="text-indigo-600 hover:text-indigo-900 ml-2">Editar</a> --}}
