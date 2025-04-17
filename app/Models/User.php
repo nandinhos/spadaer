@@ -19,6 +19,9 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'rank',
+        'full_name',
+        'order_number',
         'email',
         'password',
     ];
@@ -44,5 +47,23 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * As comissões que este usuário pertence.
+     */
+    public function commissions()
+    {
+        return $this->belongsToMany(Commission::class, 'commission_members')
+            ->withPivot('role')
+            ->withTimestamps();
+    }
+
+    /**
+     * As revisões de documentos feitas por este usuário.
+     */
+    public function documentReviews()
+    {
+        return $this->hasMany(DocumentReview::class);
     }
 }

@@ -6,9 +6,18 @@ use App\Models\Document;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; // Para distinct e raw queries se necessário
 use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class DocumentController extends Controller
 {
+    public function show(Document $document)
+    {
+        if (request()->wantsJson()) {
+            return response()->json($document);
+        }
+        return view('documents.show', compact('document'));
+    }
+
     public function index(Request $request): View
     {
         // Parâmetros de busca, filtro, ordenação e paginação
@@ -42,7 +51,8 @@ class DocumentController extends Controller
                   ->orWhere('descriptor', 'like', "%{$searchTerm}%")
                   ->orWhere('document_number', 'like', "%{$searchTerm}%")
                   ->orWhere('title', 'like', "%{$searchTerm}%")
-                  ->orWhere('project', 'like', "%{$searchTerm}%");
+                  ->orWhere('project', 'like', "%{$searchTerm}%")
+                  ->orWhere('confidentiality', 'like', "%{$searchTerm}%");
                 // Não buscar em data, sigilo, versão, cópia diretamente com like simples
             });
         }
@@ -96,6 +106,12 @@ class DocumentController extends Controller
          $filteredBoxesCount = $documents->pluck('box_number')->unique()->count();
          $filteredProjectsCount = $documents->pluck('project')->filter()->unique()->count(); // filter() remove nulls
 
+         // Calcula o intervalo de anos para os documentos filtrados
+         $yearsData = $documents->pluck('document_date')->map(fn($date) => $date?->year)->filter()->unique()->sort();
+         $yearRange = $yearsData->isNotEmpty()
+             ? ($yearsData->first() === $yearsData->last() ? $yearsData->first() : $yearsData->first() . ' - ' . $yearsData->last())
+             : null;
+
 
         return view('documents.index', [
             'documents' => $documents,
@@ -109,15 +125,79 @@ class DocumentController extends Controller
                 'filteredDocumentsCount' => $filteredDocumentsCount,
                 'filteredBoxesCount' => $filteredBoxesCount, // Contagem baseada na página atual
                 'filteredProjectsCount' => $filteredProjectsCount, // Contagem baseada na página atual
+                'yearRange' => $yearRange, // Intervalo de anos dos documentos filtrados
             ],
             'hasActiveFilters' => $request->filled(['search', 'filter_box', 'filter_project', 'filter_year']), // Verifica se algum filtro está preenchido
         ]);
     }
 
-     // Método para detalhes (exemplo para o modal)
-     public function show(Document $document)
-     {
-         // Retorna o documento como JSON para ser usado pelo Alpine no modal
-         return response()->json($document);
-     }
+     
+    public function create()
+    {
+        return view('documents.create');
+    }
+
+    public function store(Request $request)
+    {
+        // Validation and document creation logic here
+        $validated = $request->validate([
+            'box_number' => 'required',
+            'item_number' => 'required',
+            'title' => 'required',
+            'document_date' => 'required|date',
+            'project' => 'required',
+            // Add other validation rules as needed
+        ]);
+    
+        // Create the document
+        Document::create($validated);
+    
+        return redirect()->route('documents.index')
+            ->with('success', 'Document created successfully.');
+    }
+
+    /**
+     * Exibe o formulário para editar um documento existente
+     */
+    public function edit(Document $document): View
+    {
+        return view('documents.edit', compact('document'));
+    }
+
+    /**
+     * Atualiza um documento existente no banco de dados
+     */
+    public function update(Request $request, Document $document): RedirectResponse
+    {
+        $validated = $request->validate([
+            'box_number' => 'required|string|max:255',
+            'item_number' => 'required|string|max:255',
+            'code' => 'nullable|string|max:255',
+            'descriptor' => 'nullable|string|max:255',
+            'document_number' => 'nullable|string|max:255',
+            'title' => 'required|string|max:255',
+            'document_date' => 'required|date',
+            'project' => 'required|string|max:255',
+            'confidentially' => 'nullable|string|max:255',
+            'version' => 'nullable|string|max:255',
+            'is_copy' => 'nullable|boolean',
+        ]);
+
+        // Atualiza o documento com os dados validados
+        $document->update($validated);
+
+        return redirect()->route('documents.show', $document)
+            ->with('success', 'Documento atualizado com sucesso!');
+    }
+
+    /**
+     * Remove um documento do banco de dados
+     */
+    public function destroy(Document $document): RedirectResponse
+    {
+        $document->delete();
+
+        return redirect()->route('documents.index')
+            ->with('success', 'Documento excluído com sucesso!');
+    }
 }

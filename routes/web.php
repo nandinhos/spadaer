@@ -1,7 +1,8 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\DocumentController; // Importe o controller
+use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\CommissionController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -11,15 +12,24 @@ Route::get('/', function () {
      if (Auth::check()) {
         return redirect()->route('documents.index');
      }
-     return view('welcome'); // Ou sua landing page
+     return view('dashboard'); // Ou sua landing page
 });
+
 
 // Rotas autenticadas
 Route::middleware('auth')->group(function () {
     // Rota principal do sistema de documentos
     Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
+    
+    // Add these routes for document creation
+    Route::get('/documents/create', [DocumentController::class, 'create'])->name('documents.create');
+    Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
+    
     // Rota para buscar detalhes de um documento via AJAX (para o modal)
     Route::get('/documents/{document}', [DocumentController::class, 'show'])->name('documents.show');
+
+    // Rotas para Comissões
+Route::resource('commissions', CommissionController::class);
 
     // Rotas do Breeze (Perfil)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -27,14 +37,17 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
      // Redireciona a rota padrão /dashboard para /documents
-     Route::redirect('/dashboard', '/documents');
+     // Add this line to define the 'dashboard' named route
+     Route::get('/dashboard', function () {
+         return redirect()->route('documents.index');
+     })->name('dashboard');
 
-     // Adicione outras rotas aqui (ex: criar, editar, deletar documentos)
-     // Route::get('/documents/create', [DocumentController::class, 'create'])->name('documents.create');
-     // Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
-     // Route::get('/documents/{document}/edit', [DocumentController::class, 'edit'])->name('documents.edit');
-     // Route::put('/documents/{document}', [DocumentController::class, 'update'])->name('documents.update');
-     // Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
+     // Rotas para gerenciamento de documentos
+     Route::get('/documents/create', [DocumentController::class, 'create'])->name('documents.create');
+     Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
+     Route::get('/documents/{document}/edit', [DocumentController::class, 'edit'])->name('documents.edit');
+     Route::put('/documents/{document}', [DocumentController::class, 'update'])->name('documents.update');
+     Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
 });
 
 

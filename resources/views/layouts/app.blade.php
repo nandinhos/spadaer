@@ -1,42 +1,51 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+{{-- Use pt-BR para acessibilidade e SEO --}}
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        {{-- Título dinâmico ou padrão --}}
+        <title>{{ config('app.name', 'Laravel') }} - @yield('title', 'Sistema')</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-        <!-- Scripts -->
+        <!-- Scripts and Styles -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        {{-- Estilos específicos da página (opcional) --}}
+        @stack('styles')
     </head>
-    <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            <div x-data="{ sidebarOpen: localStorage.getItem('sidebarOpen') !== 'false' }" class="flex h-screen overflow-hidden">
-                <!-- Sidebar Component -->
-                <x-sidebar />
+    {{-- Adicione a classe bg-gray-100 dark:bg-gray-900 aqui ou no body do conteúdo --}}
+    <body
+        class="h-full font-sans antialiased bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-200"
+        x-data="layout()" {{-- Alpine data for layout: sidebar, dark mode --}}
+        :class="{ 'dark': darkMode }"
+    >
+        <div class="flex h-full overflow-hidden">
+            {{-- Incluir Sidebar Component --}}
+            <x-sidebar />
 
-                <!-- Main Content Area -->
-                <div class="flex flex-col flex-grow overflow-hidden">
-                    <!-- Page Heading -->
-                    @if (isset($header))
-                        <header class="bg-white dark:bg-gray-800 shadow">
-                            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                                {{ $header }}
-                            </div>
-                        </header>
-                    @endif
+            {{-- Main Content Area --}}
+            <div class="flex flex-col flex-grow overflow-hidden">
+                {{-- Incluir Header Component --}}
+                <x-header />
 
-                    <!-- Page Content -->
-                    <main class="flex-grow overflow-y-auto p-4 md:p-6">
-                        {{ $slot }}
-                    </main>
-                </div>
+                <!-- Page Content -->
+                <main class="flex-grow overflow-y-auto p-4 md:p-6">
+                    {{-- O conteúdo da view específica será injetado aqui --}}
+                    {{ $slot }}
+                </main>
             </div>
         </div>
+
+         {{-- Incluir o Modal Component aqui, fora do fluxo principal se necessário --}}
+         <x-document-modal />
+
+        {{-- Scripts específicos da página (opcional) --}}
+        @stack('scripts')
     </body>
 </html>

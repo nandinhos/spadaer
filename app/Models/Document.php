@@ -10,27 +10,27 @@ class Document extends Model
     use HasFactory;
 
     protected $fillable = [
-        'box',
-        'item',
+        'box_number',
+        'item_number',
         'code',
         'descriptor',
-        'number',
+        'document_number',
         'title',
-        'date',
+        'document_date',
         'project',
-        'secrecy',
+        'confidentiality',
         'version',
-        'copy',
-        'conference_military',
-        'conference_date',
+        'is_copy',
+        //'conference_military',
+        //'conference_date',
         // 'user_id',
         // 'box_id',
         // 'project_id',
     ];
 
     protected $casts = [
-        'date' => 'date:Y-m-d',
-        'copy' => 'boolean',
+        'document_date' => 'date:Y-m-d',
+        'is_copy' => 'boolean',
     ];
     
     // Add a mutator to handle secrecy values
@@ -38,9 +38,9 @@ class Document extends Model
     {
         // If the value is too long, truncate it or map it to an allowed value
         if ($value === 'COMPANY CONFIDENTIAL') {
-            $this->attributes['secrecy'] = 'CONFIDENTIAL';
+            $this->attributes['confidentiality'] = 'CONFIDENTIAL';
         } else {
-            $this->attributes['secrecy'] = $value;
+            $this->attributes['confidentiality'] = $value;
         }
     }
 
