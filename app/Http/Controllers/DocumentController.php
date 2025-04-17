@@ -114,34 +114,65 @@ class DocumentController extends Controller
             ->orderBy('project')
             ->pluck('project');
 
-        // $availableYears = Document::query()
-        //     ->when($filterBox, fn($q) => $q->where('box_number', 'like', "%{$filterBox}%"))
-        //     ->when($filterProject, fn($q) => $q->where('project', $filterProject))
-        //     // ->select(DB::raw('YEAR(document_date) as year')) // Removido devido à data ser string
-        //     ->whereNotNull('document_date')
-        //     ->distinct()
-        //     // ->orderBy('year', 'desc') // Removido
-        //     // ->pluck('year'); // Removido
-        $availableYears = collect(); // Define como coleção vazia por enquanto
+        // Extrair anos de 4 dígitos das datas dos documentos
+        $availableYears = Document::query()
+            ->when($filterBox, fn($q) => $q->where('box_number', 'like', "%{$filterBox}%"))
+            ->when($filterProject, fn($q) => $q->where('project', $filterProject))
+            ->whereNotNull('document_date')
+            ->pluck('document_date')
+            ->map(function($dateStr) {
+                // Procura por padrão de 4 dígitos que representa um ano (entre 1900 e 2100)
+                preg_match('/(?:19|20)\d{2}/', $dateStr, $matches);
+                return $matches[0] ?? null;
+            })
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
 
-         // Dados para as Estatísticas (Exemplo - pode ser mais elaborado)
-         $totalDocuments = Document::count(); // Total geral
-         $totalBoxes = Document::distinct('box_number')->count('box_number'); // Total geral de caixas
-         $totalProjects = Document::whereNotNull('project')->distinct('project')->count('project');
+        // Dados para as Estatísticas (Exemplo - pode ser mais elaborado)
+        $totalDocuments = Document::count(); // Total geral
+        $totalBoxes = Document::distinct('box_number')->count('box_number'); // Total geral de caixas
+        $totalProjects = Document::whereNotNull('project')->distinct('project')->count('project');
 
-         // Estatísticas filtradas baseadas na contagem do Paginator
-         $filteredDocumentsCount = $documents->total();
-         // Para caixas/projetos filtrados, seria preciso uma query separada no resultado filtrado *antes* da paginação,
-         // ou contar a partir da coleção paginada (menos preciso se houver muitas páginas)
-         // Exemplo simples contando na coleção atual:
-         $filteredBoxesCount = $documents->pluck('box_number')->unique()->count();
-         $filteredProjectsCount = $documents->pluck('project')->filter()->unique()->count(); // filter() remove nulls
+        // Estatísticas filtradas
+        $filteredDocumentsCount = $documents->total();
+        
+        // Contagem de caixas filtradas usando uma query separada
+        $filteredBoxesCount = Document::query()
+            ->when($searchTerm, function($q) use ($searchTerm) {
+                $q->where(function($q) use ($searchTerm) {
+                    $q->where('box_number', 'like', "%{$searchTerm}%")
+                      ->orWhere('item_number', 'like', "%{$searchTerm}%")
+                      ->orWhere('code', 'like', "%{$searchTerm}%")
+                      ->orWhere('descriptor', 'like', "%{$searchTerm}%")
+                      ->orWhere('document_number', 'like', "%{$searchTerm}%")
+                      ->orWhere('title', 'like', "%{$searchTerm}%")
+                      ->orWhere('project', 'like', "%{$searchTerm}%")
+                      ->orWhere('confidentiality', 'like', "%{$searchTerm}%");
+                });
+            })
+            ->when($filterBox, fn($q) => $q->where('box_number', 'like', "%{$filterBox}%"))
+            ->when($filterProject, fn($q) => $q->where('project', $filterProject))
+            ->distinct('box_number')
+            ->count('box_number');
+            
+        $filteredProjectsCount = $documents->pluck('project')->filter()->unique()->count();
 
-         // Calcula o intervalo de anos para os documentos filtrados - Removido/Simplificado devido à data ser string
-         // $yearsData = $documents->pluck('document_date')->map(fn($dateStr) => /* Lógica para extrair ano da string */ )->filter()->unique()->sort();
-         // $yearRange = ...
-         $yearRange = null; // Definido como null por enquanto
-
+        // Calcula o intervalo de anos para os documentos filtrados
+        $yearsData = $documents->pluck('document_date')
+            ->map(function($dateStr) {
+                preg_match('/(?:19|20)\d{2}/', $dateStr, $matches);
+                return $matches[0] ?? null;
+            })
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
+        
+        $yearRange = $yearsData->count() > 0
+            ? $yearsData->first() . '-' . $yearsData->last()
+            : null;
 
         return view('documents.index', [
             'documents' => $documents,
