@@ -13,6 +13,7 @@
         ['key' => 'document_number', 'label' => 'Número'],
         ['key' => 'title', 'label' => 'Título'],
         ['key' => 'document_date', 'label' => 'Data'],
+        ['key' => 'project', 'label' => 'Projeto'],
         ['key' => 'confidentiality', 'label' => 'Sigilo'],
         ['key' => 'version', 'label' => 'Versão'],
         ['key' => 'is_copy', 'label' => 'Cópia'],
@@ -132,43 +133,37 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             @switch($column['key'])
                                 @case('document_date')
-                                    {{-- Exibe a data como string, sem formatação --}}
                                     {{ $document->document_date ?? 'N/D' }}
                                     @break
                                 @case('is_copy')
-                                    {{-- Exibe o valor de is_copy como string --}}
-                                    {{ $document->is_copy ?? 'N/D' }}
-                                    {{-- Alternativa: Mapear strings comuns para Sim/Não se necessário --}}
-                                    {{-- @php
+                                    @php
                                         $isCopyDisplay = 'N/D';
-                                        if (strtolower($document->is_copy) === 'true' || $document->is_copy === '1') {
-                                            $isCopyDisplay = 'Sim';
-                                        } elseif (strtolower($document->is_copy) === 'false' || $document->is_copy === '0') {
-                                            $isCopyDisplay = 'Não';
-                                        } elseif ($document->is_copy !== null) {
-                                            $isCopyDisplay = $document->is_copy; // Exibe a string como está
+                                        if ($document->is_copy !== null) {
+                                            $isCopyDisplay = $document->is_copy;
                                         }
                                     @endphp
-                                    {{ $isCopyDisplay }} --}}
+                                    {{ $isCopyDisplay }}
                                     @break
-                                 @case('confidentiality')
-                                     <span
-                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize
-                                            @if($document->confidentiality === 'Confidencial') bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
-                                            @elseif($document->confidentiality === 'Restrito') bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
-                                            @else bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
-                                            @endif"
-                                     >
-                                        {{ strtolower($document->confidentiality) }}
+                                @case('confidentiality')
+                                    @php
+                                        $confidentialityClass = match(strtolower($document->confidentiality)) {
+                                            'restrito' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                                            'restricted' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                                            'confidencial' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                                            'confidential' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                                            'unclassified' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
+                                            default => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                        };
+                                    @endphp
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize {{ $confidentialityClass }}">
+                                        {{ strtolower($document->confidentiality ?? 'N/D') }}
                                     </span>
                                     @break
-                                 @case('title')
-                                     {{-- Limita o tamanho do título --}}
-                                     <span title="{{ $document->{$column['key']} }}">{{ Str::limit($document->{$column['key']}, 50) }}</span>
+                                @case('title')
+                                    <span title="{{ $document->title }}">{{ Str::limit($document->title, 50) }}</span>
                                     @break
-
                                 @default
-                                     {{ $document->{$column['key']} ?? 'N/D' }}
+                                    {{ $document->{$column['key']} ?? 'N/D' }}
                             @endswitch
                         </td>
                     @endforeach

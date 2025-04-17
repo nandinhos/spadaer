@@ -7,9 +7,37 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; // Para distinct e raw queries se necessário
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use App\Imports\DocumentsImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DocumentController extends Controller
 {
+    public function import(Request $request)
+    {
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt|max:2048'
+        ]);
+
+        try {
+            $import = new DocumentsImport();
+            Excel::import($import, $request->file('csv_file'));
+
+            $importedCount = $import->getImportedCount();
+            $errors = $import->getErrors();
+
+            if (count($errors) > 0) {
+                return back()->with([
+                    'success' => "$importedCount documentos importados com sucesso.",
+                    'error' => "Erros encontrados durante a importação:\n" . implode("\n", array_map(function($error) { return $error[0]; }, $errors))
+                ]);
+            }
+
+            return back()->with('success', "$importedCount documentos importados com sucesso.");
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erro ao processar o arquivo: ' . $e->getMessage());
+        }
+    }
+
     public function show(Document $document)
     {
         if (request()->wantsJson()) {

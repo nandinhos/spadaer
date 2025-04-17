@@ -2,6 +2,9 @@
     @section('title', 'Documentos') {{-- Define o título da página --}}
     @section('header-title', 'Listagem de Documentos') {{-- Define o título do header --}}
 
+    {{-- Formulário de Importação --}}
+    @include('documents.import-form')
+
     {{-- O Alpine 'documentSystem' agora pode estar no layout ou aqui, se for específico --}}
     {{-- Se 'layout()' já tem as funções do modal, não precisa de outro x-data --}}
     {{-- <div x-data="documentPage()"> --}}

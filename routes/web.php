@@ -42,6 +42,9 @@ Route::resource('commissions', CommissionController::class);
          return redirect()->route('documents.index');
      })->name('dashboard');
 
+     // Rota para importação de documentos
+     Route::post('/documents/import', [DocumentController::class, 'import'])->name('documents.import');
+
      // Rotas para gerenciamento de documentos
      Route::get('/documents/create', [DocumentController::class, 'create'])->name('documents.create');
      Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');

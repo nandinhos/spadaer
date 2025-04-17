@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('item_number'); // item
             $table->string('code')->nullable(); // codigo
             $table->string('descriptor')->nullable(); // descritor
-            $table->string('document_number')->unique(); // numero (considerar unique?)
+            $table->string('document_number'); // numero
             $table->text('title'); // titulo
             $table->string('document_date')->nullable(); // data (alterado para string)
             $table->string('project')->nullable(); // projeto
