@@ -1,9 +1,15 @@
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
-<label for="csv_file" class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                Importar Documentos (CSV)
-            </label>
-            
-    <form action="{{ route('documents.import') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+<div class="flex items-center justify-between mb-2">
+    <label for="csv_file" class="text-sm font-bold text-gray-700 dark:text-gray-300">
+        Importar Documentos (CSV)
+    </label>
+    <a href="{{ asset('files/modelo_importacao.csv') }}" 
+       class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+       download>
+        Baixar modelo CSV
+    </a>
+</div>
+<form action="{{ route('documents.import') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
         @csrf
         <div>
            

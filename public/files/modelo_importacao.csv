@@ -1,0 +1,4 @@
+﻿caixa,item,codigo,descritor,numero,titulo,data,projeto,sigilo,versao,copia
+1,1,441,PROJETO DE PESQUISA E DESENVOLVIMENTO,2024/001,"KC-390 - Relatório de Atividades Mensais",2024-01-15,"Projeto Alpha",RESERVADO,1.0,0
+1,2,441,PROJETO DE PESQUISA E DESENVOLVIMENTO,2024/002,"MAR-1 - Solicitação de Recursos",2024-01-16,"Projeto Beta",OSTENSIVO,1.0,0
+2,1,441,PROJETO DE PESQUISA E DESENVOLVIMENTO,2024/003,"FX-39 - Análise de Desempenho",2024-01-17,"Projeto Gamma",CONFIDENCIAL,2.0,1
