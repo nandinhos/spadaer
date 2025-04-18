@@ -7,22 +7,22 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="bg-gray dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <!-- Card de Resumo da Comissão -->
                     <div class="bg-white dark:bg-gray-700 shadow-md rounded-lg p-6 mb-6">
                         <h3 class="text-xl font-semibold mb-4 border-b pb-2 dark:border-gray-600">{{ __('Resumo da Comissão') }}</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <p class="font-medium font-bold">{{ __('Nome da Comissão') }}</p>
+                                <p class=" font-bold">{{ __('Nome da Comissão') }}</p>
                                 <p class="mt-1">{{ $commission->name }}</p>
                             </div>
                             <div>
-                                <p class="font-medium font-bold">{{ __('Descrição') }}</p>
+                                <p class="font-bold">{{ __('Descrição') }}</p>
                                 <p class="mt-1">{{ $commission->description }}</p>
                             </div>
                             <div>
-                                <p class="font-medium font-bold">{{ __('Portaria') }}</p>
+                                <p class="font-bold">{{ __('Portaria') }}</p>
                                 <p class="mt-1">
                                     Número: {{ $commission->ordinance_number }} <br>
                                     Data: {{ $commission->ordinance_date->format('d/m/Y') }}
@@ -37,7 +37,7 @@
                                 @endif
                             </div>
                             <div>
-                                <p class="font-medium font-bold">{{ __('Status') }}</p>
+                                <p class="font-bold">{{ __('Status') }}</p>
                                 <p class="mt-1">
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $commission->status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100' : 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100' }}">
                                         {{ $commission->status === 'active' ? 'Ativa' : 'Inativa' }}
@@ -49,7 +49,7 @@
 
                     <!-- Tabela de Membros -->
                     <div>
-                        <h3 class="text-lg font-medium mb-4">{{ __('Membros da Comissão') }}</h3>
+                        <h3 class="text-xl font-bold mb-4">{{ __('Membros da Comissão') }}</h3>
                         <div class="overflow-x-auto shadow-md sm:rounded-lg">
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead class="bg-gray-50 dark:bg-gray-600">

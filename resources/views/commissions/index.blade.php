@@ -1,4 +1,6 @@
 <x-app-layout>
+@section('title', 'Comissões') {{-- Define o título da página --}}
+@section('header-title', 'Gerenciamento de Comissões') {{-- Define o título do header --}}
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Comissões') }}
@@ -13,7 +15,7 @@
                 </a>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="bg-gray dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">

@@ -81,17 +81,28 @@
     </form>
 
     <!-- Botões de Ações Rápidas -->
-    <div class="flex flex-wrap gap-2 mt-2">
-        <a href="{{ route('documents.create') }}" class="inline-flex items-center px-4 py-2 bg-black dark:bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-gray-700 focus:bg-gray-700 dark:focus:bg-gray-700 active:bg-gray-900 dark:active:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+    <div class="flex flex-wrap gap-2 mt-2" x-data="{ isImporting: false }">
+        <a href="{{ route('documents.create') }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
             <i class="fas fa-plus-circle mr-1.5"></i> Adicionar
         </a>
-         <x-secondary-button type="button" onclick="alert('Ação Exportar não implementada')">
-             <i class="fas fa-file-export mr-1.5"></i> Exportar
-        </x-secondary-button>
-         <x-secondary-button type="button" onclick="alert('Ação Imprimir não implementada')">
-             <i class="fas fa-print mr-1.5"></i> Imprimir
-         </x-secondary-button>
+        
+        <button type="button" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150" onclick="alert('Ação Exportar não implementada')">
+            <i class="fas fa-file-export mr-1.5"></i> Exportar
+        </button>
+        <button type="button" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150" onclick="alert('Ação Imprimir não implementada')">
+            <i class="fas fa-print mr-1.5"></i> Imprimir
+        </button>
     </div>
+    @if(session('import_errors'))
+        <div class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+            <h4 class="font-bold mb-2">Erros na importação:</h4>
+            <ul class="list-disc list-inside">
+                @foreach(session('import_errors') as $error)
+                    <li>{{ $error[0] }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 </div>
 
 <div class="overflow-x-auto">
