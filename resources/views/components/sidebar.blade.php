@@ -31,16 +31,7 @@
     <!-- Menu Items -->
     <nav class="flex-grow py-4 px-2 overflow-y-auto">
         <ul class="space-y-2">
-            <li :class="sidebarOpen ? '' : 'justify-center'">
-                <a href="{{ route('documents.index') }}"
-                   class="flex items-center space-x-2 p-2 rounded-lg {{ request()->routeIs('documents.index') ? 'bg-primary bg-opacity-10 text-primary dark:text-primary-light font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
-                    <i class="fas fa-tachometer-alt w-5 text-center"></i>
-                    <span class="whitespace-nowrap overflow-hidden transition-opacity duration-300"
-                          :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0'">
-                        Dashboard
-                    </span>
-                </a>
-            </li>
+            
             <li :class="sidebarOpen ? '' : 'justify-center'">
                 <a href="{{ route('documents.index') }}"
                    class="flex items-center space-x-2 p-2 rounded-lg {{ request()->routeIs('documents.*') ? 'bg-primary bg-opacity-10 text-primary dark:text-primary-light font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' }}">

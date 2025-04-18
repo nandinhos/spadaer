@@ -16,13 +16,12 @@
     </head>
     <body class="font-sans text-gray-900 antialiased">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-            <div class="mb-8">
+           
+            <div class="w-full sm:max-w-md px-8 py-6 bg-white overflow-hidden rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
                 <a href="/">
                     <x-application-logo class="w-auto text-gray-800" />
                 </a>
-            </div>
-
-            <div class="w-full sm:max-w-md px-8 py-6 bg-white overflow-hidden sm:rounded-lg">
+                <br>
                 {{ $slot }}
             </div>
         </div>
