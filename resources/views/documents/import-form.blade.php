@@ -1,10 +1,12 @@
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
+<label for="csv_file" class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                Importar Documentos (CSV)
+            </label>
+            
     <form action="{{ route('documents.import') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
         @csrf
         <div>
-            <label for="csv_file" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Importar Documentos (CSV)
-            </label>
+           
             <div class="flex items-center space-x-4">
                 <input type="file" 
                        id="csv_file" 

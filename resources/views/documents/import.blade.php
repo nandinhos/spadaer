@@ -1,4 +1,6 @@
 <x-app-layout>
+@section('title', 'Importar Documentos') {{-- Define o título da página --}}
+@section('header-title', 'Importar de Documentos em Massa') {{-- Define o título do header --}}
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">

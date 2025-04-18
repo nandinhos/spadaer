@@ -2,27 +2,15 @@
     @section('title', 'Documentos') {{-- Define o título da página --}}
     @section('header-title', 'Listagem de Documentos') {{-- Define o título do header --}}
 
+    {{-- Estatísticas --}}
+    <x-document-stats :stats="$stats" :hasActiveFilters="$hasActiveFilters" :totalDocuments="$stats['totalDocuments']" />
+
     {{-- Formulário de Importação --}}
     @include('documents.import-form')
 
     {{-- O Alpine 'documentSystem' agora pode estar no layout ou aqui, se for específico --}}
     {{-- Se 'layout()' já tem as funções do modal, não precisa de outro x-data --}}
     {{-- <div x-data="documentPage()"> --}}
-
-        {{-- Filtros --}}
-        <x-document-filters
-            :projects="$availableProjects"
-            :years="$availableYears"
-            :requestParams="$requestParams"
-        />
-
-         {{-- Filtros Ativos --}}
-         @if($hasActiveFilters)
-            <x-active-filters :requestParams="$requestParams" />
-         @endif
-
-        {{-- Estatísticas --}}
-         <x-document-stats :stats="$stats" :hasActiveFilters="$hasActiveFilters" :totalDocuments="$stats['totalDocuments']" />
 
          {{-- Tabela de Documentos --}}
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow mt-6 overflow-hidden">
