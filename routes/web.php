@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BoxController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\CommissionController;
@@ -30,6 +31,9 @@ Route::middleware('auth')->group(function () {
 
     // Rotas para Comissões
 Route::resource('commissions', CommissionController::class);
+
+    // Rotas de caixas
+    Route::resource('boxes', BoxController::class);
 
     // Rotas do Breeze (Perfil)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

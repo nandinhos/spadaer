@@ -7,7 +7,7 @@
 >
     <!-- Logo -->
     <div class="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
-        <a href="{{ route('documents.index') }}" class="flex items-center space-x-2 text-decoration-none">
+        <a href="{{ route('dashboard') }}" class="flex items-center space-x-2 text-decoration-none">
             <i class="fas fa-box text-primary text-xl"></i>
             <h2
                 class="font-bold whitespace-nowrap overflow-hidden transition-opacity duration-300 text-gray-800 dark:text-gray-200"
@@ -43,8 +43,8 @@
                 </a>
             </li>
             <li :class="sidebarOpen ? '' : 'justify-center'">
-                <a href="#"
-                   class="flex items-center space-x-2 p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">
+                <a href="{{ route('boxes.index') }}"
+                   class="flex items-center space-x-2 p-2 rounded-lg {{ request()->routeIs('boxes.*') ? 'bg-primary bg-opacity-10 text-primary dark:text-primary-light font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
                     <i class="fas fa-box w-5 text-center"></i>
                     <span class="whitespace-nowrap overflow-hidden transition-opacity duration-300"
                           :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0'">
