@@ -4,13 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Document extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'box_number',
+        'box_id',
+        'project_id',
         'item_number',
         'code',
         'descriptor',
@@ -37,10 +39,10 @@ class Document extends Model
     // A lógica de mapeamento pode ser feita na importação ou em outra camada, se necessário.
 
     // Relacionamentos (opcional, se criar models Box, Project, User)
-    public function user()
+    /*public function user()
     {
         return $this->belongsTo(User::class);
-    }
+    }*/
 
     // Relacionamentos
     public function box(): BelongsTo

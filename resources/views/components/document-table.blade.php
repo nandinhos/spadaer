@@ -1,213 +1,274 @@
 @props([
     'documents', // Coleção paginada
-    'requestParams' => [],
+    'requestParams' => [], // Parâmetros da request atual
 ])
 
 @php
-    // Definição das colunas para facilitar a manutenção
+    // --- Definição das Colunas e Chaves de Ordenação ---
+    // Usamos as chaves que o controller espera para ordenação (com nome da tabela)
+    // Usamos as keys do modelo para o switch de exibição quando apropriado
     $columns = [
-        ['key' => 'box_number', 'label' => 'Caixa'],
-        ['key' => 'item_number', 'label' => 'Item'],
-        ['key' => 'code', 'label' => 'Código'],
-        ['key' => 'descriptor', 'label' => 'Descritor'],
-        ['key' => 'document_number', 'label' => 'Número'],
-        ['key' => 'title', 'label' => 'Título'],
-        ['key' => 'document_date', 'label' => 'Data'],
-        ['key' => 'project', 'label' => 'Projeto'],
-        ['key' => 'confidentiality', 'label' => 'Sigilo'],
-        ['key' => 'version', 'label' => 'Versão'],
-        ['key' => 'is_copy', 'label' => 'Cópia'],
+        ['key' => 'boxes.number', 'label' => 'Caixa', 'model_key' => 'box'], // 'key' para sort, 'model_key' para acesso ao dado relacionado
+        ['key' => 'projects.name', 'label' => 'Projeto', 'model_key' => 'project'],
+        ['key' => 'documents.item_number', 'label' => 'Item', 'model_key' => 'item_number'],
+        ['key' => 'documents.code', 'label' => 'Código', 'model_key' => 'code'],
+        ['key' => 'documents.descriptor', 'label' => 'Descritor', 'model_key' => 'descriptor'],
+        ['key' => 'documents.document_number', 'label' => 'Número', 'model_key' => 'document_number'],
+        ['key' => 'documents.title', 'label' => 'Título', 'model_key' => 'title'],
+        ['key' => 'documents.document_date', 'label' => 'Data', 'model_key' => 'document_date'],
+        ['key' => 'documents.confidentiality', 'label' => 'Sigilo', 'model_key' => 'confidentiality'],
+        ['key' => 'documents.version', 'label' => 'Versão', 'model_key' => 'version'],
+        ['key' => 'documents.is_copy', 'label' => 'Cópia', 'model_key' => 'is_copy'],
     ];
-    $currentSortBy = $requestParams['sort_by'] ?? 'box_number';
-    $currentSortDir = $requestParams['sort_dir'] ?? 'asc';
+    // Default sort deve corresponder a uma chave válida em $columns
+    $currentSortBy = $requestParams['sort_by'] ?? 'documents.document_date';
+    $currentSortDir = $requestParams['sort_dir'] ?? 'desc';
+
+    // Helper para gerar links de ordenação (mantido da view index de caixas)
+    $requestParamsForSort = request()->except(['page']);
+    function sortLink($label, $columnKey, $currentSortBy, $currentSortDir, $params)
+    {
+        $newSortDir = $currentSortBy == $columnKey && $currentSortDir == 'asc' ? 'desc' : 'asc';
+        $url = route('documents.index', array_merge($params, ['sort_by' => $columnKey, 'sort_dir' => $newSortDir]));
+        $icon = '';
+        if ($currentSortBy == $columnKey) {
+            $icon =
+                $currentSortDir == 'asc'
+                    ? '<i class="ml-1 fas fa-sort-up"></i>'
+                    : '<i class="ml-1 fas fa-sort-down"></i>';
+        }
+        return '<a href="' .
+            $url .
+            '" class="flex items-center space-x-1 group hover:text-gray-900 dark:hover:text-gray-100">' .
+            $label .
+            $icon .
+            '</a>';
+    }
 @endphp
 
+{{-- Cabeçalho da Tabela (Busca, Itens por página, Ações) --}}
 <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-     {{-- Formulário para busca e itens por página --}}
-    <form action="{{ route('documents.index') }}" method="GET" class="mb-4">
-        {{-- Mantém filtros e ordenação --}}
-         @if(isset($requestParams['filter_box'])) <input type="hidden" name="filter_box" value="{{ $requestParams['filter_box'] }}"> @endif
-         @if(isset($requestParams['filter_project'])) <input type="hidden" name="filter_project" value="{{ $requestParams['filter_project'] }}"> @endif
-         @if(isset($requestParams['filter_year'])) <input type="hidden" name="filter_year" value="{{ $requestParams['filter_year'] }}"> @endif
-         @if(isset($requestParams['sort_by'])) <input type="hidden" name="sort_by" value="{{ $requestParams['sort_by'] }}"> @endif
-         @if(isset($requestParams['sort_dir'])) <input type="hidden" name="sort_dir" value="{{ $requestParams['sort_dir'] }}"> @endif
+    {{-- Formulário para busca e itens por página --}}
+    {{-- É melhor ter formulários separados para busca e itens por página --}}
+    <div class="flex flex-col items-center justify-between gap-4 mb-4 md:flex-row">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 shrink-0">
+            Documentos
+            <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                ({{ $documents->total() > 0 ? $documents->firstItem() . '-' . $documents->lastItem() : 0 }} de
+                {{ $documents->total() }})
+            </span>
+        </h2>
 
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                Documentos
-                <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
-                   ({{ $documents->total() > 0 ? $documents->firstItem() . '-' . $documents->lastItem() : 0 }} de {{ $documents->total() }})
-                </span>
-            </h2>
+        {{-- Formulário de Busca --}}
+        <form action="{{ route('documents.index') }}" method="GET" class="flex-grow md:max-w-md">
+            {{-- Manter filtros/sort/per_page ao buscar --}}
+            <input type="hidden" name="filter_box_number" value="{{ $requestParams['filter_box_number'] ?? '' }}">
+            <input type="hidden" name="filter_project_id" value="{{ $requestParams['filter_project_id'] ?? '' }}">
+            <input type="hidden" name="filter_year" value="{{ $requestParams['filter_year'] ?? '' }}">
+            <input type="hidden" name="sort_by" value="{{ $currentSortBy }}">
+            <input type="hidden" name="sort_dir" value="{{ $currentSortDir }}">
+            <input type="hidden" name="per_page" value="{{ $requestParams['per_page'] ?? 15 }}">
 
-            {{-- Campo de Pesquisa --}}
-            <div class="relative flex-grow md:max-w-md">
-                <x-text-input
-                    type="text"
-                    name="search"
-                    placeholder="Pesquisar documentos..."
-                    class="w-full px-4 py-2 pr-10 text-base"
-                    :value="old('search', $requestParams['search'] ?? '')"
-                    aria-label="Pesquisar documentos"
-                />
-                 {{-- Botão Limpar (opcional, pode ser feito com JS se preferir não submeter) --}}
-                @if(!empty($requestParams['search']))
-                <a href="{{ route('documents.index', array_merge($requestParams, ['search' => '', 'page' => 1])) }}" class="absolute right-10 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light" title="Limpar pesquisa">
-                     <i class="fas fa-times-circle"></i>
-                </a>
+            <div class="relative">
+                <x-text-input type="text" name="search" placeholder="Pesquisar..."
+                    class="w-full px-4 py-2 pr-10 text-base" :value="$requestParams['search'] ?? ''" aria-label="Pesquisar documentos" />
+                @if (!empty($requestParams['search']))
+                    {{-- Link para limpar busca, mantendo outros params --}}
+                    <a href="{{ route('documents.index', array_merge($requestParams, ['search' => '', 'page' => 1])) }}"
+                        class="absolute text-gray-500 transform -translate-y-1/2 right-10 top-1/2 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light"
+                        title="Limpar pesquisa">
+                        <i class="fas fa-times-circle"></i>
+                    </a>
                 @endif
-                <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400" aria-label="Pesquisar">
+                <button type="submit"
+                    class="absolute text-gray-500 transform -translate-y-1/2 right-3 top-1/2 dark:text-gray-400"
+                    aria-label="Pesquisar">
                     <i class="fas fa-search"></i>
                 </button>
             </div>
+        </form>
 
-            {{-- Seleção de Itens por Página --}}
+        {{-- Formulário Itens por Página --}}
+        <form action="{{ route('documents.index') }}" method="GET">
+            {{-- Manter filtros/sort/search ao mudar página --}}
+            <input type="hidden" name="filter_box_number" value="{{ $requestParams['filter_box_number'] ?? '' }}">
+            <input type="hidden" name="filter_project_id" value="{{ $requestParams['filter_project_id'] ?? '' }}">
+            <input type="hidden" name="filter_year" value="{{ $requestParams['filter_year'] ?? '' }}">
+            <input type="hidden" name="sort_by" value="{{ $currentSortBy }}">
+            <input type="hidden" name="sort_dir" value="{{ $currentSortDir }}">
+            <input type="hidden" name="search" value="{{ $requestParams['search'] ?? '' }}">
+
             <div class="flex items-center gap-2 shrink-0">
-                <x-input-label for="per_page" value="Por página:" class="whitespace-nowrap"/>
-                <x-select-input
-                    id="per_page"
-                    name="per_page"
-                    class="p-1 text-sm"
-                     onchange="this.form.submit()" {{-- Submete o form ao mudar --}}
-                     :currentValue="old('per_page', $requestParams['per_page'] ?? 10)"
-                >
-                    <option value="10">10</option>
+                <label for="per_page"
+                    class="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ __('Por página:') }}</label>
+                <x-select-input id="per_page" name="per_page" class="p-1 text-sm !py-1 !px-2"
+                    onchange="this.form.submit()" :currentValue="$requestParams['per_page'] ?? 15">
+                    <option value="15">15</option>
                     <option value="25">25</option>
                     <option value="50">50</option>
                     <option value="100">100</option>
-                 </x-select-input>
+                </x-select-input>
             </div>
-        </div>
-    </form>
+        </form>
+    </div>
 
     <!-- Botões de Ações Rápidas -->
-    <div class="flex flex-wrap gap-2 mt-2" x-data="{ isImporting: false }">
-        <a href="{{ route('documents.create') }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+    <div class="flex flex-wrap gap-2">
+        {{-- @can('create', App\Models\Document::class) --}}
+        <x-primary-button tag="a" href="{{ route('documents.create') }}">
             <i class="fas fa-plus-circle mr-1.5"></i> Adicionar
-        </a>
-        
-        <button type="button" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150" onclick="alert('Ação Exportar não implementada')">
+        </x-primary-button>
+        {{-- @endcan --}}
+
+        <x-secondary-button type="button" onclick="alert('Ação Exportar não implementada')">
             <i class="fas fa-file-export mr-1.5"></i> Exportar
-        </button>
-        <button type="button" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150" onclick="alert('Ação Imprimir não implementada')">
+        </x-secondary-button>
+        <x-secondary-button type="button" onclick="alert('Ação Imprimir não implementada')">
             <i class="fas fa-print mr-1.5"></i> Imprimir
-        </button>
+        </x-secondary-button>
+        {{-- Botão para abrir formulário de importação (se existir e usar Alpine) --}}
+        {{-- <x-secondary-button type="button" @click="isImporting = !isImporting">
+            <i class="fas fa-file-import mr-1.5"></i> Importar
+        </x-secondary-button> --}}
     </div>
-    @if(session('import_errors'))
-        <div class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-            <h4 class="font-bold mb-2">Erros na importação:</h4>
-            <ul class="list-disc list-inside">
-                @foreach(session('import_errors') as $error)
-                    <li>{{ $error[0] }}</li>
-                @endforeach
-            </ul>
-        </div>
+
+    {{-- Exibir erros de importação, se houver --}}
+    @if (session('import_errors'))
+        {{-- ... (código para exibir erros de importação) ... --}}
     @endif
 </div>
 
+{{-- Tabela de Dados --}}
 <div class="overflow-x-auto">
     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
         <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
+                {{-- Gera cabeçalhos com links de ordenação --}}
                 @foreach ($columns as $column)
-                    <th
-                        scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-                    >
-                        {{-- Link para ordenação (gerado no Blade ou com Alpine) --}}
-                        {{-- Usando Alpine: @click="window.location.href=getSortUrl('{{ $column['key'] }}')" class="cursor-pointer" --}}
-                        <a href="{{ route('documents.index', array_merge($requestParams, [
-                            'sort_by' => $column['key'],
-                            'sort_dir' => $currentSortBy == $column['key'] && $currentSortDir == 'asc' ? 'desc' : 'asc',
-                            'page' => 1, // Resetar para primeira página ao ordenar
-                        ])) }}" class="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-100">
-                            <span>{{ $column['label'] }}</span>
-                            @if ($currentSortBy == $column['key'])
-                                <i class="fas {{ $currentSortDir == 'asc' ? 'fa-sort-up' : 'fa-sort-down' }}"></i>
-                            @else
-                                {{-- Ícone placeholder para indicar que é ordenável (opcional) --}}
-                                {{-- <i class="fas fa-sort text-gray-300 dark:text-gray-600"></i> --}}
-                            @endif
-                         </a>
+                    <th scope="col"
+                        class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300">
+                        {!! sortLink($column['label'], $column['key'], $currentSortBy, $currentSortDir, $requestParamsForSort) !!}
                     </th>
                 @endforeach
-                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th scope="col"
+                    class="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase dark:text-gray-300">
                     Ações
                 </th>
             </tr>
         </thead>
-        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+        <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
             @forelse ($documents as $document)
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-750/50">
-                     {{-- Mapeia as colunas definidas no array $columns para os dados do $document --}}
+                    {{-- Itera sobre as colunas definidas para exibir os dados corretos --}}
                     @foreach ($columns as $column)
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                            @switch($column['key'])
+                        <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap dark:text-gray-300">
+                            @switch($column['model_key'])
+                                {{-- Usa model_key para acessar o dado --}}
+                                @case('box')
+                                    {{-- Caso especial para relacionamento box --}}
+                                    {{ $document->box?->number ?? '--' }} {{-- Acessa o número da caixa via relacionamento --}}
+                                @break
+
+                                @case('project')
+                                    {{-- Caso especial para relacionamento project --}}
+                                    {{ $document->project?->name ?? '--' }} {{-- Acessa o nome do projeto via relacionamento --}}
+                                @break
+
                                 @case('document_date')
-                                    {{ $document->document_date ?? 'N/D' }}
-                                    @break
+                                    {{ $document->document_date?->format('d/m/Y') ?? '--' }} {{-- Formata a data --}}
+                                @break
+
                                 @case('is_copy')
-                                    @php
-                                        $isCopyDisplay = 'N/D';
-                                        if ($document->is_copy !== null) {
-                                            $isCopyDisplay = $document->is_copy;
-                                        }
-                                    @endphp
-                                    {{ $isCopyDisplay }}
-                                    @break
+                                    {{ $document->is_copy ? 'Sim' : 'Não' }} {{-- Simplificado --}}
+                                @break
+
                                 @case('confidentiality')
+                                    {{-- Lógica do badge (mantida, mas pode virar um componente) --}}
                                     @php
-                                        $confidentialityClass = match(strtolower($document->confidentiality)) {
+                                        $confidentialityClass = match (strtolower($document->confidentiality ?? '')) {
                                             'restrito' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-                                            'restricted' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-                                            'confidencial' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                                            'confidential' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                                            'unclassified' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
-                                            default => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                            'confidencial'
+                                                => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                                            default
+                                                => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200', // Público como default
                                         };
+                                        $confidentialityLabel = $document->confidentiality
+                                            ? strtolower($document->confidentiality)
+                                            : '--';
                                     @endphp
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize {{ $confidentialityClass }}">
-                                        {{ strtolower($document->confidentiality ?? 'N/D') }}
+                                    <span
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize {{ $confidentialityClass }}">
+                                        {{ $confidentialityLabel }}
                                     </span>
-                                    @break
+                                @break
+
                                 @case('title')
+                                    {{-- Truncate com title --}}
                                     <span title="{{ $document->title }}">{{ Str::limit($document->title, 50) }}</span>
-                                    @break
+                                @break
+
                                 @default
-                                    {{ $document->{$column['key']} ?? 'N/D' }}
+                                    {{-- Acessa a propriedade diretamente usando a model_key --}}
+                                    {{ $document->{$column['model_key']} ?? '--' }}
                             @endswitch
                         </td>
                     @endforeach
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                            {{-- Chama a função Alpine para abrir o modal --}}
-                            @click="openDocumentModal({{ $document->id }})" class="text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-white font-medium"
-                        >
-                             <a href="{{ route('documents.show', $document) }}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-eye mr-1"></i>Ver</a>
+                    {{-- Coluna de Ações --}}
+                    <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
+                        {{-- Botão para abrir o Modal (NÃO PODE TER LINK DENTRO) --}}
+                        <button type="button" {{-- Garante que não é submit --}} {{-- Chama a função Alpine GLOBAL --}}
+                            @click="openDocumentModal({{ $document->id }})"
+                            class="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-200 focus:outline-none focus:underline"
+                            title="Ver Detalhes do Documento">
+                            <i class="mr-1 fas fa-eye"></i>
                         </button>
-                        {{-- Adicionar botões de Editar/Excluir aqui, se necessário --}}
-                        {{-- <a href="{{ route('documents.edit', $document) }}" class="text-indigo-600 hover:text-indigo-900 ml-2">Editar</a> --}}
+
+                        {{-- Botão Editar (Exemplo) --}}
+                        {{-- @can('update', $document) --}}
+                        <a href="{{ route('documents.edit', $document) }}"
+                            class="ml-2 font-medium text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-white focus:outline-none focus:underline"
+                            title="Editar Documento">
+                            <i class="mr-1 fas fa-edit"></i>
+                        </a>
+                        {{-- @endcan --}}
+
+                        {{-- Botão Excluir (Exemplo) --}}
+                        {{-- @can('delete', $document) --}}
+                        <form method="POST" action="{{ route('documents.destroy', $document) }}"
+                            class="inline ml-2"
+                            onsubmit="return confirm('Tem certeza que deseja excluir este documento?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit"
+                                class="font-medium text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200 focus:outline-none focus:underline"
+                                title="Excluir Documento">
+                                <i class="mr-1 fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                        {{-- @endcan --}}
                     </td>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="{{ count($columns) + 1 }}" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400">
-                         <div class="flex flex-col items-center justify-center">
-                            <i class="fas fa-folder-open fa-3x text-gray-400 mb-2"></i>
-                            Nenhum documento encontrado.
-                            @if(count(array_filter($requestParams)) > 0) {{-- Verifica se há filtros ativos --}}
-                                <p class="mt-1 text-sm">Tente ajustar os filtros ou a pesquisa.</p>
-                                <button
-                                     onclick="window.location.href='{{ route('documents.index', ['sort_by' => $requestParams['sort_by'] ?? null, 'sort_dir' => $requestParams['sort_dir'] ?? null, 'per_page' => $requestParams['per_page'] ?? null ]) }}'"
-                                     class="mt-3 text-sm text-primary dark:text-primary-light hover:underline"
-                                 >
-                                     Limpar filtros
-                                </button>
-                            @endif
-                         </div>
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
+                @empty
+                    {{-- Linha para quando não há documentos --}}
+                    <tr>
+                        <td colspan="{{ count($columns) + 1 }}"
+                            class="px-6 py-10 text-center text-gray-500 dark:text-gray-400">
+                            <div class="flex flex-col items-center justify-center">
+                                <i class="mb-2 text-gray-400 fas fa-folder-open fa-3x"></i>
+                                Nenhum documento encontrado.
+                                @if (count(array_filter($requestParams)) > 0)
+                                    {{-- Verifica se há filtros/busca ativos --}}
+                                    <p class="mt-1 text-sm">Tente ajustar os filtros ou a pesquisa.</p>
+                                    {{-- Botão para limpar filtros mantendo sort/per_page --}}
+                                    <a href="{{ route('documents.index', ['sort_by' => $requestParams['sort_by'] ?? null, 'sort_dir' => $requestParams['sort_dir'] ?? null, 'per_page' => $requestParams['per_page'] ?? null]) }}"
+                                        class="mt-3 text-sm text-primary dark:text-primary-light hover:underline">
+                                        Limpar filtros e pesquisa
+                                    </a>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
