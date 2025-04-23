@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Document;
+use App\Models\Box;
+use App\Models\Project; // Para filtros
+use App\Models\User;    // Para filtros
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
@@ -11,52 +14,42 @@ class BoxController extends DocumentController
 {
     public function index(Request $request): View
     {
-        // Obtém caixas únicas com contagem de documentos e datas
-        $query = Document::select(
-            'box_number',
-            DB::raw('COUNT(*) as document_count'),
-            DB::raw('MIN(YEAR(document_date)) as min_year'),
-            DB::raw('MAX(YEAR(document_date)) as max_year')
-        )
-        ->groupBy('box_number')
-        ->orderBy('box_number');
+        // Lógica similar ao DocumentController para busca, filtro, sort, paginação
+        $query = Box::query()->with(['project', 'checker']); // Eager load relacionamentos
 
-        // Aplicar busca se houver
-        $searchTerm = $request->input('search');
-        if ($searchTerm) {
-            $query->where('box_number', 'like', "%{$searchTerm}%");
+        // Exemplo de filtro por número
+        if ($request->filled('search')) {
+            $query->where('number', 'like', '%' . $request->input('search') . '%')
+                ->orWhere('physical_location', 'like', '%' . $request->input('search') . '%');
         }
 
-        $boxes = $query->paginate(12)->withQueryString();
+        // Exemplo filtro por projeto
+        if ($request->filled('project_id')) {
+            $query->where('project_id', $request->input('project_id'));
+        }
 
-        // Transformar os resultados para incluir os anos
-        $boxes->getCollection()->transform(function ($box) {
-            // Se tiver apenas um ano, mostra ele sozinho
-            if ($box->min_year == $box->max_year) {
-                $box->year_range = $box->min_year;
-            } else {
-                $box->year_range = "{$box->min_year} - {$box->max_year}";
-            }
-            
-            // Calcula os períodos baseado no ano mais recente
-            $box->current_year = $box->max_year + 5;
-            $box->intermediate_year = $box->current_year + 10;
-            
-            return $box;
-        });
+        // Exemplo filtro por conferente
+        if ($request->filled('checker_id')) {
+            $query->where('checker_id', $request->input('checker_id'));
+        }
 
-        // Estatísticas
-        $stats = [
-            'totalBoxes' => Document::distinct('box_number')->count(),
-            'totalDocuments' => Document::count(),
-            'totalProjects' => Document::distinct('project')->count(),
-        ];
+        // Ordenação (ex: por número)
+        $sortBy = $request->input('sort_by', 'number');
+        $sortDir = $request->input('sort_dir', 'asc');
+        if (in_array($sortBy, ['number', 'physical_location', 'conference_date'])) { // Validar colunas
+            $query->orderBy($sortBy, $sortDir);
+        } else {
+            $query->orderBy('number', 'asc'); // Default
+        }
 
-        return view('boxes.index', [
-            'boxes' => $boxes,
-            'stats' => $stats,
-            'hasActiveFilters' => !empty($searchTerm),
-        ]);
+
+        $boxes = $query->paginate(15)->withQueryString(); // Paginar
+
+        // Dados para filtros
+        $projects = Project::orderBy('name')->pluck('name', 'id');
+        $checkers = User::orderBy('name')->pluck('name', 'id'); // Ou filtrar por roles específicas
+
+        return view('boxes.index', compact('boxes', 'projects', 'checkers', 'request'));
     }
 
     /**

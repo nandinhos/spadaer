@@ -6,6 +6,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasOne; // Para o membro da comissão
+use Illuminate\Database\Eloquent\Relations\HasManyThrough; // Para as caixas conferidas
 
 class User extends Authenticatable
 {
@@ -65,5 +67,24 @@ class User extends Authenticatable
     public function documentReviews()
     {
         return $this->hasMany(DocumentReview::class);
+    }
+
+    // Relacionamento com o registro de membro da comissão (se houver)
+    public function commissionMember(): HasOne
+    {
+        return $this->hasOne(CommissionMember::class);
+    }
+
+    // Caixas conferidas por este usuário (através da tabela commission_members)
+    public function checkedBoxes(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Box::class,              // Modelo final que queremos acessar (Caixa)
+            CommissionMember::class, // Modelo intermediário (Membro da Comissão)
+            'user_id',               // Chave estrangeira no modelo intermediário (commission_members.user_id)
+            'checker_member_id',     // Chave estrangeira no modelo final (boxes.checker_member_id)
+            'id',                    // Chave local no modelo atual (users.id)
+            'id'                     // Chave local no modelo intermediário (commission_members.id)
+        );
     }
 }

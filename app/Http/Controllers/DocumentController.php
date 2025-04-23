@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Document;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB; // Para distinct e raw queries se necessário
-use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 use App\Imports\DocumentsImport;
+use App\Models\Box;
+use App\Models\Document;
+use App\Models\Project;
+// Para retornar JSON
+use Illuminate\Http\RedirectResponse; // Para retornar JSON
+// Para redirecionar
+use Illuminate\Http\Request; // Para distinct e raw queries se necessário
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 
 class DocumentController extends Controller
@@ -15,11 +19,11 @@ class DocumentController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'csv_file' => 'required|file|mimes:csv,txt|max:2048'
+            'csv_file' => 'required|file|mimes:csv,txt|max:2048',
         ]);
 
         try {
-            $import = new DocumentsImport();
+            $import = new DocumentsImport;
             Excel::import($import, $request->file('csv_file'));
 
             $importedCount = $import->getImportedCount();
@@ -28,13 +32,15 @@ class DocumentController extends Controller
             if (count($errors) > 0) {
                 return back()->with([
                     'success' => "$importedCount documentos importados com sucesso.",
-                    'error' => "Erros encontrados durante a importação:\n" . implode("\n", array_map(function($error) { return $error[0]; }, $errors))
+                    'error' => "Erros encontrados durante a importação:\n".implode("\n", array_map(function ($error) {
+                        return $error[0];
+                    }, $errors)),
                 ]);
             }
 
             return back()->with('success', "$importedCount documentos importados com sucesso.");
         } catch (\Exception $e) {
-            return back()->with('error', 'Erro ao processar o arquivo: ' . $e->getMessage());
+            return back()->with('error', 'Erro ao processar o arquivo: '.$e->getMessage());
         }
     }
 
@@ -43,6 +49,7 @@ class DocumentController extends Controller
         if (request()->wantsJson()) {
             return response()->json($document);
         }
+
         return view('documents.show', compact('document'));
     }
 
@@ -50,156 +57,122 @@ class DocumentController extends Controller
     {
         // Parâmetros de busca, filtro, ordenação e paginação
         $searchTerm = $request->input('search');
-        $filterBox = $request->input('filter_box');
-        $filterProject = $request->input('filter_project');
+        // Filtros agora usam IDs ou valores das tabelas relacionadas
+        $filterBoxNumber = $request->input('filter_box_number'); // Filtro pelo número da caixa
+        $filterProjectId = $request->input('filter_project_id'); // Filtro pelo ID do projeto
         $filterYear = $request->input('filter_year');
-        $sortBy = $request->input('sort_by', 'box_number'); // Coluna padrão
-        $sortDir = $request->input('sort_dir', 'asc'); // Direção padrão
-        $perPage = $request->input('per_page', 10); // Itens por página
+        $sortBy = $request->input('sort_by', 'document_date'); // Default: data do documento (existe em documents)
+        $sortDir = $request->input('sort_dir', 'desc'); // Default: descendente para data
+        $perPage = $request->input('per_page', 15); // Aumentado para 15 como exemplo
 
-        // Valida coluna de ordenação para evitar erros
-        $validSortColumns = ['box_number', 'item_number', 'code', 'descriptor', 'document_number', 'title', 'document_date', 'confidentiality', 'version', 'is_copy', 'project'];
-        if (!in_array($sortBy, $validSortColumns)) {
-            $sortBy = 'box_number';
+        // Colunas válidas para ordenação (incluindo colunas relacionadas)
+        $validSortColumns = [
+            'documents.id', // Explicitando a tabela para evitar ambiguidade
+            'documents.item_number',
+            'documents.code',
+            'documents.descriptor',
+            'documents.document_number',
+            'documents.title',
+            'documents.document_date',
+            'documents.confidentiality',
+            'documents.version',
+            'documents.is_copy',
+            'boxes.number', // Coluna da tabela boxes
+            'projects.name', // Coluna da tabela projects
+        ];
+
+        // Valida coluna de ordenação
+        if (! in_array($sortBy, $validSortColumns)) {
+            $sortBy = 'documents.document_date'; // Reset para default seguro
         }
         // Valida direção
-         if (!in_array(strtolower($sortDir), ['asc', 'desc'])) {
-            $sortDir = 'asc';
+        if (! in_array(strtolower($sortDir), ['asc', 'desc'])) {
+            $sortDir = 'desc';
         }
 
-        // Construção da Query
-        $query = Document::query();
+        // --- Construção da Query ---
+        // Seleciona colunas específicas para evitar ambiguidade de 'id', 'created_at', 'updated_at'
+        $query = Document::query()
+            ->select('documents.*', 'boxes.number as box_number', 'projects.name as project_name') // Seleciona e alias colunas relacionadas
+            ->leftJoin('boxes', 'documents.box_id', '=', 'boxes.id') // Junta com boxes
+            ->leftJoin('projects', 'documents.project_id', '=', 'projects.id'); // Junta com projects
 
-        // Aplicar busca textual
+        // Aplicar busca textual (agora pode incluir campos das tabelas unidas)
         if ($searchTerm) {
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('box_number', 'like', "%{$searchTerm}%")
-                  ->orWhere('item_number', 'like', "%{$searchTerm}%")
-                  ->orWhere('code', 'like', "%{$searchTerm}%")
-                  ->orWhere('descriptor', 'like', "%{$searchTerm}%")
-                  ->orWhere('document_number', 'like', "%{$searchTerm}%")
-                  ->orWhere('title', 'like', "%{$searchTerm}%")
-                  ->orWhere('project', 'like', "%{$searchTerm}%")
-                  ->orWhere('confidentiality', 'like', "%{$searchTerm}%");
-                // Não buscar em data, sigilo, versão, cópia diretamente com like simples
+                $q->where('documents.item_number', 'like', "%{$searchTerm}%")
+                    ->orWhere('documents.code', 'like', "%{$searchTerm}%")
+                    ->orWhere('documents.descriptor', 'like', "%{$searchTerm}%")
+                    ->orWhere('documents.document_number', 'like', "%{$searchTerm}%")
+                    ->orWhere('documents.title', 'like', "%{$searchTerm}%")
+                  // Busca nas tabelas relacionadas
+                    ->orWhere('boxes.number', 'like', "%{$searchTerm}%")
+                    ->orWhere('projects.name', 'like', "%{$searchTerm}%");
             });
         }
 
         // Aplicar filtros específicos
-        if ($filterBox) {
-            $query->where('box_number', 'like', "%{$filterBox}%");
+        if ($filterBoxNumber) {
+            // Filtra pelo número da caixa na tabela 'boxes'
+            $query->where('boxes.number', 'like', "%{$filterBoxNumber}%");
         }
-        if ($filterProject) {
-            $query->where('project', $filterProject);
+        if ($filterProjectId) {
+            // Filtra pelo ID do projeto na tabela 'documents'
+            $query->where('documents.project_id', $filterProjectId);
         }
-        // if ($filterYear) {
-        //     // Filtrar por ano em um campo string é complexo e depende do formato.
-        //     // Considere implementar uma busca textual ou normalizar o formato da data.
-        //     // $query->where('document_date', 'like', $filterYear . '-%'); // Exemplo simples se o formato for YYYY-MM-DD
-        // }
+        if ($filterYear) {
+            $query->whereYear('documents.document_date', $filterYear);
+        }
 
-        // Aplicar ordenação
+        // Aplicar ordenação (já validada)
+        // O $sortBy já contém o nome da tabela (ex: 'boxes.number')
         $query->orderBy($sortBy, $sortDir);
 
         // Paginar resultados
-        $documents = $query->paginate($perPage)->withQueryString(); // withQueryString mantém os filtros/sort na paginação
+        // IMPORTANTE: Como usamos JOIN e SELECT, a paginação pode precisar de groupBy para evitar duplicatas se um documento pudesse ter múltiplas caixas/projetos (não é o caso aqui, mas é bom saber).
+        // Contudo, para este caso, deve funcionar.
+        $documents = $query->paginate($perPage)->withQueryString();
 
-        // Obter dados para os filtros (otimizado para buscar apenas o necessário)
-        $availableProjects = Document::query()
-            ->when($filterBox, fn($q) => $q->where('box_number', 'like', "%{$filterBox}%")) // Filtra projetos baseados em outros filtros ativos? Opcional.
-            // ->when($filterYear, fn($q) => $q->whereYear('document_date', $filterYear)) // Removido devido à data ser string
-            ->select('project')
-            ->whereNotNull('project')
-            ->distinct()
-            ->orderBy('project')
-            ->pluck('project');
-
-        // Extrair anos de 4 dígitos das datas dos documentos
+        // --- Obter dados para os filtros ---
+        // Busca projetos diretamente da tabela projects
+        $availableProjects = Project::orderBy('name')->pluck('name', 'id');
+        // Busca anos da tabela documents (considerando filtros ativos?)
         $availableYears = Document::query()
-            ->when($filterBox, fn($q) => $q->where('box_number', 'like', "%{$filterBox}%"))
-            ->when($filterProject, fn($q) => $q->where('project', $filterProject))
+                            // ->when($filterBoxNumber, fn($q) => $q->whereHas('box', fn($bq) => $bq->where('number', 'like', "%{$filterBoxNumber}%"))) // Filtrar anos por caixa?
+                            // ->when($filterProjectId, fn($q) => $q->where('project_id', $filterProjectId)) // Filtrar anos por projeto?
+            ->select(DB::raw('YEAR(document_date) as year'))
             ->whereNotNull('document_date')
-            ->pluck('document_date')
-            ->map(function($dateStr) {
-                // Procura por padrão de 4 dígitos que representa um ano (entre 1900 e 2100)
-                preg_match('/(?:19|20)\d{2}/', $dateStr, $matches);
-                return $matches[0] ?? null;
-            })
-            ->filter()
-            ->unique()
-            ->sort()
-            ->values();
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->pluck('year');
+        // Adicionar busca por caixas disponíveis (opcional, pode ser muitas)
+        // $availableBoxes = Box::orderBy('number')->pluck('number', 'id'); // Pode ser ineficiente se houver muitas caixas
 
-        // Dados para as Estatísticas (Exemplo - pode ser mais elaborado)
-        $totalDocuments = Document::count(); // Total geral
-        $totalBoxes = Document::distinct('box_number')->count('box_number'); // Total geral de caixas
-        $totalProjects = Document::query()
-            ->whereNotNull('project')
-            ->distinct('project')
-            ->count('project');
+        // --- Dados para as Estatísticas (ajustar se necessário) ---
+        // Contagem total precisa ser feita antes de aplicar filtros relacionados a JOINs que podem multiplicar linhas
+        $totalDocuments = Document::count();
+        $totalBoxes = Box::count(); // Total de caixas cadastradas
+        $totalProjects = Project::count(); // Total de projetos cadastrados
 
-        // Estatísticas filtradas
+        // Contagem filtrada - ATENÇÃO: A contagem do paginator ($documents->total()) reflete a query com JOINs e filtros.
         $filteredDocumentsCount = $documents->total();
-        
-        // Contagem de caixas filtradas usando uma query separada
-        $filteredBoxesCount = Document::query()
-            ->when($searchTerm, function($q) use ($searchTerm) {
-                $q->where(function($q) use ($searchTerm) {
-                    $q->where('box_number', 'like', "%{$searchTerm}%")
-                      ->orWhere('item_number', 'like', "%{$searchTerm}%")
-                      ->orWhere('code', 'like', "%{$searchTerm}%")
-                      ->orWhere('descriptor', 'like', "%{$searchTerm}%")
-                      ->orWhere('document_number', 'like', "%{$searchTerm}%")
-                      ->orWhere('title', 'like', "%{$searchTerm}%")
-                      ->orWhere('project', 'like', "%{$searchTerm}%")
-                      ->orWhere('confidentiality', 'like', "%{$searchTerm}%");
-                });
-            })
-            ->when($filterBox, fn($q) => $q->where('box_number', 'like', "%{$filterBox}%"))
-            ->when($filterProject, fn($q) => $q->where('project', $filterProject))
-            ->distinct('box_number')
-            ->count('box_number');
-            
-        // Contagem de projetos filtrados usando uma query separada
-        $filteredProjectsCount = Document::query()
-            ->when($searchTerm, function($q) use ($searchTerm) {
-                $q->where(function($q) use ($searchTerm) {
-                    $q->where('box_number', 'like', "%{$searchTerm}%")
-                      ->orWhere('item_number', 'like', "%{$searchTerm}%")
-                      ->orWhere('code', 'like', "%{$searchTerm}%")
-                      ->orWhere('descriptor', 'like', "%{$searchTerm}%")
-                      ->orWhere('document_number', 'like', "%{$searchTerm}%")
-                      ->orWhere('title', 'like', "%{$searchTerm}%")
-                      ->orWhere('project', 'like', "%{$searchTerm}%")
-                      ->orWhere('confidentiality', 'like', "%{$searchTerm}%");
-                });
-            })
-            ->when($filterBox, fn($q) => $q->where('box_number', 'like', "%{$filterBox}%"))
-            ->when($filterProject, fn($q) => $q->where('project', $filterProject))
-            ->whereNotNull('project')
-            ->distinct('project')
-            ->count('project');
 
-        // Calcula o intervalo de anos para os documentos filtrados
-        $yearsData = $documents->pluck('document_date')
-            ->map(function($dateStr) {
-                preg_match('/(?:19|20)\d{2}/', $dateStr, $matches);
-                return $matches[0] ?? null;
-            })
-            ->filter()
-            ->unique()
-            ->sort()
-            ->values();
-        
-        $yearRange = $yearsData->count() > 0
-            ? $yearsData->first() . '-' . $yearsData->last()
-            : null;
+        // Contagem de caixas/projetos únicos *nos resultados filtrados* é mais complexa com JOIN.
+        // Solução simples (pode ser imprecisa se filtros removerem todas as caixas/projetos de um tipo):
+        // Requereria uma query separada nos IDs filtrados antes da paginação ou contar na coleção atual.
+        // Exemplo contando na coleção atual (pode não refletir o total real filtrado):
+        $filteredBoxesCount = $documents->pluck('box_id')->filter()->unique()->count();
+        $filteredProjectsCount = $documents->pluck('project_id')->filter()->unique()->count();
+
+        // Verifica se há filtros ativos
+        $hasActiveFilters = $request->filled(['search', 'filter_box_number', 'filter_project_id', 'filter_year']);
 
         return view('documents.index', [
             'documents' => $documents,
             'availableProjects' => $availableProjects,
             'availableYears' => $availableYears,
-            'requestParams' => $request->all(), // Passa todos os parâmetros da request para preencher filtros/sort
+            // 'availableBoxes' => $availableBoxes, // Descomentar se buscar e passar caixas
+            'requestParams' => $request->all(),
             'stats' => [
                 'totalDocuments' => $totalDocuments,
                 'totalBoxes' => $totalBoxes,
@@ -207,13 +180,11 @@ class DocumentController extends Controller
                 'filteredDocumentsCount' => $filteredDocumentsCount,
                 'filteredBoxesCount' => $filteredBoxesCount, // Contagem baseada na página atual
                 'filteredProjectsCount' => $filteredProjectsCount, // Contagem baseada na página atual
-                'yearRange' => $yearRange, // Intervalo de anos dos documentos filtrados
             ],
-            'hasActiveFilters' => $request->filled(['search', 'filter_box', 'filter_project', 'filter_year']), // Verifica se algum filtro está preenchido
+            'hasActiveFilters' => $hasActiveFilters,
         ]);
     }
 
-     
     public function create()
     {
         return view('documents.create');
@@ -235,10 +206,10 @@ class DocumentController extends Controller
             'version' => 'nullable|string|max:255',
             'is_copy' => 'nullable|string|max:255', // Alterado de boolean para string
         ]);
-    
+
         // Create the document
         Document::create($validated);
-    
+
         return redirect()->route('documents.index')
             ->with('success', 'Document created successfully.');
     }
@@ -261,7 +232,7 @@ class DocumentController extends Controller
             'item_number' => 'required|string|max:255',
             'code' => 'nullable|string|max:255',
             'descriptor' => 'nullable|string|max:255',
-            'document_number' => 'nullable|string|max:255|unique:documents,document_number,' . $document->id, // Adicionado unique e ignorar atual
+            'document_number' => 'nullable|string|max:255|unique:documents,document_number,'.$document->id, // Adicionado unique e ignorar atual
             'title' => 'required|string',
             'document_date' => 'required|string|max:255', // Alterado de date para string
             'project' => 'nullable|string|max:255',

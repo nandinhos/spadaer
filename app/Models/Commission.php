@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Commission extends Model
 {
@@ -20,7 +21,7 @@ class Commission extends Model
         'status',
         'ordinance_number',
         'ordinance_file',
-        'ordinance_date'
+        'ordinance_date',
     ];
 
     /**
@@ -29,19 +30,19 @@ class Commission extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'ordinance_date' => 'date'
+        'ordinance_date' => 'date',
     ];
 
     /**
      * Os membros que pertencem a esta comissão.
      */
-    public function members()
+    /*public function members()
     {
         return $this->belongsToMany(User::class, 'commission_members')
             ->withPivot('role')
             ->withTimestamps()
             ->orderBy('users.id'); // Ordena os membros pelo ID do usuário
-    }
+    }*/
 
     /**
      * Os documentos associados a esta comissão.
@@ -49,5 +50,29 @@ class Commission extends Model
     public function documents()
     {
         return $this->hasMany(Document::class);
+    }
+
+    public function members(): HasMany
+    {
+        return $this->hasMany(CommissionMember::class)->orderBy('user_id', 'asc');
+    }
+
+    /**
+     * Os documentos associados a esta comissão.
+     */
+    /*public function ordinance()
+    {
+        return $this->hasOne(Ordinance::class);
+    }*/
+
+    /**
+     * Os membros que pertencem a esta comissão.
+     */
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'commission_members')
+            ->withPivot('role')
+            ->withTimestamps()
+            ->orderBy('users.id'); // Ordena os membros pelo ID do usuário
     }
 }

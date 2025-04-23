@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('commissions', function (Blueprint $table) {
+        Schema::create('projects', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->text('description');
-            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->string('code')->nullable()->unique();
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }
@@ -25,7 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('commission_members');
-        Schema::dropIfExists('commissions');
+        Schema::dropIfExists('projects');
     }
 };
