@@ -2,102 +2,63 @@
 
 namespace App\Http\Controllers;
 
-use App\Imports\DocumentsImport;
+// Models
+use App\Http\Requests\StoreDocumentRequest;
+use App\Http\Requests\UpdateDocumentRequest;
 use App\Models\Box;
-use App\Models\Document;
-use App\Models\Project;
-// Para retornar JSON
-use Illuminate\Http\RedirectResponse; // Para retornar JSON
-// Para redirecionar
-use Illuminate\Http\Request; // Para distinct e raw queries se necessário
+// Requests
+use App\Models\Document; // <-- Use Form Request
+use App\Models\Project; // <-- Use Form Request
+use Illuminate\Http\RedirectResponse; // Use Request padrão apenas onde Form Request não se aplica
+// Outros
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+// Para o método show/ajax
 use Illuminate\View\View;
-use Maatwebsite\Excel\Facades\Excel;
 
 class DocumentController extends Controller
 {
-    public function import(Request $request)
+    // Aplicar Policy (descomente quando criar DocumentPolicy)
+    // public function __construct()
+    // {
+    //     $this->authorizeResource(Document::class, 'document');
+    // }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request): View // Request padrão aqui para pegar filtros/sort/etc.
     {
-        $request->validate([
-            'csv_file' => 'required|file|mimes:csv,txt|max:2048',
-        ]);
-
-        try {
-            $import = new DocumentsImport;
-            Excel::import($import, $request->file('csv_file'));
-
-            $importedCount = $import->getImportedCount();
-            $errors = $import->getErrors();
-
-            if (count($errors) > 0) {
-                return back()->with([
-                    'success' => "$importedCount documentos importados com sucesso.",
-                    'error' => "Erros encontrados durante a importação:\n".implode("\n", array_map(function ($error) {
-                        return $error[0];
-                    }, $errors)),
-                ]);
-            }
-
-            return back()->with('success', "$importedCount documentos importados com sucesso.");
-        } catch (\Exception $e) {
-            return back()->with('error', 'Erro ao processar o arquivo: '.$e->getMessage());
-        }
-    }
-
-    public function show(Document $document)
-    {
-        if (request()->wantsJson()) {
-            return response()->json($document);
-        }
-
-        return view('documents.show', compact('document'));
-    }
-
-    public function index(Request $request): View
-    {
-        // Parâmetros de busca, filtro, ordenação e paginação
+        // Parâmetros (mantendo nomes consistentes com a última refatoração)
         $searchTerm = $request->input('search');
-        // Filtros agora usam IDs ou valores das tabelas relacionadas
-        $filterBoxNumber = $request->input('filter_box_number'); // Filtro pelo número da caixa
-        $filterProjectId = $request->input('filter_project_id'); // Filtro pelo ID do projeto
+        $filterBoxNumber = $request->input('filter_box_number');
+        $filterProjectId = $request->input('filter_project_id');
         $filterYear = $request->input('filter_year');
-        $sortBy = $request->input('sort_by', 'document_date'); // Default: data do documento (existe em documents)
-        $sortDir = $request->input('sort_dir', 'desc'); // Default: descendente para data
-        $perPage = $request->input('per_page', 15); // Aumentado para 15 como exemplo
+        $sortBy = $request->input('sort_by', 'documents.document_date'); // Default
+        $sortDir = $request->input('sort_dir', 'desc');
+        $perPage = $request->input('per_page', 15);
 
-        // Colunas válidas para ordenação (incluindo colunas relacionadas)
+        // Colunas válidas para ordenação
         $validSortColumns = [
-            'documents.id', // Explicitando a tabela para evitar ambiguidade
-            'documents.item_number',
-            'documents.code',
-            'documents.descriptor',
-            'documents.document_number',
-            'documents.title',
-            'documents.document_date',
-            'documents.confidentiality',
-            'documents.version',
-            'documents.is_copy',
-            'boxes.number', // Coluna da tabela boxes
-            'projects.name', // Coluna da tabela projects
+            'documents.id', 'documents.item_number', 'documents.code', 'documents.descriptor',
+            'documents.document_number', 'documents.title', 'documents.document_date',
+            'documents.confidentiality', 'documents.version', 'documents.is_copy',
+            'boxes.number', 'projects.name',
         ];
-
-        // Valida coluna de ordenação
         if (! in_array($sortBy, $validSortColumns)) {
-            $sortBy = 'documents.document_date'; // Reset para default seguro
+            $sortBy = 'documents.document_date';
         }
-        // Valida direção
         if (! in_array(strtolower($sortDir), ['asc', 'desc'])) {
             $sortDir = 'desc';
         }
 
-        // --- Construção da Query ---
-        // Seleciona colunas específicas para evitar ambiguidade de 'id', 'created_at', 'updated_at'
+        // Query Base com Joins e Selects
         $query = Document::query()
-            ->select('documents.*', 'boxes.number as box_number', 'projects.name as project_name') // Seleciona e alias colunas relacionadas
-            ->leftJoin('boxes', 'documents.box_id', '=', 'boxes.id') // Junta com boxes
-            ->leftJoin('projects', 'documents.project_id', '=', 'projects.id'); // Junta com projects
+            ->select('documents.*', 'boxes.number as box_number', 'projects.name as project_name')
+            ->leftJoin('boxes', 'documents.box_id', '=', 'boxes.id')
+            ->leftJoin('projects', 'documents.project_id', '=', 'projects.id');
 
-        // Aplicar busca textual (agora pode incluir campos das tabelas unidas)
+        // Aplicar busca textual
         if ($searchTerm) {
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('documents.item_number', 'like', "%{$searchTerm}%")
@@ -105,7 +66,6 @@ class DocumentController extends Controller
                     ->orWhere('documents.descriptor', 'like', "%{$searchTerm}%")
                     ->orWhere('documents.document_number', 'like', "%{$searchTerm}%")
                     ->orWhere('documents.title', 'like', "%{$searchTerm}%")
-                  // Busca nas tabelas relacionadas
                     ->orWhere('boxes.number', 'like', "%{$searchTerm}%")
                     ->orWhere('projects.name', 'like', "%{$searchTerm}%");
             });
@@ -113,149 +73,122 @@ class DocumentController extends Controller
 
         // Aplicar filtros específicos
         if ($filterBoxNumber) {
-            // Filtra pelo número da caixa na tabela 'boxes'
             $query->where('boxes.number', 'like', "%{$filterBoxNumber}%");
         }
         if ($filterProjectId) {
-            // Filtra pelo ID do projeto na tabela 'documents'
             $query->where('documents.project_id', $filterProjectId);
         }
         if ($filterYear) {
             $query->whereYear('documents.document_date', $filterYear);
         }
 
-        // Aplicar ordenação (já validada)
-        // O $sortBy já contém o nome da tabela (ex: 'boxes.number')
+        // Aplicar ordenação
         $query->orderBy($sortBy, $sortDir);
 
-        // Paginar resultados
-        // IMPORTANTE: Como usamos JOIN e SELECT, a paginação pode precisar de groupBy para evitar duplicatas se um documento pudesse ter múltiplas caixas/projetos (não é o caso aqui, mas é bom saber).
-        // Contudo, para este caso, deve funcionar.
-        $documents = $query->paginate($perPage)->withQueryString();
+        // Paginar resultados (com groupBy por causa dos joins)
+        $documents = $query->groupBy('documents.id') // Garante unicidade do documento
+            ->paginate($perPage)
+            ->withQueryString();
 
-        // --- Obter dados para os filtros ---
-        // Busca projetos diretamente da tabela projects
+        // --- Dados para Filtros ---
         $availableProjects = Project::orderBy('name')->pluck('name', 'id');
-        // Busca anos da tabela documents (considerando filtros ativos?)
         $availableYears = Document::query()
-                            // ->when($filterBoxNumber, fn($q) => $q->whereHas('box', fn($bq) => $bq->where('number', 'like', "%{$filterBoxNumber}%"))) // Filtrar anos por caixa?
-                            // ->when($filterProjectId, fn($q) => $q->where('project_id', $filterProjectId)) // Filtrar anos por projeto?
             ->select(DB::raw('YEAR(document_date) as year'))
             ->whereNotNull('document_date')
             ->distinct()
             ->orderBy('year', 'desc')
             ->pluck('year');
-        // Adicionar busca por caixas disponíveis (opcional, pode ser muitas)
-        // $availableBoxes = Box::orderBy('number')->pluck('number', 'id'); // Pode ser ineficiente se houver muitas caixas
 
-        // --- Dados para as Estatísticas (ajustar se necessário) ---
-        // Contagem total precisa ser feita antes de aplicar filtros relacionados a JOINs que podem multiplicar linhas
-        $totalDocuments = Document::count();
-        $totalBoxes = Box::count(); // Total de caixas cadastradas
-        $totalProjects = Project::count(); // Total de projetos cadastrados
-
-        // Contagem filtrada - ATENÇÃO: A contagem do paginator ($documents->total()) reflete a query com JOINs e filtros.
-        $filteredDocumentsCount = $documents->total();
-
-        // Contagem de caixas/projetos únicos *nos resultados filtrados* é mais complexa com JOIN.
-        // Solução simples (pode ser imprecisa se filtros removerem todas as caixas/projetos de um tipo):
-        // Requereria uma query separada nos IDs filtrados antes da paginação ou contar na coleção atual.
-        // Exemplo contando na coleção atual (pode não refletir o total real filtrado):
-        $filteredBoxesCount = $documents->pluck('box_id')->filter()->unique()->count();
-        $filteredProjectsCount = $documents->pluck('project_id')->filter()->unique()->count();
-
-        // Verifica se há filtros ativos
+        // --- Estatísticas (simplificado) ---
+        $stats = [/* ... lógica de estatísticas ... */]; // Recalcular se necessário
         $hasActiveFilters = $request->filled(['search', 'filter_box_number', 'filter_project_id', 'filter_year']);
 
-        return view('documents.index', [
-            'documents' => $documents,
-            'availableProjects' => $availableProjects,
-            'availableYears' => $availableYears,
-            // 'availableBoxes' => $availableBoxes, // Descomentar se buscar e passar caixas
-            'requestParams' => $request->all(),
-            'stats' => [
-                'totalDocuments' => $totalDocuments,
-                'totalBoxes' => $totalBoxes,
-                'totalProjects' => $totalProjects,
-                'filteredDocumentsCount' => $filteredDocumentsCount,
-                'filteredBoxesCount' => $filteredBoxesCount, // Contagem baseada na página atual
-                'filteredProjectsCount' => $filteredProjectsCount, // Contagem baseada na página atual
-            ],
-            'hasActiveFilters' => $hasActiveFilters,
-        ]);
-    }
-
-    public function create()
-    {
-        return view('documents.create');
-    }
-
-    public function store(Request $request)
-    {
-        // Validation and document creation logic here
-        $validated = $request->validate([
-            'box_number' => 'required|string|max:255',
-            'item_number' => 'required|string|max:255',
-            'code' => 'nullable|string|max:255',
-            'descriptor' => 'nullable|string|max:255',
-            'document_number' => 'nullable|string|max:255|unique:documents,document_number', // Adicionado unique
-            'title' => 'required|string',
-            'document_date' => 'required|string|max:255', // Alterado de date para string
-            'project' => 'nullable|string|max:255', // Alterado para nullable como no update
-            'confidentiality' => 'nullable|string|max:255',
-            'version' => 'nullable|string|max:255',
-            'is_copy' => 'nullable|string|max:255', // Alterado de boolean para string
-        ]);
-
-        // Create the document
-        Document::create($validated);
-
-        return redirect()->route('documents.index')
-            ->with('success', 'Document created successfully.');
+        return view('documents.index', compact(
+            'documents',
+            'availableProjects',
+            'availableYears',
+            'requestParams', // Passar $request->all()
+            'stats',
+            'hasActiveFilters'
+        ));
     }
 
     /**
-     * Exibe o formulário para editar um documento existente
+     * Show the form for creating a new resource.
+     */
+    public function create(): View
+    {
+        // Passar dados necessários para selects no formulário
+        $boxes = Box::orderBy('number')->pluck('number', 'id');
+        $projects = Project::orderBy('name')->pluck('name', 'id');
+
+        return view('documents.create', compact('boxes', 'projects'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(StoreDocumentRequest $request): RedirectResponse
+    {
+        $validated = $request->validated();
+        // Adicionar lógica para lidar com upload de arquivo de documento se houver
+        Document::create($validated);
+
+        return redirect()->route('documents.index')->with('success', 'Documento criado com sucesso.');
+    }
+
+    /**
+     * Display the specified resource for AJAX/Modal.
+     * Removido o tipo de retorno para evitar conflito. O Laravel detectará
+     * a requisição AJAX ou retornará JSON devido ao response()->json().
+     */
+    public function show(Document $document) // Sem tipo de retorno
+    {
+        // Carrega os relacionamentos necessários para o modal
+        $document->load(['box:id,number', 'project:id,name']); // Carrega apenas colunas necessárias
+
+        return response()->json($document);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
      */
     public function edit(Document $document): View
     {
-        return view('documents.edit', compact('document'));
+        $boxes = Box::orderBy('number')->pluck('number', 'id');
+        $projects = Project::orderBy('name')->pluck('name', 'id');
+
+        return view('documents.edit', compact('document', 'boxes', 'projects'));
     }
 
     /**
-     * Atualiza um documento existente no banco de dados
+     * Update the specified resource in storage.
      */
-    public function update(Request $request, Document $document): RedirectResponse
+    public function update(UpdateDocumentRequest $request, Document $document): RedirectResponse
     {
-        $validated = $request->validate([
-            'box_number' => 'required|string|max:255',
-            'item_number' => 'required|string|max:255',
-            'code' => 'nullable|string|max:255',
-            'descriptor' => 'nullable|string|max:255',
-            'document_number' => 'nullable|string|max:255|unique:documents,document_number,'.$document->id, // Adicionado unique e ignorar atual
-            'title' => 'required|string',
-            'document_date' => 'required|string|max:255', // Alterado de date para string
-            'project' => 'nullable|string|max:255',
-            'confidentiality' => 'nullable|string|max:255', // Corrigido typo e tipo
-            'version' => 'nullable|string|max:255',
-            'is_copy' => 'nullable|string|max:255', // Alterado de boolean para string
-        ]);
-
-        // Atualiza o documento com os dados validados
+        $validated = $request->validated();
+        // Adicionar lógica para lidar com upload de arquivo se houver
         $document->update($validated);
 
-        return redirect()->route('documents.show', $document)
-            ->with('success', 'Documento atualizado com sucesso!');
+        return redirect()->route('documents.index')->with('success', 'Documento atualizado com sucesso.');
     }
 
     /**
-     * Remove um documento do banco de dados
+     * Remove the specified resource from storage.
      */
     public function destroy(Document $document): RedirectResponse
     {
-        $document->delete();
+        // Adicionar lógica de autorização aqui (Policy) antes de deletar
+        // $this->authorize('delete', $document);
+        try {
+            // Adicionar lógica para deletar arquivo associado se houver
+            $document->delete();
 
-        return redirect()->route('documents.index')
-            ->with('success', 'Documento excluído com sucesso!');
+            return redirect()->route('documents.index')->with('success', 'Documento excluído com sucesso.');
+        } catch (\Throwable $e) {
+            Log::error("Erro ao excluir documento {$document->id}: ".$e->getMessage());
+
+            return redirect()->route('documents.index')->with('error', 'Erro ao excluir o documento.');
+        }
     }
 }

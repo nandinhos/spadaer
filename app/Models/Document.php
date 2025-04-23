@@ -21,23 +21,35 @@ class Document extends Model
         'confidentiality',
         'version',
         'is_copy',
-        //'conference_military',
-        //'conference_date',
+        // 'conference_military',
+        // 'conference_date',
         // 'user_id',
         // 'box_id',
         // 'project_id',
     ];
 
     protected $casts = [
-        // 'document_date' => 'date:Y-m-d', // Removido pois agora é string
+        'document_date' => 'date:Y-m-d', // Removido pois agora é string
         // 'is_copy' => 'boolean', // Removido pois agora é string
     ];
-    
+
     // O mutator setSecrecyAttribute foi removido pois o campo confidentiality agora é string
     // A lógica de mapeamento pode ser feita na importação ou em outra camada, se necessário.
 
     // Relacionamentos (opcional, se criar models Box, Project, User)
-    public function user() { return $this->belongsTo(User::class); }
-    //public function box() { return $this->belongsTo(Box::class); }
-    //public function project() { return $this->belongsTo(Project::class); }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    // Relacionamentos
+    public function box(): BelongsTo
+    {
+        return $this->belongsTo(Box::class);
+    }
+
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
 }

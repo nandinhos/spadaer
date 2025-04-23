@@ -1,94 +1,136 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Detalhes da Caixa') }}
-        </h2>
+        <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                {{ __('Detalhes da Caixa') }}: {{ $box->number }}
+            </h2>
+            {{-- Botões de Ação no Header --}}
+            <div class="flex items-center space-x-2">
+                <x-secondary-button onclick="window.location='{{ route('boxes.edit', $box) }}'">
+                    <i class="mr-1 fas fa-edit"></i> Editar
+                </x-secondary-button>
+                <form method="POST" action="{{ route('boxes.destroy', $box) }}"
+                    onsubmit="return confirm('Tem certeza que deseja excluir esta caixa e TODOS os documentos contidos nela?');">
+                    @csrf
+                    @method('DELETE')
+                    <x-danger-button type="submit">
+                        <i class="mr-1 fas fa-trash-alt"></i> Excluir
+                    </x-danger-button>
+                </form>
+            </div>
+        </div>
     </x-slot>
 
-    <div class="container mx-auto px-4 py-8">
-        <div class="max-w-7xl mx-auto">
-            <!-- Links de Navegação -->
-            <div class="flex justify-end space-x-4 mb-6">
-                <a href="{{ route('boxes.index') }}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
-                    <i class="fas fa-arrow-left mr-2"></i>Voltar
+    <div class="py-12">
+        <div class="mx-auto space-y-6 max-w-7xl sm:px-6 lg:px-8">
+
+            {{-- Card de Informações da Caixa --}}
+            <div class="bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
+                        Informações da Caixa
+                    </h3>
+                </div>
+                <dl class="p-6 space-y-4 text-sm">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <div>
+                            <dt class="font-medium text-gray-500 dark:text-gray-400">Número</dt>
+                            <dd class="mt-1 text-gray-900 dark:text-gray-100">{{ $box->number }}</dd>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <dt class="font-medium text-gray-500 dark:text-gray-400">Local Físico</dt>
+                            <dd class="mt-1 text-gray-900 dark:text-gray-100">{{ $box->physical_location ?: '-' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="font-medium text-gray-500 dark:text-gray-400">Projeto</dt>
+                            <dd class="mt-1 text-gray-900 dark:text-gray-100">
+                                {{ $box->project?->name ?: '-- Nenhum --' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="font-medium text-gray-500 dark:text-gray-400">Conferente</dt>
+                            <dd class="mt-1 text-gray-900 dark:text-gray-100">
+                                {{ $box->checkerMember?->user?->name ?: '-- Nenhum --' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="font-medium text-gray-500 dark:text-gray-400">Data Conferência</dt>
+                            <dd class="mt-1 text-gray-900 dark:text-gray-100">
+                                {{ $box->conference_date?->format('d/m/Y') ?: '-' }}</dd>
+                        </div>
+                    </div>
+                </dl>
+            </div>
+
+            {{-- Card de Documentos na Caixa --}}
+            <div class="bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
+                        Documentos na Caixa ({{ $box->documents->count() }})
+                    </h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300">
+                                    Item</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300">
+                                    Número Doc.</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300">
+                                    Título</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300">
+                                    Data Doc.</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase dark:text-gray-300">
+                                    Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                            @forelse ($box->documents as $document)
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-750/50">
+                                    <td
+                                        class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap dark:text-gray-100">
+                                        {{ $document->item_number }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap dark:text-gray-300">
+                                        {{ $document->document_number }}</td>
+                                    <td class="max-w-xs px-6 py-4 text-sm text-gray-600 truncate dark:text-gray-300"
+                                        title="{{ $document->title }}">{{ $document->title }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap dark:text-gray-300">
+                                        {{ $document->document_date?->format('d/m/Y') ?? '-' }}</td>
+                                    <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
+                                        {{-- Link para ver o documento (se existir rota) ou abrir modal --}}
+                                        <button {{-- Assumindo que a função Alpine openDocumentModal existe no escopo --}} {{-- Caso contrário, link para documents.show --}} {{-- href="{{ route('documents.show', $document) }}" --}}
+                                            @click="openDocumentModal({{ $document->id }})"
+                                            class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-200">
+                                            Ver Detalhes
+                                        </button>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400">
+                                        Nenhum documento encontrado nesta caixa.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="flex justify-start mt-6">
+                <a href="{{ route('boxes.index') }}"
+                    class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md shadow-sm dark:bg-gray-800 dark:border-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-25">
+                    ← Voltar para Lista de Caixas
                 </a>
             </div>
 
-            <div class="max-w-2xl mx-auto">
-                <!-- Card da Caixa (Capa) -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center border-4 border-gray-800 dark:border-gray-600">
-                    <div class="mb-6">
-                        <img src="{{ asset('images/logo.png') }}" alt="COPAC" class="w-24 h-24 mx-auto mb-4">
-                        <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">COPAC</h2>
-                        <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200">GAC-PAC</h3>
-                    </div>
-
-                    <div class="mb-6">
-                        <div class="text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4">{{ $boxInfo['number'] }}</div>
-                        <h4 class="text-lg font-medium text-gray-700 dark:text-gray-300">{{ implode(', ', $boxInfo['projects']) }}</h4>
-                    </div>
-
-                    <div class="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-8">CX {{ $boxInfo['number'] }}</div>
-
-                    <div class="space-y-3 text-left border-t border-gray-300 dark:border-gray-600 pt-6">
-                        <p class="text-gray-700 dark:text-gray-300">
-                            <span class="font-medium">Total de Documentos:</span> {{ $boxInfo['totalDocuments'] }}
-                        </p>
-                        <p class="text-gray-700 dark:text-gray-300">
-                            <span class="font-medium">Projetos:</span> {{ implode(', ', $boxInfo['projects']) }}
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Lista de Documentos -->
-                <div class="lg:col-span-2">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-                        <h2 class="text-2xl font-bold mb-6">Documentos na Caixa</h2>
-
-                        @if($documents->count() > 0)
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                    <thead class="bg-gray-50 dark:bg-gray-700">
-                                        <tr>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Item</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Código</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Título</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Data</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                        @foreach($documents as $document)
-                                            <tr>
-                                                <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-300">{{ $document->item_number }}</td>
-                                                <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-300">{{ $document->code }}</td>
-                                                <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-300">{{ $document->title }}</td>
-                                                <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-300">
-                                                    {{ \Carbon\Carbon::parse($document->document_date)->format('d/m/Y') }}
-                                                </td>
-                                                <td class="px-6 py-4 text-sm font-medium space-x-2">
-                                                    <a href="{{ route('documents.show', $document) }}" class="text-primary hover:text-primary-dark dark:text-primary-light dark:hover:text-primary">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                    <a href="{{ route('documents.edit', $document) }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div class="mt-6">
-                                {{ $documents->links() }}
-                            </div>
-                        @else
-                            <p class="text-gray-500 dark:text-gray-400 text-center py-4">Nenhum documento encontrado nesta caixa.</p>
-                        @endif
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
+
+    {{-- Incluir o modal de documento se a função Alpine for usada --}}
+    <x-document-modal />
 </x-app-layout>
