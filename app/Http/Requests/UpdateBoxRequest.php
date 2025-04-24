@@ -56,6 +56,16 @@ class UpdateBoxRequest extends FormRequest
         ];
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->input('checker_member_id') === '') {
+            $this->merge([
+                'checker_member_id' => null,
+            ]);
+        }
+        // Adicione outros preparos se necessário
+    }
+
     /**
      * Customiza mensagens de erro (opcional).
      * Pode herdar do StoreBoxRequest ou definir aqui.

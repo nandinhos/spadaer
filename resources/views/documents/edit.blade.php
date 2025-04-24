@@ -1,8 +1,8 @@
 {{-- resources/views/documents/edit.blade.php --}}
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-            <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">
+        <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center justify-between">
+            <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                 {{ __('Editar Documento') }}: {{ $document->document_number }}
             </h2>
             <a href="{{ route('documents.index') }}"
@@ -18,14 +18,14 @@
                 <div class="p-6 text-gray-900 md:p-8 dark:text-gray-100">
 
                     @if ($errors->any())
-                        <div class="relative px-4 py-3 mb-6 text-red-700 bg-red-100 border border-red-400 rounded">
-                            <strong class="font-bold">{{ __('Ops! Algo deu errado.') }}</strong>
-                            <ul class="mt-2 text-sm list-disc list-inside">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
+                    <div class="relative px-4 py-3 mb-6 text-red-700 bg-red-100 border border-red-400 rounded">
+                        <strong class="font-bold">{{ __('Ops! Algo deu errado.') }}</strong>
+                        <ul class="mt-2 text-sm list-disc list-inside">
+                            @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
                     @endif
 
                     <form method="POST" action="{{ route('documents.update', $document) }}"
@@ -43,11 +43,13 @@
                                     <option value="" disabled @selected(old('box_id', $document->box_id) === null)>
                                         {{ __('Selecione uma Caixa') }}
                                     </option>
+                                    @isset($boxes)
                                     @foreach ($boxes as $id => $number)
-                                        <option value="{{ $id }}" @selected(old('box_id', $document->box_id) == $id)>
-                                            {{ $number }}
-                                        </option>
+                                    <option value="{{ $id }}" @selected(old('box_id', $document->box_id) == $id)>
+                                        {{ $number }}
+                                    </option>
                                     @endforeach
+                                    @endisset
                                 </select>
                                 <x-input-error :messages="$errors->get('box_id')" class="mt-2" />
                             </div>
@@ -65,14 +67,16 @@
                                 <x-input-label for="project_id" :value="__('Projeto (Opcional)')" />
                                 <select id="project_id" name="project_id"
                                     class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
-                                    <option value="" @selected(old('project_id', $document->project_id) === null)>
+                                    <option value="" @selected(old('project_id', $document->project_id) == '')>
                                         {{ __('-- Nenhum --') }}
                                     </option>
+                                    @isset($projects)
                                     @foreach ($projects as $id => $name)
-                                        <option value="{{ $id }}" @selected(old('project_id', $document->project_id) == $id)>
-                                            {{ $name }}
-                                        </option>
+                                    <option value="{{ $id }}" @selected(old('project_id', $document->project_id) == $id)>
+                                        {{ $name }}
+                                    </option>
                                     @endforeach
+                                    @endisset
                                 </select>
                                 <x-input-error :messages="$errors->get('project_id')" class="mt-2" />
                             </div>
@@ -105,9 +109,7 @@
                             <div class="md:col-span-3">
                                 <x-input-label for="title" :value="__('Título')" />
                                 <x-textarea id="title" name="title" class="block w-full mt-1" rows="3"
-                                    required>
-                                    {{ old('title', $document->title) }}
-                                </x-textarea>
+                                    required>{{ old('title', $document->title) }}</x-textarea>
                                 <x-input-error :messages="$errors->get('title')" class="mt-2" />
                             </div>
 
@@ -115,10 +117,7 @@
                             <div>
                                 <x-input-label for="document_date" :value="__('Data do Documento')" />
                                 <x-text-input id="document_date" name="document_date" type="date" required
-                                    class="block w-full mt-1" :value="old(
-                                        'document_date',
-                                        optional($document->document_date)->format('Y-m-d'),
-                                    )" />
+                                    class="block w-full mt-1" :value="old('document_date', optional($document->document_date)->format('Y-m-d'))" />
                                 <x-input-error :messages="$errors->get('document_date')" class="mt-2" />
                             </div>
 
@@ -128,9 +127,9 @@
                                 <select id="confidentiality" name="confidentiality" required
                                     class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
                                     @foreach (['Público', 'Restrito', 'Confidencial'] as $level)
-                                        <option value="{{ $level }}" @selected(old('confidentiality', $document->confidentiality) === $level)>
-                                            {{ $level }}
-                                        </option>
+                                    <option value="{{ $level }}" @selected(old('confidentiality', $document->confidentiality) === $level)>
+                                        {{ $level }}
+                                    </option>
                                     @endforeach
                                 </select>
                                 <x-input-error :messages="$errors->get('confidentiality')" class="mt-2" />
@@ -144,10 +143,26 @@
                                 <x-input-error :messages="$errors->get('version')" class="mt-2" />
                             </div>
 
+                            {{-- É Cópia? (Checkbox) -- ADICIONADO AQUI --}}
+                            <div class="flex items-center md:col-span-3 mt-4"> {{-- Ocupa largura e adiciona margem --}}
+                                {{-- O value="1" é enviado quando marcado. Se desmarcado, nada é enviado para 'is_copy' --}}
+                                <input id="is_copy" name="is_copy" type="checkbox" value="1"
+                                    {{-- Marca se o valor antigo OU o valor atual for verdadeiro (1) --}}
+                                    @checked(old('is_copy', $document->is_copy))
+                                class="text-indigo-600 border-gray-300 rounded shadow-sm dark:bg-gray-900 dark:border-gray-700 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800">
+                                <label for="is_copy" class="ml-2 text-sm text-gray-600 dark:text-gray-400">{{ __('Marcar se este documento for uma cópia') }}</label>
+                                <x-input-error :messages="$errors->get('is_copy')" class="mt-2 ml-2" />
+                            </div>
+                            {{-- FIM DA ADIÇÃO --}}
+
                         </div>
 
                         {{-- Botão de Enviar --}}
-                        <div class="pt-4">
+                        <div class="pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 flex justify-end items-center gap-4">
+                            <a href="{{ route('documents.index') }}"
+                                class="text-sm text-gray-600 rounded-md dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
+                                {{ __('Cancelar') }}
+                            </a>
                             <x-primary-button>
                                 {{ __('Salvar Alterações') }}
                             </x-primary-button>

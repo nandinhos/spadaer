@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 // Models
 use App\Http\Requests\StoreBoxRequest;
-use App\Http\Requests\UpdateBoxRequest;
 use App\Models\Box;
 // Requests
 use App\Models\CommissionMember; // <-- Use Form Request
@@ -170,12 +169,25 @@ class BoxController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateBoxRequest $request, Box $box): RedirectResponse
+    public function update(Request $request, Box $box): RedirectResponse // Use Request normal para depurar antes da validação do Form Request
     {
-        $validated = $request->validated();
-        $box->update($validated);
+        $submittedCheckerId = $request->input('checker_member_id');
+        \Log::debug('Submitted checker_member_id: '.$submittedCheckerId);
 
-        return redirect()->route('boxes.index')->with('success', 'Caixa atualizada com sucesso.');
+        if ($submittedCheckerId) {
+            $exists = \App\Models\CommissionMember::where('id', $submittedCheckerId)->exists();
+            \Log::debug("CommissionMember with ID {$submittedCheckerId} exists? ".($exists ? 'Yes' : 'No'));
+            if (! $exists) {
+                // Adiciona um erro manual para entender melhor
+                return back()->withErrors(['checker_member_id' => 'O ID do conferente enviado ('.$submittedCheckerId.') não foi encontrado na tabela commission_members.'])->withInput();
+            }
+        }
+
+        // Se chegou aqui, o ID é nulo ou existe. Agora pode validar com o Form Request
+        // Para fazer isso, crie uma instância do Form Request manualmente (ou mova a lógica acima para o Form Request)
+        $updateRequest = \App\Http\Requests\UpdateBoxRequest::createFrom($request);
+        $validated = $updateRequest->validated(); // Isso vai rodar a validação do Form Request
+
     }
 
     /**

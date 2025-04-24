@@ -1,8 +1,14 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-            {{ __('Editar Caixa') }}: {{ $box->number }}
-        </h2>
+        <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+            <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                {{ __('Editar Caixa') }}: {{ $box->number }}
+            </h2>
+            <a href="{{ route('boxes.index') }}"
+                class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md shadow-sm dark:bg-gray-800 dark:border-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                <i class="mr-2 fas fa-arrow-left"></i>{{ __('Voltar para Lista') }}
+            </a>
+        </div>
     </x-slot>
 
     <div class="py-12">
@@ -12,7 +18,7 @@
 
                     {{-- Exibição de Erros Gerais --}}
                     @if ($errors->any())
-                        <div class="relative px-4 py-3 mb-4 text-red-700 bg-red-100 border border-red-400 rounded"
+                        <div class="relative px-4 py-3 mb-6 text-red-700 bg-red-100 border border-red-400 rounded"
                             role="alert">
                             <strong class="font-bold">{{ __('Ops! Algo deu errado.') }}</strong>
                             <ul class="mt-2 text-sm list-disc list-inside">
@@ -25,7 +31,7 @@
 
                     <form method="POST" action="{{ route('boxes.update', $box) }}" class="space-y-6">
                         @csrf
-                        @method('PUT') {{-- Ou PATCH --}}
+                        @method('PUT')
 
                         {{-- Número da Caixa --}}
                         <div>
@@ -47,44 +53,53 @@
                         {{-- Projeto (Select) --}}
                         <div>
                             <x-input-label for="project_id" :value="__('Projeto Associado (Opcional)')" />
-                            <x-select-input id="project_id" name="project_id" class="block w-full mt-1"
-                                :currentValue="old('project_id', $box->project_id)"> {{-- Usa $box->project_id como default --}}
-                                <option value="">{{ __('-- Nenhum --') }}</option>
-                                @foreach ($projects as $id => $name)
-                                    <option value="{{ $id }}" {{-- Não precisa do selected aqui, :currentValue cuida disso --}}>{{ $name }}
-                                    </option>
-                                @endforeach
-                            </x-select-input>
+                            {{-- Removido :currentValue, usando @selected --}}
+                            <select id="project_id" name="project_id"
+                                class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600">
+                                <option value="" @selected(old('project_id', $box->project_id) == '')>{{ __('-- Nenhum --') }}</option>
+                                @isset($projects)
+                                    @foreach ($projects as $id => $name)
+                                        {{-- Usa @selected para comparar o valor antigo/atual com o ID da opção --}}
+                                        <option value="{{ $id }}" @selected(old('project_id', $box->project_id) == $id)>
+                                            {{ $name }}
+                                        </option>
+                                    @endforeach
+                                @endisset
+                            </select>
                             <x-input-error :messages="$errors->get('project_id')" class="mt-2" />
                         </div>
 
                         {{-- Conferente (Select) --}}
                         <div>
                             <x-input-label for="checker_member_id" :value="__('Conferente (Opcional)')" />
-                            <x-select-input id="checker_member_id" name="checker_member_id" class="block w-full mt-1"
-                                :currentValue="old('checker_member_id', $box->checker_member_id)"> {{-- Usa $box->checker_member_id como default --}}
-                                <option value="">{{ __('-- Nenhum --') }}</option>
-                                @foreach ($activeMembers as $id => $name)
-                                    <option value="{{ $id }}">{{ $name }}</option>
-                                @endforeach
-                            </x-select-input>
+                            {{-- Removido :currentValue, usando @selected --}}
+                            <select id="checker_member_id" name="checker_member_id"
+                                class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600">
+                                <option value="" @selected(old('checker_member_id', $box->checker_member_id) == '')>{{ __('-- Nenhum --') }}</option>
+                                @isset($activeMembers)
+                                    @foreach ($activeMembers as $id => $name)
+                                        {{-- Usa @selected para comparar o valor antigo/atual com o ID da opção --}}
+                                        <option value="{{ $id }}" @selected(old('checker_member_id', $box->checker_member_id) == $id)>
+                                            {{ $name }}
+                                        </option>
+                                    @endforeach
+                                @endisset
+                            </select>
                             <x-input-error :messages="$errors->get('checker_member_id')" class="mt-2" />
                         </div>
 
                         {{-- Data da Conferência --}}
                         <div>
                             <x-input-label for="conference_date" :value="__('Data da Conferência (Opcional)')" />
-                            {{-- Formata a data para YYYY-MM-DD para o input date --}}
                             <x-text-input id="conference_date" name="conference_date" type="date"
-                                class="block w-full mt-1" :value="old('conference_date', $box->conference_date?->format('Y-m-d'))" />
+                                class="block w-full mt-1" :value="old('conference_date', optional($box->conference_date)->format('Y-m-d'))" />
                             <x-input-error :messages="$errors->get('conference_date')" class="mt-2" />
                             <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">Preencha apenas se um conferente
                                 for selecionado.</p>
                         </div>
 
-
                         {{-- Botões --}}
-                        <div class="flex items-center gap-4 mt-8">
+                        <div class="flex items-center gap-4 pt-6 mt-8 border-t border-gray-200 dark:border-gray-700">
                             <x-primary-button>{{ __('Atualizar Caixa') }}</x-primary-button>
                             <a href="{{ route('boxes.index') }}"
                                 class="text-sm text-gray-600 rounded-md dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
