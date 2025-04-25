@@ -100,13 +100,19 @@
                                 for selecionado.</p>
                         </div>
 
-                        {{-- Botões --}}
-                        <div class="flex items-center gap-4 pt-6 mt-8 border-t border-gray-200 dark:border-gray-700">
-                            <x-primary-button>{{ __('Atualizar Caixa') }}</x-primary-button>
-                            <a href="{{ route('boxes.index') }}"
+                        {{-- Botões no final do formulário em boxes/edit.blade.php --}}
+                        <div
+                            class="flex items-center justify-end gap-4 pt-6 mt-8 border-t border-gray-200 dark:border-gray-700">
+                            {{-- Botão Cancelar --}}
+                            <a href="{{ request()->input('redirect_to', route('boxes.index')) }}"
+                                {{-- Usa redirect_to se existir, senão vai para index --}}
                                 class="text-sm text-gray-600 rounded-md dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
                                 {{ __('Cancelar') }}
                             </a>
+                            {{-- Botão Atualizar --}}
+                            <x-primary-button>
+                                {{ __('Atualizar Caixa') }}
+                            </x-primary-button>
                         </div>
                     </form>
                 </div>

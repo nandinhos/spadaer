@@ -38,11 +38,23 @@
             {{-- Card: Informações da Caixa --}}
             <div class="bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
                 {{-- Header do Card --}}
-                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                     <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
                         <i class="mr-2 text-gray-500 fas fa-info-circle"></i> {{ __('Informações da Caixa') }}
                     </h3>
+
+                    {{-- Botão Editar Sutil no Card de Informações em boxes/show.blade.php --}}
+                    {{-- @can('update', $box) --}}
+                    <a href="{{ route('boxes.edit', ['box' => $box, 'redirect_to' => request()->fullUrl()]) }}"
+                        {{-- Passa a URL atual --}}
+                        class="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 shadow-sm text-xs font-medium rounded text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150"
+                        title="{{ __('Editar Informações da Caixa') }}">
+                        <i class="fas fa-edit mr-1"></i>
+                        {{ __('Editar') }}
+                    </a>
+                    {{-- @endcan --}}
                 </div>
+
                 {{-- Corpo do Card (Definition List) --}}
                 <dl class="px-6 py-6 space-y-4 text-sm">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-4">
@@ -162,13 +174,6 @@
         </div>
     </div>
 
-    {{--
-        IMPORTANTE: O CÓDIGO DO MODAL NÃO VAI AQUI!
-        Ele deve ser incluído uma única vez no seu layout principal (app.blade.php)
-        usando o componente <x-document-modal />
-        Se ele não estiver no layout principal, o botão "Ver Detalhes" não terá
-        nenhum modal para abrir.
-     --}}
-    {{-- <x-document-modal /> --}} {{-- NÃO COLOQUE AQUI, COLOQUE NO app.blade.php --}}
+
 
 </x-app-layout>
