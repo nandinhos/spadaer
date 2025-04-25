@@ -79,7 +79,7 @@
                         <div>
                             <dt class="font-medium text-gray-500 dark:text-gray-400">{{ __('Conferente') }}</dt>
                             <dd class="mt-1 text-gray-900 dark:text-gray-100">
-                                {{ $box->checkerMember?->user?->name ?: '-- Nenhum --' }}</dd>
+                                {{ $box->commissionMember?->user?->name ?: '-- Nenhum --' }}</dd>
                         </div>
                         {{-- Data Conferência --}}
                         <div>
