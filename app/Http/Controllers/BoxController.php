@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 // Models
+use App\Http\Requests\StoreBoxRequest;
+use App\Http\Requests\UpdateBoxRequest;
 use App\Models\Box;
+// Requests
 use App\Models\CommissionMember;
 use App\Models\Project;
-// Requests
 use Illuminate\Http\RedirectResponse;
 // Outros
 use Illuminate\Http\Request;
