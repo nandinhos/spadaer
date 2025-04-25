@@ -170,16 +170,19 @@
                                 {{ $box->conference_date?->format('d/m/Y') ?? '-' }}</td>
                             <td class="px-6 py-4 space-x-2 text-sm font-medium text-right whitespace-nowrap">
                                 <a href="{{ route('boxes.show', $box) }}"
-                                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-200">Ver</a>
+                                    class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-200"><i
+                                        class="mr-1 fas fa-eye"></i></a>
                                 <a href="{{ route('boxes.edit', $box) }}"
-                                    class="text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-white">Editar</a>
+                                    class="text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-white"><i
+                                        class="mr-1 fas fa-edit"></i></a>
                                 {{-- Botão Excluir com formulário --}}
                                 <form method="POST" action="{{ route('boxes.destroy', $box) }}" class="inline"
                                     onsubmit="return confirm('Tem certeza que deseja excluir esta caixa e TODOS os documentos contidos nela?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit"
-                                        class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200">Excluir</button>
+                                        class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200"><i
+                                            class="mr-1 fas fa-trash-alt"></i></button>
                                 </form>
                             </td>
                         </tr>
