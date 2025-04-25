@@ -71,21 +71,23 @@
 
                         {{-- Conferente (Select) --}}
                         <div>
-                            <x-input-label for="checker_member_id" :value="__('Conferente (Opcional)')" />
-                            {{-- Removido :currentValue, usando @selected --}}
-                            <select id="checker_member_id" name="checker_member_id"
+                            <x-input-label for="commission_member_id" :value="__('Conferente (Opcional)')" />
+                            <select id="commission_member_id" name="commission_member_id"
                                 class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600">
-                                <option value="" @selected(old('checker_member_id', $box->checker_member_id) == '')>{{ __('-- Nenhum --') }}</option>
+                                {{-- Seleciona '-- Nenhum --' se o valor antigo/atual for vazio/nulo --}}
+                                <option value="" @selected(old('commission_member_id', $box->commission_member_id) == '')>{{ __('-- Nenhum --') }}</option>
                                 @isset($activeMembers)
+                                    {{-- $id é commission_member.id, $name é user.name --}}
                                     @foreach ($activeMembers as $id => $name)
-                                        {{-- Usa @selected para comparar o valor antigo/atual com o ID da opção --}}
-                                        <option value="{{ $id }}" @selected(old('checker_member_id', $box->checker_member_id) == $id)>
-                                            {{ $name }}
+                                        {{-- Seleciona se o valor antigo/atual corresponder ao ID do CommissionMember --}}
+                                        <option value="{{ $id }}" @selected(old('commission_member_id', $box->commission_member_id) == $id)>
+                                            {{-- VALUE é o ID do CommissionMember --}}
+                                            {{ $name }} {{-- TEXTO é o nome do User --}}
                                         </option>
                                     @endforeach
                                 @endisset
                             </select>
-                            <x-input-error :messages="$errors->get('checker_member_id')" class="mt-2" />
+                            <x-input-error :messages="$errors->get('commission_member_id')" class="mt-2" />
                         </div>
 
                         {{-- Data da Conferência --}}

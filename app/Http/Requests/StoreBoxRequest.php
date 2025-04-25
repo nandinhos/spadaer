@@ -39,17 +39,16 @@ class StoreBoxRequest extends FormRequest
                 'integer',
                 'exists:projects,id', // Verifica se o ID do projeto existe
             ],
-            'checker_member_id' => [
-                'nullable', // Pode não ter conferente
+            'commission_member_id' => [ // <-- ATUALIZADO
+                'nullable',
                 'integer',
-                'exists:commission_members,id', // Verifica se o ID do membro existe
+                'exists:commission_members,id',
             ],
             'conference_date' => [
-                // Só pode ter data se tiver conferente? Use 'required_with'
                 'nullable',
-                'required_with:checker_member_id', // Data é obrigatória se checker_member_id for preenchido
+                'required_with:commission_member_id', // <-- ATUALIZADO
                 'date',
-                'before_or_equal:today', // Data não pode ser no futuro?
+                'before_or_equal:today',
             ],
         ];
     }

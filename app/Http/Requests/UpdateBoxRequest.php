@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\CommissionMember;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class UpdateBoxRequest extends FormRequest
@@ -42,14 +44,14 @@ class UpdateBoxRequest extends FormRequest
                 'integer',
                 'exists:projects,id',
             ],
-            'checker_member_id' => [
+            'commission_member_id' => [ // <-- ATUALIZADO
                 'nullable',
                 'integer',
                 'exists:commission_members,id',
             ],
             'conference_date' => [
                 'nullable',
-                'required_with:checker_member_id',
+                'required_with:commission_member_id', // <-- ATUALIZADO
                 'date',
                 'before_or_equal:today',
             ],
@@ -58,12 +60,18 @@ class UpdateBoxRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        if ($this->input('checker_member_id') === '') {
-            $this->merge([
-                'checker_member_id' => null,
-            ]);
+        $commissionMemberId = $this->input('commission_member_id');
+        Log::debug('Preparing validation. Submitted commission_member_id: '.$commissionMemberId);
+
+        if ($commissionMemberId === '') {
+            // Garante que string vazia se torne null antes da validação 'exists'
+            $this->merge(['commission_member_id' => null]);
+            Log::debug('Converted empty commission_member_id to null.');
+        } elseif ($commissionMemberId) {
+            // Log de verificação (a regra 'exists' fará a validação real)
+            $exists = CommissionMember::where('id', $commissionMemberId)->exists();
+            Log::debug("Pre-validation check: CommissionMember with ID {$commissionMemberId} exists? ".($exists ? 'Yes' : 'No'));
         }
-        // Adicione outros preparos se necessário
     }
 
     /**
