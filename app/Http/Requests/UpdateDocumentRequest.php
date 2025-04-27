@@ -75,7 +75,7 @@ class UpdateDocumentRequest extends FormRequest
                 'required', 'string',
                 'regex:/^([a-zA-Z]{3})\/?(\d{4})$/i', // Valida formato MES/ANO
             ],
-            'confidentiality' => ['nullable', 'string', 'max:255', Rule::in(['Ostensivo', 'Público', 'Restrito', 'Confidencial', 'ostensivo', 'público', 'restrito', 'confidencial', 'Restricted', 'restricted', 'confidential', 'Confidential', 'Unclassified', 'unclassified'])],
+            'confidentiality' => ['nullable', 'string', 'max:255', Rule::in(['Ostensivo', 'Público', 'Restrito', 'Confidencial', 'ostensivo', 'público', 'restrito', 'confidencial', 'Restricted', 'restricted', 'confidential', 'Confidential', 'Unclassified', 'unclassified', 'Secreto', 'secreto', 'Secret', 'secret'])],
             'code' => [
                 'nullable', 'string', 'max:255',
                 // Se 'code' precisar ser único (ignorando o atual):

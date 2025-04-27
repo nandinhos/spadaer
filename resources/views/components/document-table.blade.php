@@ -182,22 +182,54 @@
                                 @break
 
                                 @case('confidentiality')
-                                    {{-- Lógica do badge (mantida) --}}
                                     @php
-                                        $confidentialityClass = match (strtolower($document->confidentiality ?? '')) {
-                                            'restrito' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-                                            'confidencial'
-                                                => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                                            default
-                                                => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-                                        };
-                                        $confidentialityLabel = $document->confidentiality
-                                            ? strtolower($document->confidentiality)
-                                            : '--';
+                                        // Normaliza o valor para minúsculas para comparação case-insensitive
+                                        $level = strtolower($document->confidentiality ?? '');
+                                        $confidentialityClass = '';
+                                        // Mantém o valor original para exibição (ou '--' se nulo/vazio)
+                                        $confidentialityLabel = $document->confidentiality ?: '--';
+
+                                        // Define as classes CSS baseadas no nível de sigilo normalizado
+                                        switch ($level) {
+                                            case 'unclassified': // Azul
+                                                $confidentialityClass =
+                                                    'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+                                                break;
+
+                                            case 'ostensivo': // Verde
+                                            case 'público': // Verde
+                                            case 'public': // Verde
+                                                $confidentialityClass =
+                                                    'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+                                                break;
+
+                                            case 'confidencial': // Amarelo
+                                            case 'confidential': // Amarelo
+                                                $confidentialityClass =
+                                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+                                                break;
+
+                                            case 'restrito': // Vermelho
+                                            case 'secreto': // Vermelho
+                                            case 'restricted': // Vermelho
+                                                $confidentialityClass =
+                                                    'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+                                                break;
+
+                                            default:
+                                                // Cor padrão cinza para valores vazios ou não reconhecidos
+                                                $confidentialityClass =
+                                                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+                                                // Garante que o label seja '--' se for um valor não reconhecido ou vazio
+                                                $confidentialityLabel = '--';
+                                                break;
+                                        }
                                     @endphp
+                                    {{-- Aplica a classe e exibe o label original (capitalizado) ou '--' --}}
                                     <span
                                         class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize {{ $confidentialityClass }}">
-                                        {{ $confidentialityLabel }}
+                                        {{-- Usar ucfirst() para capitalizar a primeira letra do label exibido --}}
+                                        {{ $confidentialityLabel !== '--' ? ucfirst(strtolower($document->confidentiality)) : '--' }}
                                     </span>
                                 @break
 

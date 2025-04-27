@@ -187,7 +187,7 @@ class DocumentsImport implements SkipsOnFailure, ToCollection, WithHeadingRow, W
             'title' => ['required', 'string', 'max:65535'],
             'document_date_csv' => ['required'], // Valida presença da data original
             'processed_date' => ['required'], // Valida se o parse MES/ANO funcionou
-            'confidentiality' => ['nullable', 'string', 'max:255', Rule::in(['Ostensivo', 'Público', 'Restrito', 'Confidencial', 'ostensivo', 'público', 'restrito', 'confidencial', 'Restricted', 'restricted', 'confidential', 'Confidential', 'Unclassified', 'unclassified'])],
+            'confidentiality' => ['nullable', 'string', 'max:255', Rule::in(['Ostensivo', 'Público', 'Restrito', 'Confidencial', 'ostensivo', 'público', 'restrito', 'confidencial', 'Restricted', 'restricted', 'confidential', 'Confidential', 'Unclassified', 'unclassified', 'Secreto', 'secreto', 'Secret', 'secret'])],
             'code' => ['nullable', 'string', 'max:255'], // Valida string
             'descriptor' => ['nullable', 'string', 'max:255'],
             'version' => ['nullable', 'string', 'max:255'], // Valida string
