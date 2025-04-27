@@ -65,7 +65,9 @@ class UpdateDocumentRequest extends FormRequest
             ],
             'document_date' => [
                 'required',
-                'date',
+                'string',
+                // Regex para validar 3 letras, barra opcional, 4 dígitos
+                'regex:/^([a-zA-Z]{3})\/?(\d{4})$/i',
             ],
             'project_id' => [
                 'nullable',
@@ -83,7 +85,7 @@ class UpdateDocumentRequest extends FormRequest
             ],
             'is_copy' => [
                 'nullable',
-                'boolean',
+                'string',
             ],
             // 'document_file' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'] // Não obrigatório no update
         ];
@@ -103,8 +105,14 @@ class UpdateDocumentRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        $this->merge([
-            'is_copy' => $this->boolean('is_copy'),
-        ]);
+
+        if ($this->has('document_date')) {
+            $dateString = $this->input('document_date');
+            $normalizedDate = null;
+            if (preg_match('/^([a-zA-Z]{3})\/?(\d{4})$/', $dateString, $matches)) {
+                $normalizedDate = strtoupper($matches[1]).'/'.$matches[2];
+            }
+            $this->merge(['document_date' => $normalizedDate]); // Salva normalizado ou null
+        }
     }
 }

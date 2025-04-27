@@ -1,4 +1,5 @@
-﻿caixa,item,codigo,descritor,numero,titulo,data,projeto,sigilo,versao,copia
-1,1,441,PROJETO DE PESQUISA E DESENVOLVIMENTO,2024/001,"KC-390 - Relatório de Atividades Mensais",2024-01-15,"Projeto Alpha",RESERVADO,1.0,0
-1,2,441,PROJETO DE PESQUISA E DESENVOLVIMENTO,2024/002,"MAR-1 - Solicitação de Recursos",2024-01-16,"Projeto Beta",OSTENSIVO,1.0,0
-2,1,441,PROJETO DE PESQUISA E DESENVOLVIMENTO,2024/003,"FX-39 - Análise de Desempenho",2024-01-17,"Projeto Gamma",CONFIDENCIAL,2.0,1
+﻿box_id,project_id,item_number,code,descriptor,document_number,title,document_date,confidentiality,version,is_copy
+10,3,003,ADM-PROC-001,"Procedimento","ADM-24-PROC-001","Procedimento de Acesso ao Arquivo",2024-01-10,Ostensivo,"27M",
+9,1,001,ADRT-REQ-001,"Requisitos Técnicos","DART-24-REQ-001","Especificação de Requisitos",15/01/2024,Restrito,"COPY1","Original"
+3,10,002,ADRT-TEST-005,"Relatório de Teste","DART-24-TST-005","Resultados dos Testes de Voo #5",20/03/2024,Confidential,"COPy2","Cópia 1"
+1,9,004,MAR1-REQ-002,"Requisito Interface","MAR1-24-REQ-002","Interface com Sistema Navegação",10/02/2024,Restricted,"teste",

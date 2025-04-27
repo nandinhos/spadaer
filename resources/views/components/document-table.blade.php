@@ -165,32 +165,31 @@
                             @switch($column['model_key'])
                                 {{-- Usa model_key para acessar o dado --}}
                                 @case('box')
-                                    {{-- Caso especial para relacionamento box --}}
-                                    {{ $document->box?->number ?? '--' }} {{-- Acessa o número da caixa via relacionamento --}}
+                                    {{ $document->box?->number ?? '--' }}
                                 @break
 
                                 @case('project')
-                                    {{-- Caso especial para relacionamento project --}}
-                                    {{ $document->project?->name ?? '--' }} {{-- Acessa o nome do projeto via relacionamento --}}
+                                    {{ $document->project?->name ?? '--' }}
                                 @break
 
                                 @case('document_date')
-                                    {{ $document->document_date?->format('d/m/Y') ?? '--' }} {{-- Formata a data --}}
+                                    {{ $document->document_date }}
                                 @break
 
                                 @case('is_copy')
-                                    {{ $document->is_copy ? 'Sim' : 'Não' }} {{-- Simplificado --}}
+                                    {{-- Exibe a string armazenada ou um traço se for nulo/vazio --}}
+                                    {{ $document->is_copy ?: '--' }}
                                 @break
 
                                 @case('confidentiality')
-                                    {{-- Lógica do badge (mantida, mas pode virar um componente) --}}
+                                    {{-- Lógica do badge (mantida) --}}
                                     @php
                                         $confidentialityClass = match (strtolower($document->confidentiality ?? '')) {
                                             'restrito' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
                                             'confidencial'
                                                 => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
                                             default
-                                                => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200', // Público como default
+                                                => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
                                         };
                                         $confidentialityLabel = $document->confidentiality
                                             ? strtolower($document->confidentiality)
@@ -203,37 +202,31 @@
                                 @break
 
                                 @case('title')
-                                    {{-- Truncate com title --}}
                                     <span title="{{ $document->title }}">{{ Str::limit($document->title, 50) }}</span>
                                 @break
 
                                 @default
-                                    {{-- Acessa a propriedade diretamente usando a model_key --}}
                                     {{ $document->{$column['model_key']} ?? '--' }}
                             @endswitch
                         </td>
                     @endforeach
                     {{-- Coluna de Ações --}}
                     <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
-                        {{-- Botão para abrir o Modal (NÃO PODE TER LINK DENTRO) --}}
-                        <button type="button" {{-- Garante que não é submit --}} {{-- Chama a função Alpine GLOBAL --}}
-                            @click="openDocumentModal({{ $document->id }})"
+                        {{-- Botão para abrir o Modal --}}
+                        <button type="button" @click="openDocumentModal({{ $document->id }})"
                             class="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-200 focus:outline-none focus:underline"
                             title="Ver Detalhes do Documento">
-                            <i class="mr-1 fas fa-eye"></i>
+                            <i class="mr-1 fas fa-eye"></i>Ver
                         </button>
 
-                        {{-- Botão Editar (Exemplo) --}}
-                        {{-- @can('update', $document) --}}
+                        {{-- Botão Editar --}}
                         <a href="{{ route('documents.edit', $document) }}"
                             class="ml-2 font-medium text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-white focus:outline-none focus:underline"
                             title="Editar Documento">
-                            <i class="mr-1 fas fa-edit"></i>
+                            <i class="mr-1 fas fa-edit"></i>Editar
                         </a>
-                        {{-- @endcan --}}
 
-                        {{-- Botão Excluir (Exemplo) --}}
-                        {{-- @can('delete', $document) --}}
+                        {{-- Botão Excluir --}}
                         <form method="POST" action="{{ route('documents.destroy', $document) }}"
                             class="inline ml-2"
                             onsubmit="return confirm('Tem certeza que deseja excluir este documento?');">
@@ -242,10 +235,9 @@
                             <button type="submit"
                                 class="font-medium text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200 focus:outline-none focus:underline"
                                 title="Excluir Documento">
-                                <i class="mr-1 fas fa-trash-alt"></i>
+                                <i class="mr-1 fas fa-trash-alt"></i>Excluir
                             </button>
                         </form>
-                        {{-- @endcan --}}
                     </td>
                 </tr>
                 @empty
@@ -257,9 +249,7 @@
                                 <i class="mb-2 text-gray-400 fas fa-folder-open fa-3x"></i>
                                 Nenhum documento encontrado.
                                 @if (count(array_filter($requestParams)) > 0)
-                                    {{-- Verifica se há filtros/busca ativos --}}
                                     <p class="mt-1 text-sm">Tente ajustar os filtros ou a pesquisa.</p>
-                                    {{-- Botão para limpar filtros mantendo sort/per_page --}}
                                     <a href="{{ route('documents.index', ['sort_by' => $requestParams['sort_by'] ?? null, 'sort_dir' => $requestParams['sort_dir'] ?? null, 'per_page' => $requestParams['per_page'] ?? null]) }}"
                                         class="mt-3 text-sm text-primary dark:text-primary-light hover:underline">
                                         Limpar filtros e pesquisa

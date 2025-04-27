@@ -6,14 +6,15 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\CommissionController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\DocumentImportController;
 
 // Rotas públicas (ex: landing page, se houver)
 Route::get('/', function () {
-     // Redireciona para login ou dashboard se já logado
-     if (Auth::check()) {
+    // Redireciona para login ou dashboard se já logado
+    if (Auth::check()) {
         return redirect()->route('documents.index');
-     }
-     return view('dashboard'); // Ou sua landing page
+    }
+    return view('dashboard'); // Ou sua landing page
 });
 
 
@@ -21,16 +22,16 @@ Route::get('/', function () {
 Route::middleware('auth')->group(function () {
     // Rota principal do sistema de documentos
     Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
-    
+
     // Add these routes for document creation
     Route::get('/documents/create', [DocumentController::class, 'create'])->name('documents.create');
     Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
-    
+
     // Rota para buscar detalhes de um documento via AJAX (para o modal)
     Route::get('/documents/{document}', [DocumentController::class, 'show'])->name('documents.show');
 
     // Rotas para Comissões
-Route::resource('commissions', CommissionController::class);
+    Route::resource('commissions', CommissionController::class);
 
     // Rotas de caixas
     Route::resource('boxes', BoxController::class);
@@ -40,22 +41,21 @@ Route::resource('commissions', CommissionController::class);
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-     // Redireciona a rota padrão /dashboard para /documents
-     // Add this line to define the 'dashboard' named route
-     Route::get('/dashboard', function () {
-         return redirect()->route('documents.index');
-     })->name('dashboard');
+    // Redireciona a rota padrão /dashboard para /documents
+    // Add this line to define the 'dashboard' named route
+    Route::get('/dashboard', function () {
+        return redirect()->route('documents.index');
+    })->name('dashboard');
 
-     // Rota para importação de documentos
-     Route::post('/documents/import', [DocumentController::class, 'import'])->name('documents.import');
-
-     // Rotas para gerenciamento de documentos
-     Route::get('/documents/create', [DocumentController::class, 'create'])->name('documents.create');
-     Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
-     Route::get('/documents/{document}/edit', [DocumentController::class, 'edit'])->name('documents.edit');
-     Route::put('/documents/{document}', [DocumentController::class, 'update'])->name('documents.update');
-     Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
+    // CORRIGIDO: Aponta para o DocumentImportController
+    Route::post('/documents/import', [DocumentImportController::class, 'import'])->name('documents.import');
+    // Rotas para gerenciamento de documentos
+    Route::get('/documents/create', [DocumentController::class, 'create'])->name('documents.create');
+    Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
+    Route::get('/documents/{document}/edit', [DocumentController::class, 'edit'])->name('documents.edit');
+    Route::put('/documents/{document}', [DocumentController::class, 'update'])->name('documents.update');
+    Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
 });
 
 
-require __DIR__.'/auth.php'; // Rotas de autenticação do Breeze
+require __DIR__ . '/auth.php'; // Rotas de autenticação do Breeze
