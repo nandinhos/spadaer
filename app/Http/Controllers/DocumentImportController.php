@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB; // Para transação
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Validators\ValidationException;
 
 // Não precisamos da ValidationException aqui, pois é tratada internamente se usarmos getErrors()
 // use Maatwebsite\Excel\Validators\ValidationException;
@@ -29,6 +30,7 @@ class DocumentImportController extends Controller
         ]);
 
         $file = $request->file('csv_file');
+        $originalFilename = $file->getClientOriginalName(); // << Captura o nome original
         $userId = Auth::id();
         $import = new DocumentsImport($userId); // Instancia a classe de importação
 
@@ -46,12 +48,18 @@ class DocumentImportController extends Controller
 
             // 4. Se HOUVER erros de validação, NÃO prossegue com a inserção
             if (! empty($validationErrors)) {
-                Log::warning('Importação abortada devido a erros de validação no arquivo CSV.', ['errors' => $validationErrors]);
+                Log::warning('Importação abortada devido a erros de validação no arquivo CSV.', ['filename' => $originalFilename, 'errors' => $validationErrors]);
+                // Monta a mensagem de erro com o nome do arquivo
+                $errorMessage = 'A importação falhou. Corrija os erros no arquivo <strong>'.htmlspecialchars($originalFilename).'</strong> e tente novamente.';
 
                 return redirect()->route('documents.index')
-                    ->with('error', 'A importação falhou. Corrija os erros no arquivo CSV e tente novamente.')
-                    ->with('import_errors', $validationErrors); // Envia os erros detalhados
+                       // Usa 'import_error_message' para a mensagem principal (para permitir HTML)
+                       // e 'import_errors' para os detalhes
+                    ->with('import_error_message', $errorMessage)
+                    ->with('import_errors', $validationErrors);
             }
+            Log::info('Validação do CSV concluída. '.count($validationErrors).' erros encontrados.');
+            // Log::info('Erros de validação encontrados:', $validationErrors);
 
             // 5. Se NÃO HOUVER erros de validação, pega os dados validados
             $validatedData = $import->getValidatedData();

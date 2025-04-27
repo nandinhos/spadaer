@@ -39,39 +39,47 @@
         </div>
     </form>
 
+
     {{-- Área para exibir mensagens de sucesso, erro ou erros de validação da importação --}}
     <div class="mt-4 space-y-3 text-sm">
-        {{-- Mensagem de Sucesso Geral --}}
+        {{-- Mensagem de Sucesso Geral (Permite HTML) --}}
         @if (session('success'))
-            <div
-                class="px-4 py-2 text-green-800 bg-green-100 border border-green-300 rounded dark:bg-green-900 dark:text-green-200 dark:border-green-700">
-                {{ session('success') }}
+            <div class="px-4 py-2 text-green-800 bg-green-100 border border-green-300 rounded dark:bg-green-900 dark:text-green-200 dark:border-green-700"
+                role="alert">
+                {!! session('success') !!} {{-- Usa {!! !!} para renderizar o <strong> --}}
             </div>
         @endif
 
-        {{-- Mensagem de Erro Geral --}}
-        @if (session('error'))
-            <div
-                class="px-4 py-2 text-red-800 bg-red-100 border border-red-300 rounded dark:bg-red-900 dark:text-red-200 dark:border-red-700">
-                {{ session('error') }}
+        {{-- Mensagem de Erro Geral (Permite HTML) --}}
+        {{-- Usando a nova chave 'import_error_message' --}}
+        @if (session('import_error_message'))
+            <div class="px-4 py-2 text-red-800 bg-red-100 border border-red-300 rounded dark:bg-red-900 dark:text-red-200 dark:border-red-700"
+                role="alert">
+                {!! session('import_error_message') !!} {{-- Usa {!! !!} para renderizar o <strong> --}}
             </div>
         @endif
 
-        {{-- Erros específicos da validação da importação (passados via sessão) --}}
-        @if (session('import_errors'))
+        {{-- Mensagem de Aviso (Permite HTML) --}}
+        @if (session('warning'))
+            <div class="px-4 py-2 text-yellow-800 bg-yellow-100 border border-yellow-300 rounded dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700"
+                role="alert">
+                {!! session('warning') !!} {{-- Usa {!! !!} para renderizar o <strong> --}}
+            </div>
+        @endif
+
+
+        {{-- Erros específicos da validação da importação (passados via sessão 'import_errors') --}}
+        @if (session('import_errors') && is_array(session('import_errors')) && count(session('import_errors')) > 0)
             <div
-                class="px-4 py-3 mt-4 text-sm text-red-800 bg-red-100 border border-red-300 rounded dark:bg-red-900 dark:text-red-200 dark:border-red-700">
-                <p class="mb-2 font-semibold"><strong>Foram encontrados erros durante a importação:</strong></p>
+                class="px-4 py-3 text-sm text-red-800 bg-red-100 border border-red-300 rounded dark:bg-red-900 dark:text-red-200 dark:border-red-700">
+                <p class="mb-2 font-semibold"><strong>Detalhes dos erros encontrados:</strong></p>
                 <ul class="list-disc list-inside space-y-1">
                     @foreach (session('import_errors') as $errorDetail)
                         <li>
                             <strong>Linha {{ $errorDetail['row'] ?? 'Desconhecida' }}:</strong>
                             <ul class="ml-4 list-disc list-inside">
-                                {{-- Verifica se 'errors' existe e é um array --}}
                                 @if (isset($errorDetail['errors']) && is_array($errorDetail['errors']))
-                                    {{-- Itera sobre os erros [campo => [mensagem]] --}}
                                     @foreach ($errorDetail['errors'] as $field => $messages)
-                                        {{-- Exibe cada mensagem para o campo --}}
                                         @foreach ($messages as $message)
                                             <li>{{ $message }} (Campo: {{ $field }})</li>
                                         @endforeach
