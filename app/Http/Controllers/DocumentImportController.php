@@ -1,66 +1,79 @@
 <?php
 
-namespace App\Http\Controllers; // Namespace do Controller
+namespace App\Http\Controllers;
 
 use App\Imports\DocumentsImport;
-use Illuminate\Http\RedirectResponse; // Importa a classe de importação
+use App\Models\Document; // Importar Document para inserção
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB; // Para transação
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
-use Maatwebsite\Excel\Validators\ValidationException; // Adicionar tipo de retorno
 
-class DocumentImportController extends Controller // Define a classe Controller
+// Não precisamos mais da ValidationException do Excel aqui, pois tratamos no import
+// use Maatwebsite\Excel\Validators\ValidationException;
+
+class DocumentImportController extends Controller
 {
-    public function import(Request $request): RedirectResponse // Define o método import
+    public function import(Request $request): RedirectResponse
     {
-        // ... código do método import que chama Excel::import(new DocumentsImport(...), ...) ...
         $request->validate([
             'csv_file' => 'required|file|mimes:csv,txt',
         ]);
 
         $file = $request->file('csv_file');
         $userId = Auth::id();
+        $import = new DocumentsImport($userId); // Instancia a classe
 
         try {
-            $import = new DocumentsImport($userId); // Instancia a classe de importação
-            Excel::import($import, $file); // Usa a instância
+            // Executa a importação, que agora apenas lê e valida
+            Excel::import($import, $file);
 
-            $importedCount = $import->getImportedCount();
-            $skippedCount = $import->getSkippedCount();
+            // Pega os erros coletados pela classe de importação
             $errors = $import->getErrors();
 
-            $message = $importedCount.' documentos importados com sucesso.';
-            if ($skippedCount > 0 || ! empty($errors)) {
-                $message .= ' '.$skippedCount.' linhas foram puladas devido a erros.';
+            // ## LÓGICA PRINCIPAL: SÓ INSERE SE NÃO HOUVER ERROS ##
+            if (empty($errors)) {
+                // Pega os dados que passaram em TODAS as validações
+                $validatedData = $import->getValidatedData();
+
+                if (! empty($validatedData)) {
+                    // Insere todos os documentos válidos de uma vez dentro de uma transação
+                    DB::transaction(function () use ($validatedData) {
+                        // Use insert para performance em muitos registros
+                        Document::insert($validatedData);
+                        // Alternativa: usar create() se precisar de eventos de model
+                        // foreach ($validatedData as $data) {
+                        //     Document::create($data);
+                        // }
+                    });
+                    $importedCount = count($validatedData);
+
+                    return redirect()->route('documents.index')
+                        ->with('success', $importedCount.' documentos importados com sucesso.');
+                } else {
+                    // Arquivo estava vazio ou todas as linhas eram inválidas (mas sem erro fatal)
+                    return redirect()->route('documents.index')
+                        ->with('warning', 'Nenhum documento válido encontrado para importação no arquivo.');
+                }
+
+            } else {
+                // Se HOUVE erros de validação, NÃO insere nada
+                Log::warning('Importação falhou devido a erros de validação.', ['errors' => $errors]);
+
+                return redirect()->route('documents.index')
+                    ->with('error', 'A importação falhou. Corrija os erros no arquivo CSV e tente novamente.')
+                    ->with('import_errors', $errors); // Envia os erros detalhados para a view
             }
 
-            return redirect()->route('documents.index')
-                ->with('success', $message)
-                ->with('import_errors', $errors);
-
-        } catch (ValidationException $e) {
-            // ... tratamento ValidationException ...
-            $failures = $e->failures();
-            $errors = [];
-            foreach ($failures as $failure) {
-                $rowNumber = $failure->row() ?? 'N/A';
-                $rowErrors = $failure->errors();
-                $attribute = $failure->attribute() ?? 'Desconhecido';
-                $errors[] = [/* ... */];
-            }
-            Log::error('Erro de validação na importação CSV: ', $errors);
-
-            return redirect()->route('documents.index')
-                ->with('error', 'Falha na validação do arquivo CSV.')
-                ->with('import_errors', $errors);
         } catch (\Throwable $e) {
-            // ... tratamento Throwable ...
-            Log::error('Erro inesperado na importação CSV: '.$e->getMessage());
+            // Captura erros inesperados DURANTE o processo de leitura/validação do Excel::import
+            Log::error('Erro inesperado durante o processamento da importação: '.$e->getMessage());
             Log::error($e->getTraceAsString());
 
             return redirect()->route('documents.index')
-                ->with('error', 'Ocorreu um erro inesperado durante a importação.');
+                ->with('error', 'Ocorreu um erro inesperado ao processar o arquivo: '.$e->getMessage());
         }
     }
-} // FIM DA CLASSE DocumentImportController
+}

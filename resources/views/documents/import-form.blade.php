@@ -20,10 +20,7 @@
             {{-- Input de Arquivo --}}
             <div class="flex-grow">
                 <label for="csv_file" class="sr-only">Selecione o arquivo CSV</label> {{-- Screen reader only label --}}
-                <input type="file"
-                    id="csv_file"
-                    name="csv_file"
-                    accept=".csv, text/csv" {{-- Aceita .csv e o mime type --}}
+                <input type="file" id="csv_file" name="csv_file" accept=".csv, text/csv" {{-- Aceita .csv e o mime type --}}
                     class="block w-full text-sm text-gray-500 border border-gray-300 rounded-lg cursor-pointer dark:text-gray-400 focus:outline-none dark:border-gray-600 dark:placeholder-gray-400
                               file:mr-4 file:py-2 file:px-4 file:rounded-l-md file:border-0
                               file:text-sm file:font-semibold
@@ -46,41 +43,52 @@
     <div class="mt-4 space-y-3 text-sm">
         {{-- Mensagem de Sucesso Geral --}}
         @if (session('success'))
-        <div class="px-4 py-2 text-green-800 bg-green-100 border border-green-300 rounded dark:bg-green-900 dark:text-green-200 dark:border-green-700">
-            {{ session('success') }}
-        </div>
+            <div
+                class="px-4 py-2 text-green-800 bg-green-100 border border-green-300 rounded dark:bg-green-900 dark:text-green-200 dark:border-green-700">
+                {{ session('success') }}
+            </div>
         @endif
 
         {{-- Mensagem de Erro Geral --}}
         @if (session('error'))
-        <div class="px-4 py-2 text-red-800 bg-red-100 border border-red-300 rounded dark:bg-red-900 dark:text-red-200 dark:border-red-700">
-            {{ session('error') }}
-        </div>
+            <div
+                class="px-4 py-2 text-red-800 bg-red-100 border border-red-300 rounded dark:bg-red-900 dark:text-red-200 dark:border-red-700">
+                {{ session('error') }}
+            </div>
         @endif
 
         {{-- Erros específicos da validação da importação (passados via sessão) --}}
         @if (session('import_errors'))
-        <div class="px-4 py-3 text-red-800 bg-red-100 border border-red-300 rounded dark:bg-red-900 dark:text-red-200 dark:border-red-700">
-            <p class="mb-2 font-semibold"><strong>Foram encontrados erros durante a importação:</strong></p>
-            <ul class="list-disc list-inside">
-                @foreach (session('import_errors') as $errorDetail)
-                {{-- Assume que $errorDetail é um array ['row' => numero, 'errors' => [...]] --}}
-                @if(is_array($errorDetail) && isset($errorDetail['row']) && isset($errorDetail['errors']))
-                <li>
-                    <strong>Linha {{ $errorDetail['row'] }}:</strong>
-                    <ul class="ml-4 list-disc list-inside">
-                        @foreach($errorDetail['errors'] as $field => $message)
-                        <li>{{ $message[0] ?? 'Erro desconhecido' }} (Campo: {{ $field }})</li>
-                        @endforeach
-                    </ul>
-                </li>
-                @elseif(is_string($errorDetail))
-                {{-- Caso seja apenas uma string de erro --}}
-                <li>{{ $errorDetail }}</li>
-                @endif
-                @endforeach
-            </ul>
-        </div>
+            <div
+                class="px-4 py-3 mt-4 text-sm text-red-800 bg-red-100 border border-red-300 rounded dark:bg-red-900 dark:text-red-200 dark:border-red-700">
+                <p class="mb-2 font-semibold"><strong>Foram encontrados erros durante a importação:</strong></p>
+                <ul class="list-disc list-inside space-y-1">
+                    @foreach (session('import_errors') as $errorDetail)
+                        <li>
+                            <strong>Linha {{ $errorDetail['row'] ?? 'Desconhecida' }}:</strong>
+                            <ul class="ml-4 list-disc list-inside">
+                                {{-- Verifica se 'errors' existe e é um array --}}
+                                @if (isset($errorDetail['errors']) && is_array($errorDetail['errors']))
+                                    {{-- Itera sobre os erros [campo => [mensagem]] --}}
+                                    @foreach ($errorDetail['errors'] as $field => $messages)
+                                        {{-- Exibe cada mensagem para o campo --}}
+                                        @foreach ($messages as $message)
+                                            <li>{{ $message }} (Campo: {{ $field }})</li>
+                                        @endforeach
+                                    @endforeach
+                                @else
+                                    <li>Erro desconhecido nesta linha.</li>
+                                @endif
+                            </ul>
+                            {{-- Opcional: Mostrar os valores da linha que falhou --}}
+                            @if (isset($errorDetail['values']) && !empty($errorDetail['values']))
+                                <div class="mt-1 text-xs text-gray-600 dark:text-gray-400">Dados:
+                                    {{ json_encode($errorDetail['values']) }}</div>
+                            @endif
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
         @endif
     </div>
 </div>
