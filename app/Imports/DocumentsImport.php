@@ -129,7 +129,7 @@ class DocumentsImport implements SkipsOnFailure, ToCollection, WithHeadingRow, W
                     'document_number' => $validated['document_number'],
                     'title' => $validated['title'],
                     'document_date' => $documentDateMonthYear, // String MES/ANO
-                    'confidentiality' => $validatedData['confidentiality'] ?? null,
+                    'confidentiality' => $validated['confidentiality'] ?? null,
                     'version' => $versionString,      // String
                     'is_copy' => $validated['is_copy'] ?? null,   // String
                     'created_at' => now(),               // Adiciona timestamp
@@ -138,8 +138,8 @@ class DocumentsImport implements SkipsOnFailure, ToCollection, WithHeadingRow, W
                 ];
                 Log::info("[Row {$rowNumber}] Row validated successfully.");
 
-                $validatedData = $validator->validated();
-                Log::debug("[Row {$rowNumber}] Validated Data Array:", $validatedData); // Log para ver dados validados
+                // $validatedData = $validator->validated();
+                // Log::debug("[Row {$rowNumber}] Validated Data Array:", $validatedData); // Log para ver dados validados
             }
         } // Fim foreach $rows
     }
