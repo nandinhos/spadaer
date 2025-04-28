@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Imports\DocumentsImport;
-use App\Models\Document; // Importar Document
+use App\Imports\DocumentsBoxImport;
+use App\Imports\DocumentsImport; // Importar Document
+use App\Models\Box;
+use App\Models\Document;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\Request; // Para transação
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB; // Para transação
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException;
@@ -117,6 +119,74 @@ class DocumentImportController extends Controller
 
             return redirect()->route('documents.index')
                 ->with('error', 'Ocorreu um erro crítico ao processar o arquivo: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Importa documentos para uma caixa específica a partir de um arquivo CSV.
+     *
+     * @param  Box  $box  A caixa onde importar (via Route Model Binding)
+     */
+    public function importForBox(Request $request, Box $box): RedirectResponse
+    {
+        // 1. Validar o arquivo de upload (específico para este formulário)
+        $request->validate([
+            'documents_csv' => 'required|file|mimes:csv,txt|max:5120', // Nome do campo de upload
+        ], [
+            'documents_csv.required' => 'Nenhum arquivo CSV foi selecionado.',
+            // ... outras mensagens ...
+        ]);
+
+        $file = $request->file('documents_csv');
+        $userId = Auth::id();
+
+        Log::info("Iniciando importação de documentos para a Caixa ID {$box->id} do arquivo: ".$file->getClientOriginalName());
+
+        // 2. Instanciar a classe de importação específica para Caixa
+        $import = new DocumentsBoxImport($userId, $box->id); // Passa o ID da caixa alvo
+
+        // 3. Executar a importação (leitura e validação)
+        try {
+            Excel::import($import, $file);
+
+            // 4. Pega os resultados
+            $validationErrors = $import->getErrors();
+            $validatedDocData = $import->getValidatedData();
+
+            // 5. Processar resultados
+            if (! empty($validationErrors)) {
+                // Se HOUVE erros de validação no CSV -> NÃO insere, retorna com erros
+                Log::warning("Importação de documentos para Caixa ID {$box->id} falhou.", ['errors' => $validationErrors]);
+
+                return redirect()->route('boxes.show', $box) // Redireciona de volta para a view da caixa
+                    ->with('error', 'A importação de documentos falhou. Corrija os erros no arquivo CSV.')
+                    ->with('import_errors', $validationErrors); // Envia os erros detalhados
+            } else {
+                // Se NÃO HOUVE erros e há dados válidos -> Insere
+                if (! empty($validatedDocData)) {
+                    DB::transaction(function () use ($validatedDocData) {
+                        Document::insert($validatedDocData);
+                    });
+                    $importedCount = count($validatedDocData);
+                    Log::info("{$importedCount} documentos importados com sucesso para Caixa ID {$box->id}.");
+
+                    return redirect()->route('boxes.show', $box) // Redireciona de volta para a view da caixa
+                        ->with('success', "{$importedCount} documentos importados com sucesso para a Caixa.");
+                } else {
+                    // Arquivo vazio ou todas as linhas inválidas (mas sem erro fatal)
+                    Log::info("Nenhum documento válido encontrado para importar para Caixa ID {$box->id}.");
+
+                    return redirect()->route('boxes.show', $box) // Redireciona de volta para a view da caixa
+                        ->with('warning', 'Nenhum documento válido encontrado no arquivo para importar.');
+                }
+            }
+
+        } catch (\Throwable $e) {
+            // Erro crítico durante o processamento (ex: arquivo corrompido)
+            Log::error('Erro crítico durante importação de documentos para Caixa ID '.$box->id.': '.$e->getMessage(), ['exception' => $e]);
+
+            return redirect()->route('boxes.show', $box) // Redireciona de volta para a view da caixa
+                ->with('error', 'Ocorreu um erro crítico ao processar o arquivo de documentos.');
         }
     }
 }

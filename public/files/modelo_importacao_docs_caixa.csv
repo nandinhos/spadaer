@@ -2,3 +2,6 @@ item_number,code,descriptor,document_number,title,document_date,project_id,confi
 001,ADRT-REQ-001,"Requisitos Técnicos","DART-24-REQ-011","Especificação de Requisitos",NOV/2018,1,Restrito,"COPY1","Original"
 002,ADRT-TEST-005,"Relatório de Teste","DART-24-TST-004","Resultados dos Testes de Voo #5",DEZ/2004,12,Restrito,"REV1","Cópia 6"
 003,MAR1-REQ-002,"Requisito Interface","MAR1-24-REQ-002","Interface com Sistema Navegação",FEV/2024,,Restrito,"1.0","Original"
+001,ADRT-REQ-001,"Requisitos Técnicos","DART-24-REQ-011","Especificação de Requisitos",NOV/2018,1,Restrito,"COPY1","Original"
+002,ADRT-TEST-005,"Relatório de Teste","DART-24-TST-004","Resultados dos Testes de Voo #5",DEZ/2004,12,Restrito,"REV1","Cópia 6"
+003,MAR1-REQ-002,"Requisito Interface","MAR1-24-REQ-002","Interface com Sistema Navegação",FEV/2024,,Restrito,"1.0","Original"

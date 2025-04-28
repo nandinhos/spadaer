@@ -1,13 +1,16 @@
+{{-- resources/views/boxes/edit.blade.php --}}
 <x-app-layout>
     <x-slot name="header">
         <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                 {{ __('Editar Caixa') }}: {{ $box->number }}
             </h2>
+            {{-- Botão Voltar para Lista no Header --}}
             <a href="{{ route('boxes.index') }}"
                 class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md shadow-sm dark:bg-gray-800 dark:border-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
                 <i class="mr-2 fas fa-arrow-left"></i>{{ __('Voltar para Lista') }}
             </a>
+            {{-- REMOVIDO: Botão para abrir Modal de Importação (Ele estará na view 'show') --}}
         </div>
     </x-slot>
 
@@ -16,19 +19,21 @@
             <div class="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
                 <div class="p-6 text-gray-900 md:p-8 dark:text-gray-100">
 
-                    {{-- Exibição de Erros Gerais --}}
+                    {{-- Exibição de Erros Gerais do Formulário (Validação da Caixa) --}}
                     @if ($errors->any())
-                        <div class="relative px-4 py-3 mb-6 text-red-700 bg-red-100 border border-red-400 rounded"
-                            role="alert">
-                            <strong class="font-bold">{{ __('Ops! Algo deu errado.') }}</strong>
-                            <ul class="mt-2 text-sm list-disc list-inside">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
+                    <div class="relative px-4 py-3 mb-6 text-red-700 bg-red-100 border border-red-400 rounded"
+                        role="alert">
+                        <strong class="font-bold">{{ __('Ops! Algo deu errado.') }}</strong>
+                        <ul class="mt-2 text-sm list-disc list-inside">
+                            @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
                     @endif
 
+                    {{-- Formulário para Editar Caixa --}}
+                    {{-- REMOVIDO: enctype="multipart/form-data" (não é necessário sem upload) --}}
                     <form method="POST" action="{{ route('boxes.update', $box) }}" class="space-y-6">
                         @csrf
                         @method('PUT')
@@ -53,17 +58,17 @@
                         {{-- Projeto (Select) --}}
                         <div>
                             <x-input-label for="project_id" :value="__('Projeto Associado (Opcional)')" />
-                            {{-- Removido :currentValue, usando @selected --}}
                             <select id="project_id" name="project_id"
                                 class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600">
+                                {{-- Seleciona '-- Nenhum --' se o valor antigo/atual for vazio/nulo --}}
                                 <option value="" @selected(old('project_id', $box->project_id) == '')>{{ __('-- Nenhum --') }}</option>
                                 @isset($projects)
-                                    @foreach ($projects as $id => $name)
-                                        {{-- Usa @selected para comparar o valor antigo/atual com o ID da opção --}}
-                                        <option value="{{ $id }}" @selected(old('project_id', $box->project_id) == $id)>
-                                            {{ $name }}
-                                        </option>
-                                    @endforeach
+                                @foreach ($projects as $id => $name)
+                                {{-- Usa @selected para comparar o valor antigo/atual com o ID da opção --}}
+                                <option value="{{ $id }}" @selected(old('project_id', $box->project_id) == $id)>
+                                    {{ $name }}
+                                </option>
+                                @endforeach
                                 @endisset
                             </select>
                             <x-input-error :messages="$errors->get('project_id')" class="mt-2" />
@@ -77,14 +82,13 @@
                                 {{-- Seleciona '-- Nenhum --' se o valor antigo/atual for vazio/nulo --}}
                                 <option value="" @selected(old('commission_member_id', $box->commission_member_id) == '')>{{ __('-- Nenhum --') }}</option>
                                 @isset($activeMembers)
-                                    {{-- $id é commission_member.id, $name é user.name --}}
-                                    @foreach ($activeMembers as $id => $name)
-                                        {{-- Seleciona se o valor antigo/atual corresponder ao ID do CommissionMember --}}
-                                        <option value="{{ $id }}" @selected(old('commission_member_id', $box->commission_member_id) == $id)>
-                                            {{-- VALUE é o ID do CommissionMember --}}
-                                            {{ $name }} {{-- TEXTO é o nome do User --}}
-                                        </option>
-                                    @endforeach
+                                {{-- $id é commission_member.id, $name é user.name --}}
+                                @foreach ($activeMembers as $id => $name)
+                                {{-- Seleciona se o valor antigo/atual corresponder ao ID do CommissionMember --}}
+                                <option value="{{ $id }}" @selected(old('commission_member_id', $box->commission_member_id) == $id)>
+                                    {{ $name }}
+                                </option>
+                                @endforeach
                                 @endisset
                             </select>
                             <x-input-error :messages="$errors->get('commission_member_id')" class="mt-2" />
@@ -100,38 +104,13 @@
                                 for selecionado.</p>
                         </div>
 
-                        {{-- Seção Opcional de Importação de Documentos --}}
-                        <div class="pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                {{ __('Importar Documentos para esta Caixa (Opcional)') }}</h3>
-                            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                Anexe um arquivo CSV com os documentos pertencentes a esta caixa. A coluna 'Caixa' será
-                                ignorada/não necessária neste arquivo.
-                                <a href="{{ asset('files/modelo_importacao_docs_caixa.csv') }}" {{-- Link para NOVO modelo --}}
-                                    class="ml-2 text-indigo-600 dark:text-indigo-400 hover:underline" download>
-                                    Baixar modelo
-                                </a>
-                            </p>
+                        {{-- REMOVIDO: Seção Opcional de Importação de Documentos --}}
 
-                            <div class="mt-4">
-                                <x-input-label for="documents_csv" :value="__('Arquivo CSV de Documentos')" />
-                                <input id="documents_csv" name="documents_csv" type="file" accept=".csv, text/csv"
-                                    class="block w-full mt-1 text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400
-                      file:mr-4 file:py-2 file:px-4 file:rounded-l-md file:border-0
-                      file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700
-                      dark:file:bg-gray-700 dark:file:text-gray-300
-                      hover:file:bg-indigo-100 dark:hover:file:bg-gray-600" />
-                                {{-- Erro específico para este upload --}}
-                                <x-input-error :messages="$errors->get('documents_csv')" class="mt-2" />
-                            </div>
-                        </div>
-
-                        {{-- Botões no final do formulário em boxes/edit.blade.php --}}
+                        {{-- Botões no final do formulário --}}
                         <div
                             class="flex items-center justify-end gap-4 pt-6 mt-8 border-t border-gray-200 dark:border-gray-700">
                             {{-- Botão Cancelar --}}
                             <a href="{{ request()->input('redirect_to', route('boxes.index')) }}"
-                                {{-- Usa redirect_to se existir, senão vai para index --}}
                                 class="text-sm text-gray-600 rounded-md dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
                                 {{ __('Cancelar') }}
                             </a>
@@ -145,4 +124,7 @@
             </div>
         </div>
     </div>
+    {{-- REMOVIDO: Bloco completo do Modal de Importação (Ele estará na view 'show') --}}
+    {{-- REMOVIDO: O Modal de Detalhes do Documento (Geralmente fica no layout principal) --}}
+
 </x-app-layout>

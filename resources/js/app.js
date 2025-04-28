@@ -5,38 +5,46 @@ import Alpine from 'alpinejs';
 // Sua função layout() que define o estado e métodos globais
 function layout() {
     return {
-        // Variáveis de estado
+        // --- Variáveis de estado para modais e layout ---
         sidebarOpen: localStorage.getItem('sidebarOpen') ? localStorage.getItem('sidebarOpen') === 'true' : true,
         darkMode: localStorage.getItem('darkMode') === 'true' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches),
-        showModal: false,
-        selectedDocument: {},
-        loadingModal: false,
 
-        // Métodos (init, toggleSidebar, toggleDarkMode, openDocumentModal, closeModal, formatDate...)
+        // Estado para o modal de detalhes de Documento
+        showModal: false, // <-- Já existe
+        selectedDocument: {}, // <-- Já existe
+        loadingModal: false, // <-- Já existe
+
+        // *** NOVO: Estado para o modal de importação de Caixa ***
+        showBoxImportModal: false, // Inicializa como false
+
+        // --- Métodos ---
         init() {
-            this.updateDarkModeClass(); // Aplica classe inicial
-            // ... outros watchers e listeners ...
+            this.updateDarkModeClass();
+            // ... outros watchers ...
             this.$watch('sidebarOpen', value => localStorage.setItem('sidebarOpen', value));
             this.$watch('darkMode', value => {
                 localStorage.setItem('darkMode', value);
                 this.updateDarkModeClass();
             });
-            console.log('Alpine layout initialized.'); // Mensagem de teste
+            console.log('Alpine layout initialized.');
         },
-        toggleSidebar() { this.sidebarOpen = !this.sidebarOpen; /* ... */ },
-        toggleDarkMode() { this.darkMode = !this.darkMode; /* ... */ },
-        updateDarkModeClass() { /* ... lógica para adicionar/remover classe 'dark' no <html> ... */
+
+        toggleSidebar() { this.sidebarOpen = !this.sidebarOpen; },
+        toggleDarkMode() { this.darkMode = !this.darkMode; },
+        updateDarkModeClass() {
             if (this.darkMode) {
                 document.documentElement.classList.add('dark');
             } else {
                 document.documentElement.classList.remove('dark');
             }
         },
-        async openDocumentModal(documentId) { /* ... lógica fetch AJAX ... */
+
+        // --- Métodos para o modal de detalhes de Documento ---
+        async openDocumentModal(documentId) {
             if (!documentId) return;
-            console.log(`Opening modal for document ID: ${documentId}`); // Teste
+            console.log(`Opening document details modal for ID: ${documentId}`);
             this.loadingModal = true;
-            this.showModal = true;
+            this.showModal = true; // Abre o modal de DETALHES
             this.selectedDocument = {};
             try {
                 const response = await fetch(`/documents/${documentId}`);
@@ -44,16 +52,34 @@ function layout() {
                 const data = await response.json();
                 data.formatted_date = this.formatDate(data.document_date);
                 this.selectedDocument = data;
-                console.log('Document data loaded:', this.selectedDocument); // Teste
+                console.log('Document details data loaded:', this.selectedDocument);
             } catch (error) {
-                console.error("Erro ao buscar detalhes do documento:", error);
-                this.closeModal();
+                console.error("Error fetching document details:", error);
+                this.closeModal(); // Fecha o modal de DETALHES em caso de erro
             } finally {
                 this.loadingModal = false;
             }
         },
-        closeModal() { this.showModal = false; this.selectedDocument = {}; console.log('Modal closed.'); }, // Teste
-        formatDate(dateString) { /* ... lógica de formatação ... */
+        closeModal() { // Fecha o modal de detalhes de Documento
+            console.log('Document details modal closed.');
+            this.showModal = false;
+            this.selectedDocument = {};
+        },
+
+        // *** NOVO: Métodos para o modal de importação de Caixa ***
+        openBoxImportModal() {
+            console.log('Opening box import modal.');
+            this.showBoxImportModal = true; // Abre o modal de IMPORTAÇÃO
+            // Opcional: Aqui você pode resetar campos de formulário dentro do modal se necessário
+        },
+        closeBoxImportModal() {
+            console.log('Box import modal closed.');
+            this.showBoxImportModal = false; // Fecha o modal de IMPORTAÇÃO
+            // Opcional: Aqui você pode limpar campos de formulário dentro do modal se necessário
+        },
+
+        // --- Métodos Auxiliares ---
+        formatDate(dateString) {
             if (!dateString) return 'N/D';
             try {
                 const date = new Date(dateString + 'T00:00:00');
@@ -61,14 +87,15 @@ function layout() {
                 return date.toLocaleDateString('pt-BR');
             } catch (e) { return 'Data inválida'; }
         },
-        // ... outras funções ...
+
+        // ... outras funções auxiliares se houver ...
     }
 }
 
 // Registrar o componente Alpine globalmente
 document.addEventListener('alpine:init', () => {
     Alpine.data('layout', layout);
-    console.log('Alpine layout data registered.'); // Mensagem de teste
+    console.log('Alpine layout data registered.');
 });
 
 
@@ -78,4 +105,4 @@ window.Alpine = Alpine;
 // Iniciar Alpine
 Alpine.start();
 
-console.log('Alpine started.'); // Mensagem de teste
+console.log('Alpine started.');

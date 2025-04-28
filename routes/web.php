@@ -61,6 +61,10 @@ Route::middleware(['auth'])->group(function () { // Adicionar 'verified' se usar
     // Rota para processar a importação de CSV
     Route::post('/documents/import', [DocumentImportController::class, 'import'])->name('documents.import');
 
+    // Rota para importar documentos para uma caixa específica
+    // Usa o ID da caixa na URL
+    Route::post('/boxes/{box}/documents/import', [DocumentImportController::class, 'importForBox'])->name('boxes.documents.import');
+
     // Rota para processar a exportação para Excel/CSV
     Route::get('/documents/export', [DocumentExportController::class, 'exportExcel'])->name('documents.export');
 

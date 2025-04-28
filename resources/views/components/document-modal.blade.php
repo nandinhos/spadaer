@@ -85,7 +85,7 @@
                                 </td>
                                 {{-- Usa a propriedade formatada adicionada no JS --}}
                                 <td class="px-4 py-3 text-gray-900 dark:text-gray-100"
-                                    x-text="selectedDocument.formatted_date || '-'"></td>
+                                    x-text="selectedDocument.document_date || '-'"></td>
                             </tr>
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-750/50">
                                 <td class="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Código</td>
