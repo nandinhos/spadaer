@@ -48,6 +48,9 @@ Route::middleware('auth')->group(function () {
         return redirect()->route('documents.index');
     })->name('dashboard');
 
+    // --- Rota de Exportação (Apontando para o novo Controller) ---
+    Route::get('/documents/export', [DocumentExportController::class, 'exportExcel'])->name('documents.export');
+
     // CORRIGIDO: Aponta para o DocumentImportController
     Route::post('/documents/import', [DocumentImportController::class, 'import'])->name('documents.import');
     // Rotas para gerenciamento de documentos
@@ -56,9 +59,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/documents/{document}/edit', [DocumentController::class, 'edit'])->name('documents.edit');
     Route::put('/documents/{document}', [DocumentController::class, 'update'])->name('documents.update');
     Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
-
-    // --- Rota de Exportação (Apontando para o novo Controller) ---
-    Route::get('/documents/export', [DocumentExportController::class, 'exportExcel'])->name('documents.export');
 
 });
 
