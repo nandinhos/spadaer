@@ -114,22 +114,28 @@
 
     <!-- Botões de Ações Rápidas -->
     <div class="flex flex-wrap gap-2">
+        {{-- Botão Adicionar (Indigo) --}}
         {{-- @can('create', App\Models\Document::class) --}}
-        <x-primary-button tag="a" href="{{ route('documents.create') }}">
+        <x-primary-button tag="a" href="{{ route('documents.create') }}"
+            class="!bg-indigo-600 hover:!bg-indigo-700 focus:!bg-indigo-700 active:!bg-indigo-800 focus:!ring-indigo-500">
+            {{-- Use ! para sobrescrever a cor 'primary' padrão se necessário --}}
             <i class="fas fa-plus-circle mr-1.5"></i> Adicionar
         </x-primary-button>
         {{-- @endcan --}}
 
-        <x-secondary-button type="button" onclick="alert('Ação Exportar não implementada')">
-            <i class="fas fa-file-export mr-1.5"></i> Exportar
-        </x-secondary-button>
-        <x-secondary-button type="button" onclick="alert('Ação Imprimir não implementada')">
+        {{-- Botão Exportar (Verde) --}}
+        {{-- Usando x-secondary-button como base e aplicando cores --}}
+        <a href="{{ route('documents.export', request()->query()) }}" {{-- Nova Rota --}}
+            class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+            <i class="fas fa-file-excel mr-1.5"></i> Exportar (Excel) {{-- Ícone de Excel --}}
+        </a>
+
+        {{-- Botão Imprimir (Amarelo) --}}
+        {{-- Usando x-secondary-button como base e aplicando cores --}}
+        <button type="button" onclick="window.print();" {{-- Chama a função de impressão do navegador --}}
+            class="inline-flex items-center px-4 py-2 bg-yellow-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-600 focus:bg-yellow-600 active:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
             <i class="fas fa-print mr-1.5"></i> Imprimir
-        </x-secondary-button>
-        {{-- Botão para abrir formulário de importação (se existir e usar Alpine) --}}
-        {{-- <x-secondary-button type="button" @click="isImporting = !isImporting">
-            <i class="fas fa-file-import mr-1.5"></i> Importar
-        </x-secondary-button> --}}
+        </button>
     </div>
 
     {{-- Exibir erros de importação, se houver --}}

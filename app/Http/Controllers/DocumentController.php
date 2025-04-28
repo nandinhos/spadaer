@@ -5,15 +5,16 @@ namespace App\Http\Controllers;
 // Models
 use App\Http\Requests\StoreDocumentRequest;
 use App\Http\Requests\UpdateDocumentRequest;
-use App\Models\Box;
 // Requests
-use App\Models\Document; // Usar para store
-use App\Models\Project; // Usar para update
-use Illuminate\Http\RedirectResponse;
+use App\Models\Box; // Usar para store
+use App\Models\Document; // Usar para update
+use App\Models\Project;
 // Outros
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\View\View;
+use Illuminate\View\View; // Importar a classe de exportação
+use Maatwebsite\Excel\Facades\Excel; // Importar facade do Excel
 
 class DocumentController extends Controller
 {

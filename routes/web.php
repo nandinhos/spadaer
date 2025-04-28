@@ -1,12 +1,13 @@
 <?php
 
 use App\Http\Controllers\BoxController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\CommissionController;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\DocumentExportController;
 use App\Http\Controllers\DocumentImportController;
+use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 // Rotas públicas (ex: landing page, se houver)
 Route::get('/', function () {
@@ -14,9 +15,9 @@ Route::get('/', function () {
     if (Auth::check()) {
         return redirect()->route('documents.index');
     }
+
     return view('dashboard'); // Ou sua landing page
 });
-
 
 // Rotas autenticadas
 Route::middleware('auth')->group(function () {
@@ -55,7 +56,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/documents/{document}/edit', [DocumentController::class, 'edit'])->name('documents.edit');
     Route::put('/documents/{document}', [DocumentController::class, 'update'])->name('documents.update');
     Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
+
+    // --- Rota de Exportação (Apontando para o novo Controller) ---
+    Route::get('/documents/export', [DocumentExportController::class, 'exportExcel'])->name('documents.export');
+
 });
 
-
-require __DIR__ . '/auth.php'; // Rotas de autenticação do Breeze
+require __DIR__.'/auth.php'; // Rotas de autenticação do Breeze
