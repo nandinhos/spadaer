@@ -114,25 +114,23 @@
 
     <!-- Botões de Ações Rápidas -->
     <div class="flex flex-wrap gap-2">
-        {{-- Botão Adicionar (Indigo) --}}
+
+        {{-- Botão Adicionar (Indigo) - Refatorado para <a> com classes --}}
         {{-- @can('create', App\Models\Document::class) --}}
-        <x-primary-button tag="a" href="{{ route('documents.create') }}"
-            class="!bg-indigo-600 hover:!bg-indigo-700 focus:!bg-indigo-700 active:!bg-indigo-800 focus:!ring-indigo-500">
-            {{-- Use ! para sobrescrever a cor 'primary' padrão se necessário --}}
+        <a href="{{ route('documents.create') }}"
+            class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
             <i class="fas fa-plus-circle mr-1.5"></i> Adicionar
-        </x-primary-button>
+        </a>
         {{-- @endcan --}}
 
         {{-- Botão Exportar (Verde) --}}
-        {{-- Usando x-secondary-button como base e aplicando cores --}}
-        <a href="{{ route('documents.export', request()->query()) }}" {{-- Nova Rota --}}
+        <a href="{{ route('documents.export', request()->query()) }}"
             class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
-            <i class="fas fa-file-excel mr-1.5"></i> Exportar (Excel) {{-- Ícone de Excel --}}
+            <i class="fas fa-file-excel mr-1.5"></i> Exportar (Excel)
         </a>
 
         {{-- Botão Imprimir (Amarelo) --}}
-        {{-- Usando x-secondary-button como base e aplicando cores --}}
-        <button type="button" onclick="window.print();" {{-- Chama a função de impressão do navegador --}}
+        <button type="button" onclick="window.print();"
             class="inline-flex items-center px-4 py-2 bg-yellow-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-600 focus:bg-yellow-600 active:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
             <i class="fas fa-print mr-1.5"></i> Imprimir
         </button>

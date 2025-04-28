@@ -1,126 +1,181 @@
+{{-- resources/views/documents/create.blade.php --}}
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">
-            {{ __('Documentos') }}
-        </h2>
+        <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center justify-between">
+            <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                {{ __('Adicionar Novo Documento') }}
+            </h2>
+            <a href="{{ route('documents.index') }}"
+                class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md shadow-sm dark:bg-gray-800 dark:border-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                <i class="mr-2 fas fa-arrow-left"></i>{{ __('Voltar para Lista') }}
+            </a>
+        </div>
     </x-slot>
 
-    <div class="py-12 bg-gray-100 dark:bg-gray-900">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <!-- Title above the form -->
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            Adicionar Documento
-                        </h3>
-                    </div>
+    <div class="py-12">
+        <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <div class="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
+                <div class="p-6 text-gray-900 md:p-8 dark:text-gray-100">
 
-                    <form action="{{ route('documents.store') }}" method="POST" class="space-y-6">
+                    {{-- Exibição de Erros Gerais --}}
+                    @if ($errors->any())
+                        <div class="relative px-4 py-3 mb-6 text-red-700 bg-red-100 border border-red-400 rounded">
+                            <strong class="font-bold">{{ __('Ops! Algo deu errado.') }}</strong>
+                            <ul class="mt-2 text-sm list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    {{-- Formulário aponta para a rota store --}}
+                    <form method="POST" action="{{ route('documents.store') }}" enctype="multipart/form-data"
+                        class="space-y-6">
                         @csrf
+                        {{-- Não precisa de @method('PUT') para create --}}
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <!-- Caixa e Item -->
-                            <div class="col-span-1">
-                                <label for="box_number" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Caixa</label>
-                                <input type="text" name="box_number" id="box_number" value="{{ old('box_number') }}" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+
+                            {{-- Caixa --}}
+                            <div>
+                                <x-input-label for="box_id" :value="__('Caixa')" />
+                                <select id="box_id" name="box_id" required
+                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="" disabled @selected(old('box_id') === null)> {{-- Default é desabilitado --}}
+                                        {{ __('Selecione uma Caixa') }}
+                                    </option>
+                                    {{-- $boxes deve ser passado pelo DocumentController@create --}}
+                                    @isset($boxes)
+                                        @foreach ($boxes as $id => $number)
+                                            <option value="{{ $id }}" @selected(old('box_id') == $id)>
+                                                {{-- Usa old() para reter seleção --}}
+                                                {{ $number }}
+                                            </option>
+                                        @endforeach
+                                    @endisset
+                                </select>
+                                <x-input-error :messages="$errors->get('box_id')" class="mt-2" />
                             </div>
 
-                            <div class="col-span-1">
-                                <label for="item_number" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Item</label>
-                                <input type="text" name="item_number" id="item_number" value="{{ old('item_number') }}" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                            {{-- Item --}}
+                            <div>
+                                <x-input-label for="item_number" :value="__('Item (dentro da Caixa)')" />
+                                <x-text-input id="item_number" name="item_number" type="text" required
+                                    class="block w-full mt-1" placeholder="Ex: 001, 002..." :value="old('item_number')" />
+                                {{-- Apenas old() --}}
+                                <x-input-error :messages="$errors->get('item_number')" class="mt-2" />
                             </div>
 
-                            <!-- Código e Descritor -->
-                            <div class="col-span-1">
-                                <label for="code" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Código</label>
-                                <input type="text" name="code" id="code" value="{{ old('code') }}"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                            {{-- Projeto --}}
+                            <div>
+                                <x-input-label for="project_id" :value="__('Projeto (Opcional)')" />
+                                <select id="project_id" name="project_id"
+                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="" @selected(old('project_id') == '')>{{ __('-- Nenhum --') }}
+                                    </option> {{-- Default é '-- Nenhum --' --}}
+                                    {{-- $projects deve ser passado pelo DocumentController@create --}}
+                                    @isset($projects)
+                                        @foreach ($projects as $id => $name)
+                                            <option value="{{ $id }}" @selected(old('project_id') == $id)>
+                                                {{ $name }}
+                                            </option>
+                                        @endforeach
+                                    @endisset
+                                </select>
+                                <x-input-error :messages="$errors->get('project_id')" class="mt-2" />
                             </div>
 
-                            <div class="col-span-1">
-                                <label for="descriptor" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Descritor</label>
-                                <input type="text" name="descriptor" id="descriptor" value="{{ old('descriptor') }}"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                            {{-- Código --}}
+                            <div>
+                                <x-input-label for="code" :value="__('Código do Documento (Opcional)')" />
+                                <x-text-input id="code" name="code" type="text" class="block w-full mt-1"
+                                    :value="old('code')" /> {{-- Apenas old() --}}
+                                <x-input-error :messages="$errors->get('code')" class="mt-2" />
                             </div>
 
-                            <!-- Número e Título -->
-                            <div class="col-span-1">
-                                <label for="document_number" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Número</label>
-                                <input type="text" name="document_number" id="document_number" value="{{ old('document_number') }}"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                            {{-- Descritor --}}
+                            <div>
+                                <x-input-label for="descriptor" :value="__('Descritor (Opcional)')" />
+                                <x-text-input id="descriptor" name="descriptor" type="text" class="block w-full mt-1"
+                                    :value="old('descriptor')" /> {{-- Apenas old() --}}
+                                <x-input-error :messages="$errors->get('descriptor')" class="mt-2" />
                             </div>
 
-                            <div class="col-span-2">
-                                <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Título</label>
-                                <input type="text" name="title" id="title" value="{{ old('title') }}" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                            {{-- Número do Documento --}}
+                            <div>
+                                <x-input-label for="document_number" :value="__('Número do Documento')" />
+                                <x-text-input id="document_number" name="document_number" type="text" required
+                                    class="block w-full mt-1" :value="old('document_number')" /> {{-- Apenas old() --}}
+                                <x-input-error :messages="$errors->get('document_number')" class="mt-2" />
                             </div>
 
-                            <!-- Data e Projeto -->
-                            <div class="col-span-1">
-                                <label for="document_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Data (Texto)</label>
-                                <input type="text" name="document_date" id="document_date" value="{{ old('document_date') }}" required placeholder="Ex: 2024-12-31 ou 31/12/2024"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                            {{-- Título --}}
+                            <div class="md:col-span-3">
+                                <x-input-label for="title" :value="__('Título')" />
+                                <x-textarea id="title" name="title" class="block w-full mt-1" rows="3"
+                                    required>{{ old('title') }}</x-textarea> {{-- Apenas old() --}}
+                                <x-input-error :messages="$errors->get('title')" class="mt-2" />
                             </div>
 
-                            <div class="col-span-1">
-                                <label for="project" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Projeto</label>
-                                <input type="text" name="project" id="project" value="{{ old('project') }}" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                            {{-- Data do Documento (Como Texto) --}}
+                            <div>
+                                <x-input-label for="document_date" :value="__('Data do Documento (Mês/Ano)')" />
+                                <x-text-input id="document_date" name="document_date" type="text" required
+                                    class="block w-full mt-1" placeholder="Ex: JAN/2024, FEV/2023" :value="old('document_date')" />
+                                {{-- Apenas old() --}}
+                                <x-input-error :messages="$errors->get('document_date')" class="mt-2" />
                             </div>
 
-                            <!-- Sigilo e Versão -->
-                            <div class="col-span-1">
-                                <label for="confidentiality" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Sigilo (Texto)</label>
-                                <input type="text" name="confidentiality" id="confidentiality" value="{{ old('confidentiality') }}" placeholder="Ex: Público, Restrito, Confidencial"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
-                                {{-- Se preferir um select, mantenha-o, mas o valor será a string --}}
-                                {{-- <select name="confidentiality" id="confidentiality"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
-                                    <option value="" {{ old('confidentiality') == '' ? 'selected' : '' }}>Nenhum</option>
-                                    <option value="Público" {{ old('confidentiality') == 'Público' ? 'selected' : '' }}>Público</option>
-                                    <option value="Restrito" {{ old('confidentiality') == 'Restrito' ? 'selected' : '' }}>Restrito</option>
-                                    <option value="Confidencial" {{ old('confidentiality') == 'Confidencial' ? 'selected' : '' }}>Confidencial</option>
-                                </select> --}}
+                            {{-- Sigilo --}}
+                            <div>
+                                <x-input-label for="confidentiality" :value="__('Nível de Sigilo')" />
+                                <select id="confidentiality" name="confidentiality" required
+                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="" disabled @selected(old('confidentiality') === null || old('confidentiality') === '')>
+                                        {{ __('Selecione...') }}</option>
+                                    @foreach (['Público', 'Restrito', 'Confidencial'] as $level)
+                                        {{-- Use os valores exatos --}}
+                                        <option value="{{ $level }}" @selected(old('confidentiality') === $level)>
+                                            {{ $level }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <x-input-error :messages="$errors->get('confidentiality')" class="mt-2" />
                             </div>
 
-                            <div class="col-span-1">
-                                <label for="version" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Versão</label>
-                                <input type="text" name="version" id="version" value="{{ old('version') }}"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                            {{-- Versão --}}
+                            <div>
+                                <x-input-label for="version" :value="__('Versão (Opcional)')" />
+                                <x-text-input id="version" name="version" type="text" class="block w-full mt-1"
+                                    :value="old('version')" /> {{-- Apenas old() --}}
+                                <x-input-error :messages="$errors->get('version')" class="mt-2" />
                             </div>
 
-                            <!-- Cópia -->
-                            <div class="col-span-1">
-                                <label for="is_copy" class="block text-sm font-medium text-gray-700 dark:text-gray-300">É Cópia? (Texto)</label>
-                                <input type="text" name="is_copy" id="is_copy" value="{{ old('is_copy') }}" placeholder="Ex: Sim, Não, True, False, 1, 0"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
-                                {{-- Alternativa com Select se preferir limitar as opções --}}
-                                {{-- <select name="is_copy" id="is_copy"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
-                                    <option value="" {{ old('is_copy') == '' ? 'selected' : '' }}>Não especificado</option>
-                                    <option value="Sim" {{ old('is_copy') == 'Sim' ? 'selected' : '' }}>Sim</option>
-                                    <option value="Não" {{ old('is_copy') == 'Não' ? 'selected' : '' }}>Não</option>
-                                </select> --}}
+                            {{-- Info Cópia (Como Texto) --}}
+                            <div class="md:col-span-3">
+                                <x-input-label for="is_copy" :value="__('Informação da Cópia (Opcional)')" />
+                                <x-text-input id="is_copy" name="is_copy" type="text" class="block w-full mt-1"
+                                    placeholder="Ex: Cópia 1, V2, Revisão B" :value="old('is_copy')" />
+                                {{-- Apenas old() --}}
+                                <x-input-error :messages="$errors->get('is_copy')" class="mt-2" />
                             </div>
+
                         </div>
 
-                        <div class="flex justify-end space-x-4">
-                            <a href="{{ route('documents.index') }}" 
-                               class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
-                                <i class="fas fa-arrow-left mr-2"></i>Voltar
+                        {{-- Botões de Ação --}}
+                        <div
+                            class="flex items-center justify-end gap-4 pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
+                            <a href="{{ route('documents.index') }}"
+                                class="text-sm text-gray-600 rounded-md dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
+                                {{ __('Cancelar') }}
                             </a>
-                            <button type="reset" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
-                                Limpar
-                            </button>
-                            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors duration-200">
-                                Salvar Documento
-                            </button>
+                            <x-primary-button>
+                                {{ __('Criar Documento') }} {{-- Texto do botão ajustado --}}
+                            </x-primary-button>
                         </div>
                     </form>
+
                 </div>
             </div>
         </div>

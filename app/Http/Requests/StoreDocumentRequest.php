@@ -3,85 +3,135 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule; // Necessário para regras mais complexas
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log; // Importar Carbon se usar para normalizar/validar
+use Illuminate\Validation\Rule; // Para log na normalização
 
 class StoreDocumentRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
-     * Delegar para Policy/Controller.
      */
     public function authorize(): bool
     {
-        return true;
+        return true; // Delegar
+    }
+
+    /**
+     * Prepara os dados ANTES da validação.
+     * Normaliza a data para MES/ANO e trata is_copy.
+     */
+    protected function prepareForValidation(): void
+    {
+        $normalizedDate = null;
+        if ($this->has('document_date')) {
+            $dateString = $this->input('document_date');
+            // Tenta validar/normalizar para MES/ANO
+            if ($dateString && preg_match('/^([a-zA-Z]{3})[\/\s]?(\d{4})$/', $dateString, $matches)) {
+                $monthAbbr = strtoupper($matches[1]);
+                $year = $matches[2];
+                $validMonths = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+                if (in_array($monthAbbr, $validMonths)) {
+                    $normalizedDate = $monthAbbr.'/'.$year; // Salva normalizado
+                } else {
+                    Log::warning('Mês inválido detectado em prepareForValidation: '.$dateString);
+                }
+            } else {
+                Log::warning('Formato de data inválido detectado em prepareForValidation: '.$dateString);
+            }
+        }
+
+        $this->merge([
+            // Sobrescreve 'document_date' com o valor normalizado (ou null se inválido)
+            // A regra 'required|string|size:8' abaixo vai validar isso.
+            'document_date' => $normalizedDate,
+            // Converte is_copy para string ou null (se for checkbox, usa boolean())
+            // 'is_copy' => $this->boolean('is_copy'), // Se fosse checkbox
+            // Se is_copy é text input, apenas garanta que vazio seja null
+            'is_copy' => $this->input('is_copy') === '' ? null : $this->input('is_copy'),
+        ]);
+
+        Log::debug('Data prepared for validation in StoreDocumentRequest:', $this->all());
     }
 
     /**
      * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
+        // Pega o valor de is_copy DEPOIS do prepareForValidation
+        $isCopyString = $this->input('is_copy');
+
         return [
             'box_id' => [
-                'required', // Todo documento deve pertencer a uma caixa? Se não, use 'nullable'
+                'required',
                 'integer',
-                'exists:boxes,id', // Garante que o ID da caixa existe na tabela boxes
+                'exists:boxes,id',
             ],
             'item_number' => [
                 'required',
                 'string',
-                'max:50', // Ajuste o tamanho máximo se necessário
-                // Garante que a combinação box_id e item_number seja única
+                'max:255',
+                // Garante unicidade DENTRO da caixa selecionada
                 Rule::unique('documents', 'item_number')->where('box_id', $this->input('box_id')),
             ],
-            'code' => [
-                'nullable', // Ou 'required' se for obrigatório
+            'project_id' => [
+                'nullable',
+                'integer',
+                'exists:projects,id',
+            ],
+            'code' => [ // REMOVIDA A REGRA UNIQUE
+                'nullable',
                 'string',
-                'max:100',
-                Rule::unique('documents', 'code'), // Código do documento deve ser único?
+                'max:255',
             ],
             'descriptor' => [
-                'nullable', // Ou 'required'
+                'nullable',
                 'string',
                 'max:255',
             ],
             'document_number' => [
                 'required',
                 'string',
-                'max:100',
-                Rule::unique('documents', 'document_number'), // Número do documento único
+                'max:255',
+                // Validação de unicidade composta: document_number + is_copy
+                Rule::unique('documents', 'document_number')->where(function ($query) use ($isCopyString) {
+                    if ($isCopyString === null) { // Checa estritamente por NULL após prepareForValidation
+                        $query->where(function ($q) {
+                            $q->whereNull('is_copy')->orWhere('is_copy', '');
+                        });
+                    } else {
+                        $query->where('is_copy', $isCopyString);
+                    }
+                }),
             ],
             'title' => [
                 'required',
                 'string',
-                'max:500', // Aumente se precisar de títulos maiores
+                'max:65535',
             ],
-            'document_date' => [
-                'required',
-                'date',
-            ],
-            'project_id' => [
-                'nullable', // Documento pode não ter projeto
-                'integer',
-                'exists:projects,id', // Garante que o ID do projeto existe
+            'document_date' => [ // Valida o valor JÁ PROCESSADO pelo prepareForValidation
+                'required',      // Garante que não ficou nulo (ou seja, formato era válido)
+                'string',        // Garante que é uma string
+                // 'size:8'      // Garante que tem o formato XXX/YYYY (3 + 1 + 4 = 8)
+                'regex:/^[A-Z]{3}\/\d{4}$/', // Garante formato MES/ANO (ex: JAN/2024) após normalização
             ],
             'confidentiality' => [
-                'required',
-                Rule::in(['Público', 'Restrito', 'Confidencial']), // Garante que é um dos valores permitidos
+                'required', // Sigilo é obrigatório na criação? Se sim, required. Senão, nullable.
+                'string',
+                'max:255',
+                Rule::in(['Público', 'Restrito', 'Confidencial'/* Adicione outras variações se necessário */]),
             ],
             'version' => [
                 'nullable',
                 'string',
+                'max:255',
+            ],
+            'is_copy' => [ // Valida o valor que foi preparado
+                'nullable',
+                'string',
                 'max:50',
             ],
-            'is_copy' => [
-                'nullable', // Checkboxes não enviados têm valor null
-                'boolean', // Garante que seja true/false, 1/0, 'on'/'off' (o Laravel converte)
-            ],
-            // Adicione regras para upload de arquivo de documento se houver
-            // 'document_file' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'] // Ex: PDF/Word até 10MB
         ];
     }
 
@@ -91,30 +141,19 @@ class StoreDocumentRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'box_id.required' => 'A caixa é obrigatória.',
-            'box_id.exists' => 'A caixa selecionada é inválida.',
-            'item_number.required' => 'O número do item na caixa é obrigatório.',
+            'box_id.required' => 'A seleção da Caixa é obrigatória.',
+            'box_id.exists' => 'A Caixa selecionada é inválida.',
+            'item_number.required' => 'O número do Item na caixa é obrigatório.',
             'item_number.unique' => 'Já existe um item com este número nesta caixa.',
-            'document_number.required' => 'O número do documento é obrigatório.',
-            'document_number.unique' => 'Este número de documento já está cadastrado.',
-            'code.unique' => 'Este código de documento já está cadastrado.',
-            'title.required' => 'O título do documento é obrigatório.',
-            'document_date.required' => 'A data do documento é obrigatória.',
-            'project_id.exists' => 'O projeto selecionado é inválido.',
-            'confidentiality.required' => 'O nível de sigilo é obrigatório.',
-            'confidentiality.in' => 'O nível de sigilo selecionado é inválido.',
+            'document_number.required' => 'O número do Documento é obrigatório.',
+            'document_number.unique' => 'Já existe um documento com este Número e informação de Cópia.',
+            'title.required' => 'O Título do documento é obrigatório.',
+            'document_date.required' => 'A Data do Documento é obrigatória ou está em formato inválido: (ex: FEV/2020)',
+            'document_date.size' => 'O formato da Data do Documento deve ser Mês/Ano (ex: JAN/2024).',
+            'document_date.regex' => 'O formato da Data do Documento deve ser Mês/Ano (ex: JAN/2024).',
+            'confidentiality.required' => 'O Nível de Sigilo é obrigatório.',
+            'confidentiality.in' => 'O Nível de Sigilo selecionado é inválido.',
+            // ... outras mensagens ...
         ];
-    }
-
-    /**
-     * Prepara os dados para validação (ex: converter checkbox).
-     */
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            // Converte o valor do checkbox 'is_copy' para booleano (1/0)
-            // Se não for enviado (desmarcado), será null, que se tornará false no banco
-            'is_copy' => $this->boolean('is_copy'),
-        ]);
     }
 }

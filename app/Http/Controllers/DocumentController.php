@@ -184,14 +184,14 @@ class DocumentController extends Controller
         ));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create(): View
     {
+        // Busca caixas (ID => Número) ordenadas
         $boxes = Box::orderBy('number')->pluck('number', 'id');
+        // Busca projetos (ID => Nome) ordenados
         $projects = Project::orderBy('name')->pluck('name', 'id');
 
+        // Retorna a view 'documents.create' passando as coleções
         return view('documents.create', compact('boxes', 'projects'));
     }
 
