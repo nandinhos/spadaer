@@ -135,8 +135,9 @@
                                     <td class="max-w-xs px-6 py-4 text-sm text-gray-600 truncate dark:text-gray-300"
                                         title="{{ $document->title }}">{{ $document->title }}</td>
                                     {{-- Formata a data (o cast no model Document garante que é um objeto Carbon) --}}
-                                    <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap dark:text-gray-300">
-                                        {{ $document->document_date?->format('d/m/Y') ?? '--' }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                                        {{ $document->document_date ?? '--' }}
+                                    </td>
                                     <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
                                         {{-- Botão que ACIONA o modal global --}}
                                         {{-- @can('view', $document) --}} {{-- Descomente quando usar Policies --}}

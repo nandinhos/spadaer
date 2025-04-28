@@ -100,6 +100,32 @@
                                 for selecionado.</p>
                         </div>
 
+                        {{-- Seção Opcional de Importação de Documentos --}}
+                        <div class="pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                {{ __('Importar Documentos para esta Caixa (Opcional)') }}</h3>
+                            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                Anexe um arquivo CSV com os documentos pertencentes a esta caixa. A coluna 'Caixa' será
+                                ignorada/não necessária neste arquivo.
+                                <a href="{{ asset('files/modelo_importacao_docs_caixa.csv') }}" {{-- Link para NOVO modelo --}}
+                                    class="ml-2 text-indigo-600 dark:text-indigo-400 hover:underline" download>
+                                    Baixar modelo
+                                </a>
+                            </p>
+
+                            <div class="mt-4">
+                                <x-input-label for="documents_csv" :value="__('Arquivo CSV de Documentos')" />
+                                <input id="documents_csv" name="documents_csv" type="file" accept=".csv, text/csv"
+                                    class="block w-full mt-1 text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400
+                      file:mr-4 file:py-2 file:px-4 file:rounded-l-md file:border-0
+                      file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700
+                      dark:file:bg-gray-700 dark:file:text-gray-300
+                      hover:file:bg-indigo-100 dark:hover:file:bg-gray-600" />
+                                {{-- Erro específico para este upload --}}
+                                <x-input-error :messages="$errors->get('documents_csv')" class="mt-2" />
+                            </div>
+                        </div>
+
                         {{-- Botões no final do formulário em boxes/edit.blade.php --}}
                         <div
                             class="flex items-center justify-end gap-4 pt-6 mt-8 border-t border-gray-200 dark:border-gray-700">

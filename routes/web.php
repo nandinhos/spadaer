@@ -49,6 +49,9 @@ Route::middleware(['auth'])->group(function () { // Adicionar 'verified' se usar
     // --- Rotas de Documentos ---
     // Rotas específicas (sem parâmetros de ID) devem vir primeiro
 
+    // Rota para gerar o PDF dos documentos (usando o mesmo controller da exportação Excel)
+    Route::get('/documents/export/pdf', [DocumentExportController::class, 'exportPdf'])->name('documents.export.pdf');
+
     // Rota para exibir o formulário de criação
     Route::get('/documents/create', [DocumentController::class, 'create'])->name('documents.create');
 

@@ -129,11 +129,12 @@
             <i class="fas fa-file-excel mr-1.5"></i> Exportar (Excel)
         </a>
 
-        {{-- Botão Imprimir (Amarelo) --}}
-        <button type="button" onclick="window.print();"
-            class="inline-flex items-center px-4 py-2 bg-yellow-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-600 focus:bg-yellow-600 active:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
-            <i class="fas fa-print mr-1.5"></i> Imprimir
-        </button>
+        {{-- Botão Exportar PDF (Vermelho) --}}
+        <a href="{{ route('documents.export.pdf', request()->query()) }}" target="_blank"
+            class="inline-flex items-center px-4 py-2 bg-red-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-600 focus:bg-red-600 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+            <i class="fas fa-file-pdf mr-1.5"></i> Exportar (PDF)
+        </a>
+
     </div>
 
     {{-- Exibir erros de importação, se houver --}}
