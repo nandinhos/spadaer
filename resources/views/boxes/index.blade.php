@@ -163,7 +163,7 @@
                             <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap dark:text-gray-300">
                                 {{ $box->physical_location ?? '-' }}</td>
                             <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap dark:text-gray-300">
-                                {{ $box->project_name ?? '-' }}</td>
+                                {{ $box->project->name ?? '-' }}</td>
                             <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap dark:text-gray-300">
                                 {{ $box->checker_name ?? '-' }}</td>
                             <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap dark:text-gray-300">

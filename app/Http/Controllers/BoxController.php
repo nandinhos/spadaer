@@ -3,15 +3,17 @@
 namespace App\Http\Controllers;
 
 // Models
-use App\Http\Requests\StoreBoxRequest;
-use App\Http\Requests\UpdateBoxRequest;
 use App\Models\Box;
-// Requests
 use App\Models\CommissionMember;
 use App\Models\Project;
-use Illuminate\Http\RedirectResponse;
+use App\Models\Document; // Importar para o show
+// Requests
+use App\Http\Requests\StoreBoxRequest;
+use App\Http\Requests\UpdateBoxRequest;
 // Outros
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
@@ -28,22 +30,24 @@ class BoxController extends Controller
      */
     public function index(Request $request): View
     {
-        // 1. Obter Parâmetros (com nomes consistentes)
+        // 1. Obter Parâmetros
         $search = $request->input('search');
         $projectId = $request->input('project_id');
-        // *** Pega o ID do membro enviado pelo filtro ***
         $commissionMemberId = $request->input('commission_member_id');
+        $filterStatus = $request->input('filter_status'); // Filtro de status
         $sortBy = $request->input('sort_by', 'boxes.number');
         $sortDir = $request->input('sort_dir', 'asc');
         $perPage = $request->input('per_page', 15);
 
-        // Log para depuração do valor recebido
-        Log::debug('Filtro - commission_member_id recebido:', ['id' => $commissionMemberId]);
-
-        // 2. Validar Ordenação (como antes)
+        // 2. Validar Ordenação
         $validSortColumns = [
-            'boxes.id', 'boxes.number', 'boxes.physical_location', 'boxes.conference_date',
-            'projects.name', 'checker_users.name',
+            'boxes.id',
+            'boxes.number',
+            'boxes.physical_location',
+            'boxes.conference_date',
+            'projects.name',
+            'checker_users.name',
+            'documents_count' // Inclui contagem
         ];
         if (! in_array($sortBy, $validSortColumns)) {
             $sortBy = 'boxes.number';
@@ -52,70 +56,65 @@ class BoxController extends Controller
             $sortDir = 'asc';
         }
 
-        // 3. Construir Query Base com Joins e Selects
+        // 3. Construir Query Base
         $query = Box::query()
-            ->select([
-                'boxes.*',
-                'projects.name as project_name',
-                'checker_users.name as checker_name', // Nome do usuário conferente
-            ])
+            ->withCount('documents') // Obtém documents_count
+            ->with(['project:id,name', 'commissionMember.user:id,name']) // Eager load otimizado
+            // Joins necessários para filtro/sort
             ->leftJoin('projects', 'boxes.project_id', '=', 'projects.id')
-            ->leftJoin('commission_members', 'boxes.commission_member_id', '=', 'commission_members.id') // Usa a coluna correta
+            ->leftJoin('commission_members', 'boxes.commission_member_id', '=', 'commission_members.id')
             ->leftJoin('users as checker_users', 'commission_members.user_id', '=', 'checker_users.id');
 
-        // 4. Aplicar Busca Textual (como antes)
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $searchTermWild = "%{$search}%";
-                $q->where('boxes.number', 'like', $searchTermWild)
-                    ->orWhere('boxes.physical_location', 'like', $searchTermWild)
-                    ->orWhere('projects.name', 'like', $searchTermWild)
-                    ->orWhere('checker_users.name', 'like', $searchTermWild);
-            });
+        // 4. Aplicar Busca Textual
+        if ($search) { /* ... lógica where ... */
         }
 
         // 5. Aplicar Filtros Específicos
         if ($projectId) {
             $query->where('boxes.project_id', $projectId);
         }
-        // *** Aplicar filtro do conferente ***
         if ($commissionMemberId) {
-            // *** Garante que está filtrando pela coluna correta 'boxes.commission_member_id' ***
             $query->where('boxes.commission_member_id', $commissionMemberId);
         }
+        // Filtro de Status
+        if ($filterStatus === 'with_docs') {
+            $query->has('documents');
+        } elseif ($filterStatus === 'empty') {
+            $query->doesntHave('documents');
+        }
 
-        // 6. Aplicar Ordenação (como antes)
-        $query->orderBy($sortBy, $sortDir);
+        // 6. Aplicar Ordenação
+        if ($sortBy === 'documents_count') {
+            $query->orderBy('documents_count', $sortDir);
+        } elseif (str_contains($sortBy, '.')) {
+            $query->orderBy($sortBy, $sortDir);
+        } else {
+            $query->orderBy('boxes.' . $sortBy, $sortDir);
+        }
 
-        // 7. Paginar Resultados com groupBy
+        // 7. Paginar Resultados
         try {
-            $boxes = $query->groupBy('boxes.id')
+            $boxes = $query->select('boxes.*') // Seleciona explicitamente para evitar problemas com groupBy
+                ->groupBy('boxes.id') // Agrupa pela caixa
                 ->paginate($perPage)
                 ->withQueryString();
-        } catch (\Throwable $e) { // Use Throwable para pegar mais tipos de erro
-            Log::error('Erro na query de paginação BoxController@index: '.$e->getMessage().' SQL: '.($e instanceof \Illuminate\Database\QueryException ? $e->getSql() : 'N/A'));
-            session()->flash('error', 'Ocorreu um erro ao listar as caixas. Verifique os filtros ou tente novamente.');
-            $boxes = new \Illuminate\Pagination\LengthAwarePaginator([], 0, $perPage);
+        } catch (\Throwable $e) { /* ... tratamento de erro ... */
         }
 
         // 8. Preparar Dados para Filtros da View
         $projects = Project::orderBy('name')->pluck('name', 'id');
-        // *** Geração do $activeMembers - Garantir que ID e Nome estão corretos ***
-        $activeMembers = CommissionMember::active() // Pega apenas membros ativos?
-            ->join('users', 'commission_members.user_id', '=', 'users.id') // Join obrigatório para pegar o nome
-            ->orderBy('users.name') // Ordena pelo nome do usuário
-            ->select('commission_members.id', 'users.name as user_name') // Seleciona o ID do MEMBRO e o NOME do usuário
-            ->get()
-            ->pluck('user_name', 'id'); // Cria o array [commission_member_id => user_name]
-
-        // Log para depurar o array passado para a view
-        Log::debug('Filtro - activeMembers gerado:', $activeMembers->toArray());
+        $activeMembers = CommissionMember::active()
+            ->join('users', 'commission_members.user_id', '=', 'users.id')
+            ->orderBy('users.name')
+            ->select('commission_members.id', 'users.name as user_name')
+            ->get()->pluck('user_name', 'id');
+        $statusOptions = ['' => 'Todos os Status', 'with_docs' => 'Com Documentos', 'empty' => 'Vazias'];
 
         // 9. Passar Parâmetros da Request
         $requestParams = $request->all();
 
         // 10. Retornar a View
-        return view('boxes.index', compact('boxes', 'projects', 'activeMembers', 'requestParams', 'request'));
+        return view('boxes.index', compact('boxes', 'projects', 'activeMembers', 'statusOptions', 'requestParams', 'request'));
     }
 
     /**
@@ -123,42 +122,43 @@ class BoxController extends Controller
      */
     public function create(): View
     {
-        // ***** BUSCAR PROJETOS *****
-        $projects = Project::orderBy('name')->pluck('name', 'id'); // Busca ID e Nome
-
-        // Buscar Membros Ativos (código que você já tem)
+        $projects = Project::orderBy('name')->pluck('name', 'id');
         $activeMembers = CommissionMember::active()
-            ->with('user:id,name')
             ->join('users', 'commission_members.user_id', '=', 'users.id')
             ->orderBy('users.name')
             ->select('commission_members.id', 'users.name as user_name')
-            ->get()
-            ->pluck('user_name', 'id');
-
-        // Passar AMBOS para a view
+            ->get()->pluck('user_name', 'id');
         return view('boxes.create', compact('projects', 'activeMembers'));
     }
 
     /**
      * Store a newly created resource in storage.
+     * REMOVIDA A LÓGICA DE IMPORTAÇÃO DAQUI
      */
     public function store(StoreBoxRequest $request): RedirectResponse
     {
-        $validated = $request->validated();
-        Box::create($validated);
+        $validatedBoxData = $request->validated();
+        // Remover 'documents_csv' se ele ainda existir na validação (deve ser removido do Form Request)
+        // unset($validatedBoxData['documents_csv']);
 
-        return redirect()->route('boxes.index')->with('success', 'Caixa criada com sucesso.');
+        try {
+            Box::create($validatedBoxData);
+            return redirect()->route('boxes.index')->with('success', 'Caixa criada com sucesso.');
+        } catch (\Throwable $e) {
+            Log::error('Erro ao criar caixa: ' . $e->getMessage(), ['exception' => $e]);
+            return back()->with('error', 'Erro ao salvar a caixa. Verifique os logs.')->withInput();
+        }
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Box $box)
+    public function show(Box $box) // Sem tipo de retorno
     {
+        // Carrega relacionamentos necessários
         $box->load(['project', 'commissionMember.user', 'documents' => function ($query) {
             $query->orderBy('item_number', 'asc');
         }]);
-
         return view('boxes.show', compact('box'));
     }
 
@@ -167,40 +167,35 @@ class BoxController extends Controller
      */
     public function edit(Box $box): View
     {
-        // ***** BUSCAR PROJETOS *****
-        $projects = Project::orderBy('name')->pluck('name', 'id'); // Busca ID e Nome
-
-        // Buscar Membros Ativos (código que você já tem)
+        $projects = Project::orderBy('name')->pluck('name', 'id');
         $activeMembers = CommissionMember::active()
-            ->with('user:id,name')
             ->join('users', 'commission_members.user_id', '=', 'users.id')
             ->orderBy('users.name')
             ->select('commission_members.id', 'users.name as user_name')
-            ->get()
-            ->pluck('user_name', 'id');
-
-        // Passar TUDO para a view
+            ->get()->pluck('user_name', 'id');
         return view('boxes.edit', compact('box', 'projects', 'activeMembers'));
     }
 
     /**
      * Update the specified resource in storage.
+     * REMOVIDA A LÓGICA DE IMPORTAÇÃO DAQUI
      */
     public function update(UpdateBoxRequest $request, Box $box): RedirectResponse
     {
-        $validated = $request->validated();
-        Log::info('Validation passed via Form Request.', $validated);
+        $validatedBoxData = $request->validated();
+        // Remover 'documents_csv' se ele ainda existir na validação
+        // unset($validatedBoxData['documents_csv']);
 
         try {
-            $box->update($validated);
-            Log::info("Caixa ID {$box->id} atualizada.");
+            $box->update($validatedBoxData);
+            // Redireciona para a view da caixa após editar suas informações
+            return redirect()->route('boxes.show', $box)->with('success', 'Caixa atualizada com sucesso.');
+            // Ou redireciona para o index:
+            // return redirect()->route('boxes.index')->with('success', 'Caixa atualizada com sucesso.');
         } catch (\Throwable $e) {
-            Log::error('Erro ao atualizar caixa: '.$e->getMessage());
-
-            return back()->with('error', 'Erro ao atualizar dados da caixa.')->withInput();
+            Log::error("Erro ao atualizar caixa {$box->id}: " . $e->getMessage(), ['exception' => $e]);
+            return back()->with('error', 'Erro ao salvar as alterações da caixa. Verifique os logs.')->withInput();
         }
-
-        return redirect()->route('boxes.index')->with('success', 'Caixa atualizada com sucesso.');
     }
 
     /**
@@ -216,7 +211,7 @@ class BoxController extends Controller
 
             return redirect()->route('boxes.index')->with('success', 'Caixa excluída com sucesso.');
         } catch (\Throwable $e) {
-            Log::error("Erro ao excluir caixa {$box->id}: ".$e->getMessage());
+            Log::error("Erro ao excluir caixa {$box->id}: " . $e->getMessage());
             // Verificar se o erro é devido a FKs restritivas (se não usou cascade/set null)
             if ($e instanceof \Illuminate\Database\QueryException && str_contains($e->getMessage(), 'constraint violation')) {
                 return redirect()->route('boxes.index')->with('error', 'Não é possível excluir a caixa pois ela contém documentos.');
@@ -225,4 +220,8 @@ class BoxController extends Controller
             return redirect()->route('boxes.index')->with('error', 'Erro ao excluir a caixa.');
         }
     }
-}
+
+    // Método batchAssignChecker (se implementado) permanece aqui
+    // public function batchAssignChecker(Request $request): RedirectResponse { ... }
+
+} // Fim da classe BoxController

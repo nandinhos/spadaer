@@ -1,26 +1,23 @@
-import './bootstrap'; // Inclui dependências como Axios
-
+import './bootstrap';
 import Alpine from 'alpinejs';
 
-// Sua função layout() que define o estado e métodos globais
+// Função layout() APENAS para sidebar, dark mode e modal de DETALHES de Documento
 function layout() {
     return {
-        // --- Variáveis de estado para modais e layout ---
+        // --- Variáveis de Estado Globais ---
         sidebarOpen: localStorage.getItem('sidebarOpen') ? localStorage.getItem('sidebarOpen') === 'true' : true,
         darkMode: localStorage.getItem('darkMode') === 'true' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches),
 
-        // Estado para o modal de detalhes de Documento
-        showModal: false, // <-- Já existe
-        selectedDocument: {}, // <-- Já existe
-        loadingModal: false, // <-- Já existe
+        // Estado do Modal de Detalhes do Documento
+        showModal: false, // << Para detalhes do Documento
+        selectedDocument: {},
+        loadingModal: false,
 
-        // *** NOVO: Estado para o modal de importação de Caixa ***
-        showBoxImportModal: false, // Inicializa como false
+        // REMOVIDO: showBoxImportModal (será controlado pelo Alpine.store)
 
         // --- Métodos ---
         init() {
             this.updateDarkModeClass();
-            // ... outros watchers ...
             this.$watch('sidebarOpen', value => localStorage.setItem('sidebarOpen', value));
             this.$watch('darkMode', value => {
                 localStorage.setItem('darkMode', value);
@@ -29,80 +26,75 @@ function layout() {
             console.log('Alpine layout initialized.');
         },
 
+        // Sidebar, Dark Mode (sem alterações)
         toggleSidebar() { this.sidebarOpen = !this.sidebarOpen; },
         toggleDarkMode() { this.darkMode = !this.darkMode; },
         updateDarkModeClass() {
-            if (this.darkMode) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
+            if (this.darkMode) { document.documentElement.classList.add('dark'); }
+            else { document.documentElement.classList.remove('dark'); }
         },
 
-        // --- Métodos para o modal de detalhes de Documento ---
+        // Modal de Detalhes do Documento (sem alterações)
         async openDocumentModal(documentId) {
             if (!documentId) return;
             console.log(`Opening document details modal for ID: ${documentId}`);
             this.loadingModal = true;
-            this.showModal = true; // Abre o modal de DETALHES
+            this.showModal = true; // Controla o modal de DETALHES
             this.selectedDocument = {};
             try {
                 const response = await fetch(`/documents/${documentId}`);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
-                data.formatted_date = this.formatDate(data.document_date);
+                // data.formatted_date = this.formatDisplayDate(data.document_date); // Se precisar formatar data MES/ANO
                 this.selectedDocument = data;
                 console.log('Document details data loaded:', this.selectedDocument);
             } catch (error) {
-                console.error("Error fetching document details:", error);
-                this.closeModal(); // Fecha o modal de DETALHES em caso de erro
+                console.error("Erro ao buscar detalhes do documento:", error);
+                this.closeDocumentModal();
             } finally {
                 this.loadingModal = false;
             }
         },
-        closeModal() { // Fecha o modal de detalhes de Documento
+        closeDocumentModal() { // Fecha o modal de DETALHES
             console.log('Document details modal closed.');
             this.showModal = false;
             this.selectedDocument = {};
         },
 
-        // *** NOVO: Métodos para o modal de importação de Caixa ***
-        openBoxImportModal() {
-            console.log('Opening box import modal.');
-            this.showBoxImportModal = true; // Abre o modal de IMPORTAÇÃO
-            // Opcional: Aqui você pode resetar campos de formulário dentro do modal se necessário
-        },
-        closeBoxImportModal() {
-            console.log('Box import modal closed.');
-            this.showBoxImportModal = false; // Fecha o modal de IMPORTAÇÃO
-            // Opcional: Aqui você pode limpar campos de formulário dentro do modal se necessário
-        },
+        // REMOVIDO: openBoxImportModal()
+        // REMOVIDO: closeBoxImportModal()
 
-        // --- Métodos Auxiliares ---
-        formatDate(dateString) {
-            if (!dateString) return 'N/D';
-            try {
-                const date = new Date(dateString + 'T00:00:00');
-                if (isNaN(date.getTime())) return 'Data inválida';
-                return date.toLocaleDateString('pt-BR');
-            } catch (e) { return 'Data inválida'; }
-        },
+        // Função Auxiliar de Formatação de Data (Exemplo - opcional)
+        // formatDisplayDate(dateStringMesAno) { /* ... */ },
 
-        // ... outras funções auxiliares se houver ...
-    }
-}
+    }; // Fim do return
+} // Fim layout()
 
-// Registrar o componente Alpine globalmente
+// Registrar o componente layout
 document.addEventListener('alpine:init', () => {
     Alpine.data('layout', layout);
     console.log('Alpine layout data registered.');
+
+    // *** REGISTRAR O STORE PARA MODAIS (Como no seu app.blade.php) ***
+    // É melhor registrar stores aqui também para organização
+    Alpine.store('modals', {
+        showBoxImportModal: false, // Estado inicial
+        // Outros modais podem ser adicionados aqui
+
+        openBoxImportModal() {
+            console.log('Opening box import modal via store.');
+            this.showBoxImportModal = true;
+        },
+        closeBoxImportModal() {
+            console.log('Closing box import modal via store.');
+            this.showBoxImportModal = false;
+        }
+    });
+    console.log('Alpine modals store registered.');
+
 });
 
-
-// Tornar Alpine globalmente acessível (o Breeze faz isso)
+// Inicialização
 window.Alpine = Alpine;
-
-// Iniciar Alpine
 Alpine.start();
-
 console.log('Alpine started.');
