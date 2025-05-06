@@ -94,11 +94,33 @@ class BoxController extends Controller
 
         // 7. Paginar Resultados
         try {
-            $boxes = $query->select('boxes.*') // Seleciona explicitamente para evitar problemas com groupBy
-                ->groupBy('boxes.id') // Agrupa pela caixa
+            // REMOVIDO ->select('boxes.*') e ->groupBy('boxes.id')
+            // Deixa o Eloquent/withCount gerenciar a seleção
+            $boxes = $query
                 ->paginate($perPage)
                 ->withQueryString();
-        } catch (\Throwable $e) { /* ... tratamento de erro ... */
+        } catch (\Throwable $e) {
+            // Adicionado log da query SQL para depuração
+            Log::error("Erro ao buscar caixas: " . $e->getMessage(), [
+                'exception' => $e,
+                'query' => $query->toSql(), // Loga a query SQL gerada
+                'bindings' => $query->getBindings() // Loga os bindings da query
+            ]);
+            // Retornar view com erro ou redirecionar
+            // É uma boa prática retornar algo útil aqui em caso de erro
+            return view('boxes.index', [
+                'boxes' => collect(), // Retorna uma coleção vazia para evitar erros na view
+                'projects' => Project::orderBy('name')->pluck('name', 'id'),
+                'activeMembers' => CommissionMember::active()
+                    ->join('users', 'commission_members.user_id', '=', 'users.id')
+                    ->orderBy('users.name')
+                    ->select('commission_members.id', 'users.name as user_name')
+                    ->get()->pluck('user_name', 'id'),
+                'statusOptions' => ['' => 'Todos os Status', 'with_docs' => 'Com Documentos', 'empty' => 'Vazias'],
+                'requestParams' => $request->all(),
+                'request' => $request,
+                'errorMessage' => 'Ocorreu um erro ao buscar as caixas. Por favor, tente novamente.' // Mensagem para o usuário
+            ]);
         }
 
         // 8. Preparar Dados para Filtros da View

@@ -8,6 +8,7 @@ use App\Http\Controllers\DocumentImportController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProjectController;
 
 /*
 |--------------------------------------------------------------------------
@@ -104,11 +105,14 @@ Route::middleware(['auth'])->group(function () { // Adicionar 'verified' se usar
     // Usando Route::resource para as rotas CRUD padrão
     Route::resource('commissions', CommissionController::class);
 
+    // --- Rotas de Projetos ---
+    // Usando Route::resource para as rotas CRUD padrão
+    Route::resource('projects', ProjectController::class);
+
     // --- Rotas de Perfil (Breeze) ---
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
 }); // Fim do grupo middleware('auth')
 
 /*
@@ -120,4 +124,4 @@ Route::middleware(['auth'])->group(function () { // Adicionar 'verified' se usar
 | definidas pelo Laravel Breeze.
 |
 */
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

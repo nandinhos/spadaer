@@ -149,6 +149,10 @@
                             ) !!}
                         </th>
                         <th
+                            class="px-6 py-3 text-xs font-medium tracking-wider text-center text-gray-500 uppercase dark:text-gray-300">
+                            Documentos
+                        </th>
+                        <th
                             class="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase dark:text-gray-300">
                             Ações</th>
                     </tr>
@@ -168,6 +172,9 @@
                                 {{ $box->checker_name ?? '-' }}</td>
                             <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap dark:text-gray-300">
                                 {{ $box->conference_date?->format('d/m/Y') ?? '-' }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-600 text-center whitespace-nowrap dark:text-gray-300">
+                                {{ $box->documents_count ?? '0' }}
+                            </td>
                             <td class="px-6 py-4 space-x-2 text-sm font-medium text-right whitespace-nowrap">
                                 <a href="{{ route('boxes.show', $box) }}"
                                     class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-200"><i

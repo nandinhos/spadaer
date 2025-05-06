@@ -206,7 +206,6 @@
                                         {{-- Botão para abrir o Modal GLOBAL de Detalhes do Documento --}}
                                         {{-- @can('view', $document) --}}
                                         <button type="button" @click="openDocumentModal({{ $document->id }})"
-                                            {{-- Chama função do layout() --}}
                                             class="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-200 focus:outline-none focus:underline">
                                             {{ __('Ver Detalhes') }}
                                         </button>
