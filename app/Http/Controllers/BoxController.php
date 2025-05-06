@@ -243,6 +243,54 @@ class BoxController extends Controller
         }
     }
 
+    /**
+     * Remove múltiplos documentos de uma caixa específica.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Box  $box
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function batchDestroyDocuments(Request $request, Box $box)
+    {
+        $request->validate([
+            'document_ids' => 'required|array',
+            'document_ids.*' => 'required|integer|exists:documents,id', // Valida se os IDs existem
+        ]);
+
+        $documentIds = $request->input('document_ids');
+
+        // Opcional: Verificação de permissão mais granular
+        // foreach ($documentIds as $docId) {
+        //     $document = Document::find($docId);
+        //     // Verifique se o documento pertence à caixa $box
+        //     if (!$document || $document->box_id !== $box->id) {
+        //         return back()->with('error', 'Um ou mais documentos selecionados não pertencem a esta caixa.');
+        //     }
+        //     // Verifique se o usuário tem permissão para excluir $document (usando Gates/Policies)
+        //     // $this->authorize('delete', $document);
+        // }
+
+        try {
+            // Exclui os documentos que pertencem a esta caixa E estão na lista de IDs
+            $deletedCount = Document::where('box_id', $box->id)
+                                    ->whereIn('id', $documentIds)
+                                    ->delete();
+
+            if ($deletedCount > 0) {
+                return redirect()->route('boxes.show', $box)
+                    ->with('success', $deletedCount . ' documento(s) excluído(s) com sucesso.');
+            } else {
+                return redirect()->route('boxes.show', $box)
+                    ->with('warning', 'Nenhum documento correspondente foi encontrado para exclusão.');
+            }
+
+        } catch (\Exception $e) {
+            // Log::error('Erro ao excluir documentos em massa: ' . $e->getMessage()); // Opcional: Logar o erro
+            return redirect()->route('boxes.show', $box)
+                ->with('error', 'Ocorreu um erro ao tentar excluir os documentos.');
+        }
+    }
+
     // Método batchAssignChecker (se implementado) permanece aqui
     // public function batchAssignChecker(Request $request): RedirectResponse { ... }
 

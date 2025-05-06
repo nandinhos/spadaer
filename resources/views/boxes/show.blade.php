@@ -1,4 +1,3 @@
-{{-- resources/views/boxes/show.blade.php --}}
 <x-app-layout>
     {{-- ========================== Header da Página ========================== --}}
     <x-slot name="header">
@@ -14,13 +13,10 @@
             </div>
             {{-- Botões de Ação Principais (Editar/Excluir Caixa) --}}
             <div class="flex items-center flex-shrink-0 space-x-2">
-                {{-- @can('update', $box) --}}
                 <x-secondary-button onclick="window.location='{{ route('boxes.edit', $box) }}'">
                     <i class="mr-1 fas fa-edit"></i> {{ __('Editar Caixa') }}
                 </x-secondary-button>
-                {{-- @endcan --}}
 
-                {{-- @can('delete', $box) --}}
                 <form method="POST" action="{{ route('boxes.destroy', $box) }}"
                     onsubmit="return confirm('{{ __('Tem certeza que deseja excluir esta caixa e TODOS os documentos contidos nela?') }}');">
                     @csrf
@@ -29,7 +25,6 @@
                         <i class="mr-1 fas fa-trash-alt"></i> {{ __('Excluir Caixa') }}
                     </x-danger-button>
                 </form>
-                {{-- @endcan --}}
             </div>
         </div>
     </x-slot>
@@ -46,14 +41,12 @@
                     <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
                         <i class="mr-2 text-gray-500 fas fa-info-circle"></i> {{ __('Informações da Caixa') }}
                     </h3>
-                    {{-- @can('update', $box) --}}
                     <a href="{{ route('boxes.edit', $box) }}"
                         class="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 shadow-sm text-xs font-medium rounded text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150"
                         title="{{ __('Editar Informações da Caixa') }}">
                         <i class="fas fa-edit mr-1"></i>
                         {{ __('Editar') }}
                     </a>
-                    {{-- @endcan --}}
                 </div>
                 <dl class="px-6 py-6 space-y-4 text-sm">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-4">
@@ -86,27 +79,70 @@
             </div>
 
             {{-- ------------------------- Card: Documentos na Caixa ------------------------- --}}
-            <div class="bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
-                {{-- Header do Card com Botão Importar --}}
-                <div
-                    class="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div x-data="{
+                    selectedDocuments: [],
+                    allSelected: false,
+                    documentsOnPage: {{ json_encode($box->documents->pluck('id')->toArray()) }},
+                    toggleAll() {
+                        this.allSelected = !this.allSelected;
+                        if (this.allSelected) {
+                            this.selectedDocuments = [...this.documentsOnPage];
+                        } else {
+                            this.selectedDocuments = [];
+                        }
+                    },
+                    toggleCheckbox(docId) {
+                        if (this.selectedDocuments.includes(docId)) {
+                            this.selectedDocuments = this.selectedDocuments.filter(id => id !== docId);
+                        } else {
+                            this.selectedDocuments.push(docId);
+                        }
+                        this.updateSelectAllState();
+                    },
+                    updateSelectAllState() {
+                        this.allSelected = this.documentsOnPage.length > 0 && this.documentsOnPage.every(id => this.selectedDocuments.includes(id));
+                    },
+                    init() {
+                        this.updateSelectAllState();
+                    }
+                }"
+                x-init="init()"
+                class="bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
+
+                {{-- Header do Card com Botão Importar E BOTÃO EXCLUIR SELECIONADOS --}}
+                <div class="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
                         <i class="mr-2 text-gray-500 fas fa-file-alt"></i> {{ __('Documentos na Caixa') }}
                         ({{ $box->documents->count() }})
                     </h3>
-                    {{-- Botão para abrir Modal de Importação (Usa Alpine Store) --}}
-                    {{-- @can('importDocumentsForBox', $box) --}}
-                    <button type="button"
-                        class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase transition duration-150 ease-in-out bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
-                        @click="$store.modals.openBoxImportModal()"> {{-- CHAMA A FUNÇÃO DO STORE --}}
-                        <i class="fas fa-upload mr-1.5"></i> {{ __('Importar Documentos') }}
-                    </button>
-                    {{-- @endcan --}}
+                    <div class="flex items-center gap-2">
+                        {{-- Botão Excluir Selecionados --}}
+                        <form x-show="selectedDocuments.length > 0"
+                              action="{{ route('boxes.documents.batchDestroy', $box) }}"
+                              method="POST"
+                              onsubmit="return confirm('Tem certeza que deseja excluir os documentos selecionados? Esta ação não pode ser desfeita.');"
+                              class="inline">
+                            @csrf
+                            @method('DELETE')
+                            <template x-for="docId in selectedDocuments" :key="docId">
+                                <input type="hidden" name="document_ids[]" :value="docId">
+                            </template>
+                            <x-danger-button type="submit" x-bind:disabled="selectedDocuments.length === 0">
+                                <i class="mr-1 fas fa-trash-alt"></i> Excluir Selecionados (<span x-text="selectedDocuments.length"></span>)
+                            </x-danger-button>
+                        </form>
+
+                        {{-- Botão Importar Documentos --}}
+                        <button type="button"
+                            class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase transition duration-150 ease-in-out bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                            @click="$store.modals.openBoxImportModal()">
+                            <i class="fas fa-upload mr-1.5"></i> {{ __('Importar Documentos') }}
+                        </button>
+                    </div>
                 </div>
 
-                {{-- Área para exibir erros/mensagens de importação APÓS redirect --}}
-                {{-- Visível apenas se houver mensagens na sessão --}}
-                @if (session()->hasAny(['import_error_message', 'import_errors', 'warning', 'success'])) {{-- Verifica sucesso também se quiser mostrar aqui --}}
+                {{-- Área para exibir erros/mensagens --}}
+                @if (session()->hasAny(['import_error_message', 'import_errors', 'warning', 'success']))
                     <div x-data="{ showImportMessages: true }" x-show="showImportMessages" x-transition class="px-6 pb-4 mt-4">
                         {{-- Mensagem Geral (Erro ou Aviso ou Sucesso vindo da importação contextual) --}}
                         @if (session('import_error_message'))
@@ -119,11 +155,6 @@
                                 role="alert">
                                 {!! session('warning') !!}
                             </div>
-                            {{-- Você pode querer mostrar o sucesso da importação aqui também --}}
-                            {{-- @elseif (session('success') && Str::contains(session('success'), 'documentos importados'))
-                            <div class="px-4 py-2 mb-3 text-sm text-green-800 bg-green-100 border border-green-300 rounded dark:bg-green-900 dark:text-green-200 dark:border-green-700" role="alert">
-                                {!! session('success') !!}
-                            </div> --}}
                         @endif
 
                         {{-- Erros detalhados (passados via session('import_errors')) --}}
@@ -171,6 +202,14 @@
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
+                                {{-- Checkbox Selecionar Todos --}}
+                                <th scope="col" class="w-12 px-6 py-3">
+                                    <label for="select-all-checkbox" class="sr-only">Selecionar todos</label>
+                                    <input id="select-all-checkbox" type="checkbox"
+                                           @click="toggleAll()"
+                                           :checked="allSelected"
+                                           class="text-indigo-600 border-gray-300 rounded dark:bg-gray-900 dark:border-gray-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800">
+                                </th>
                                 <th scope="col"
                                     class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300">
                                     {{ __('Item') }}</th>
@@ -189,32 +228,39 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            {{-- Loop pelos documentos carregados (e ordenados) pelo controller --}}
+                            {{-- Loop pelos documentos --}}
                             @forelse ($box->documents as $document)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-750/50">
+                                    {{-- Checkbox Individual --}}
+                                    <td class="px-6 py-4">
+                                        <label for="doc-checkbox-{{ $document->id }}" class="sr-only">Selecionar documento {{ $document->id }}</label>
+                                        <input id="doc-checkbox-{{ $document->id }}" type="checkbox"
+                                               :value="{{ $document->id }}"
+                                               @click="toggleCheckbox({{ $document->id }})"
+                                               :checked="selectedDocuments.includes({{ $document->id }})"
+                                               class="text-indigo-600 border-gray-300 rounded dark:bg-gray-900 dark:border-gray-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800">
+                                    </td>
                                     <td
                                         class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap dark:text-gray-100">
                                         {{ $document->item_number }}</td>
                                     <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap dark:text-gray-300">
-                                        {{ $document->document_number }}</td>
+                                        {{ $document->document_number ?? '--' }}</td>
                                     <td class="max-w-xs px-6 py-4 text-sm text-gray-600 truncate dark:text-gray-300"
                                         title="{{ $document->title }}">{{ Str::limit($document->title, 60) }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                                        {{ $document->document_date ?? '--' }} {{-- Exibe a string MES/ANO --}}
+                                        {{ $document->document_date ?? '--' }}
                                     </td>
                                     <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
-                                        {{-- Botão para abrir o Modal GLOBAL de Detalhes do Documento --}}
-                                        {{-- @can('view', $document) --}}
+                                        {{-- Botão Ver Detalhes --}}
                                         <button type="button" @click="openDocumentModal({{ $document->id }})"
                                             class="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-200 focus:outline-none focus:underline">
                                             {{ __('Ver Detalhes') }}
                                         </button>
-                                        {{-- @endcan --}}
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400">
+                                    <td colspan="6" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400">
                                         <div class="flex flex-col items-center justify-center">
                                             <i class="mb-2 text-gray-400 fas fa-folder-open fa-3x"></i>
                                             {{ __('Nenhum documento encontrado nesta caixa.') }}
@@ -227,18 +273,10 @@
                 </div>
             </div> {{-- Fim Card Documentos --}}
 
-            {{-- Botão Voltar para Lista de Caixas --}}
-            <div class="flex justify-start mt-6">
-                <a href="{{ route('boxes.index') }}"
-                    class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md shadow-sm dark:bg-gray-800 dark:border-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-25">
-                    <i class="mr-2 fas fa-arrow-left"></i> {{ __('Voltar para Lista de Caixas') }}
-                </a>
-            </div>
-
         </div> {{-- Fim mx-auto --}}
     </div> {{-- Fim py-12 --}}
 
-
+    
     {{-- ========================== Modal de Importação para Caixa ========================== --}}
     {{-- Este modal é específico desta view e usa o Alpine Store 'modals' --}}
     <div x-show="$store.modals.showBoxImportModal" x-cloak @keydown.escape.window="$store.modals.closeBoxImportModal()"
@@ -343,5 +381,6 @@
         </div> {{-- Fim do container flex --}}
     </div> {{-- Fim do wrapper do modal --}}
     {{-- *** FIM DO MODAL DE IMPORTAÇÃO PARA CAIXA *** --}}
+
 
 </x-app-layout>

@@ -69,6 +69,9 @@ Route::middleware(['auth'])->group(function () { // Adicionar 'verified' se usar
     // Rota para processar a exportação para Excel/CSV
     Route::get('/documents/export', [DocumentExportController::class, 'exportExcel'])->name('documents.export');
 
+
+    Route::delete('/boxes/{box}/documents/batch-destroy', [BoxController::class, 'batchDestroyDocuments'])
+    ->name('boxes.documents.batchDestroy');
     // Rotas padrão de recurso (com parâmetro {document})
 
     // Rota para exibir a lista principal de documentos (com filtros, etc.)
