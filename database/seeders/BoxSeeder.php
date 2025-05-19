@@ -44,7 +44,7 @@ class BoxSeeder extends Seeder
                 'number' => 'AD001', // Use um padrão de número de caixa
                 'physical_location' => 'Prateleira A-1 / Nível 1',
                 'project_id' => $projectAdarter?->id, // Usa o ID do projeto A-DARTER
-                'checker_member_id' => $checkerMember?->id, // Usa o ID do membro conferente
+                'commission_member_id' => $checkerMember?->id, // Usa o ID do membro conferente
                 'conference_date' => $checkerMember ? now()->subDays(20) : null, // Define data só se houver conferente
             ],
             // Caixa 2: Projeto MAR-1, não conferida
@@ -52,7 +52,7 @@ class BoxSeeder extends Seeder
                 'number' => 'MR001',
                 'physical_location' => 'Prateleira B-3 / Nível 2',
                 'project_id' => $projectMar1?->id,
-                'checker_member_id' => null,
+                'commission_member_id' => null,
                 'conference_date' => null,
             ],
             // Caixa 3: Projeto FX-39, conferida
@@ -60,7 +60,7 @@ class BoxSeeder extends Seeder
                 'number' => 'FX001',
                 'physical_location' => 'Armário C-1 / Gaveta 1',
                 'project_id' => $projectFx39?->id,
-                'checker_member_id' => $checkerMember?->id,
+                'commission_member_id' => $checkerMember?->id,
                 'conference_date' => $checkerMember ? now()->subDays(5) : null,
             ],
             // Caixa 4: Projeto E-99M, não conferida
@@ -68,7 +68,7 @@ class BoxSeeder extends Seeder
                 'number' => 'E9901',
                 'physical_location' => 'Arquivo Deslizante 1 / Fila A',
                 'project_id' => $projectE99m?->id,
-                'checker_member_id' => null,
+                'commission_member_id' => null,
                 'conference_date' => null,
             ],
             // Caixa 5: Projeto F5-BR, conferida
@@ -76,7 +76,7 @@ class BoxSeeder extends Seeder
                 'number' => 'F5001',
                 'physical_location' => 'Prateleira A-1 / Nível 2',
                 'project_id' => $projectF5br?->id,
-                'checker_member_id' => $checkerMember?->id,
+                'commission_member_id' => $checkerMember?->id,
                 'conference_date' => $checkerMember ? now()->subDays(2) : null,
             ],
             // Caixa 6: Sem projeto específico (Administrativo), não conferida
@@ -84,7 +84,7 @@ class BoxSeeder extends Seeder
                 'number' => 'ADM01',
                 'physical_location' => 'Sala Administração / Arquivo Corrente',
                 'project_id' => null, // Sem projeto associado
-                'checker_member_id' => null,
+                'commission_member_id' => null,
                 'conference_date' => null,
             ],
             // Caixa 7: Projeto KC-390, não conferida
@@ -92,7 +92,7 @@ class BoxSeeder extends Seeder
                 'number' => 'KC390-A',
                 'physical_location' => 'Hangar 2 / Setor K',
                 'project_id' => $projectKc390?->id,
-                'checker_member_id' => null,
+                'commission_member_id' => null,
                 'conference_date' => null,
             ],
             // Caixa 8: Projeto KC-390, conferida
@@ -100,7 +100,7 @@ class BoxSeeder extends Seeder
                 'number' => 'KC390-B',
                 'physical_location' => 'Hangar 2 / Setor L',
                 'project_id' => $projectKc390?->id,
-                'checker_member_id' => $checkerMember?->id,
+                'commission_member_id' => $checkerMember?->id,
                 'conference_date' => $checkerMember ? now()->subDays(30) : null,
             ],
             // Caixa 9: Projeto HX-BR, não conferida
@@ -108,7 +108,7 @@ class BoxSeeder extends Seeder
                 'number' => 'HXBR-001',
                 'physical_location' => 'Prateleira D-5 / Nível 3',
                 'project_id' => $projectHxbr?->id,
-                'checker_member_id' => null,
+                'commission_member_id' => null,
                 'conference_date' => null,
             ],
         ];

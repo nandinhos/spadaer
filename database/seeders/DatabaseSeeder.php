@@ -10,22 +10,22 @@ class DatabaseSeeder extends Seeder
 {
   public function run(): void
   {
-    //User::factory()->create([
-    //  'name' => 'Nando Dev',
-    //'email' => 'nandinhos@gmail.com',
-    //]);
-    //$this->call(DocumentSeeder::class);
+    // 1. Criar Permissões (base para o sistema de autorização)
+    $this->call(PermissionSeeder::class);
 
-    // 1. Criar Usuários
-    $this->call(UserSeeder::class); // Adiciona o seeder de usuários
+    // 2. Criar Papéis e atribuir permissões
+    $this->call(RoleSeeder::class);
 
-    // 2. Criar Projetos
+    // 3. Criar Usuários
+    $this->call(UserSeeder::class);
+
+    // 4. Criar Projetos
     $this->call(ProjectSeeder::class);
 
-    // 3. Criar Caixas (precisa de Users e Projects)
+    // 5. Criar Caixas (precisa de Users e Projects)
     $this->call(BoxSeeder::class);
 
-    // 4. Criar Documentos (precisa de Boxes e Projects)
+    // 6. Criar Documentos (precisa de Boxes e Projects)
     $this->call(DocumentSeeder::class);
   }
 }
