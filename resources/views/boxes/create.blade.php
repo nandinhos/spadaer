@@ -90,6 +90,15 @@
                                 for selecionado.</p>
                         </div>
 
+                        {{-- Quantidade de Caixas --}}
+                        <div>
+                            <x-input-label for="box_quantity" :value="__('Quantidade de Caixas')" />
+                            <x-text-input id="box_quantity" name="box_quantity" type="number"
+                                class="block w-full mt-1" :value="old('box_quantity', 1)" min="1" max="200" required />
+                            <x-input-error :messages="$errors->get('box_quantity')" class="mt-2" />
+                            <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">Número de caixas a serem criadas em sequência (máximo 200).</p>
+                        </div>
+
                         {{-- REMOVIDO: Seção Opcional de Importação de Documentos --}}
 
                         {{-- Botões --}}

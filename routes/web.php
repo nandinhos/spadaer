@@ -71,7 +71,7 @@ Route::middleware(['auth'])->group(function () { // Adicionar 'verified' se usar
 
 
     Route::delete('/boxes/{box}/documents/batch-destroy', [BoxController::class, 'batchDestroyDocuments'])
-    ->name('boxes.documents.batchDestroy');
+        ->name('boxes.documents.batchDestroy');
     // Rotas padrão de recurso (com parâmetro {document})
 
     // Rota para exibir a lista principal de documentos (com filtros, etc.)
@@ -91,6 +91,11 @@ Route::middleware(['auth'])->group(function () { // Adicionar 'verified' se usar
     // Rota para excluir um documento
     Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
 
+     // Nova rota para ação em lote    
+     Route::delete('boxes/batch-destroy', [BoxController::class, 'batchDestroy'])->name('boxes.batch-destroy');
+
+     Route::post('/boxes/batch-assign-checker', [BoxController::class, 'batchAssignChecker'])->name('boxes.batchAssignChecker');
+ 
     // --- Rotas de Caixas ---
     // Usando Route::resource para gerar automaticamente as rotas CRUD padrão:
     // GET /boxes (index)
@@ -101,9 +106,8 @@ Route::middleware(['auth'])->group(function () { // Adicionar 'verified' se usar
     // PUT/PATCH /boxes/{box} (update)
     // DELETE /boxes/{box} (destroy)
     Route::resource('boxes', BoxController::class);
-    // Rota adicional para ação em lote (se implementada)
-    Route::post('/boxes/batch-assign-checker', [BoxController::class, 'batchAssignChecker'])->name('boxes.batchAssignChecker');
-
+    
+   
     // --- Rotas para Comissões ---
     // Usando Route::resource para as rotas CRUD padrão
     Route::resource('commissions', CommissionController::class);
