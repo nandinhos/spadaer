@@ -8,51 +8,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
-
-    /**
-     * Os papéis atribuídos ao usuário.
-     */
-    public function roles(): BelongsToMany
-    {
-        return $this->belongsToMany(Role::class);
-    }
-
-    /**
-     * Verifica se o usuário tem um papel específico.
-     *
-     * @param string|Role $role
-     * @return bool
-     */
-    public function hasRole(string|Role $role): bool
-    {
-        if (is_string($role)) {
-            return $this->roles()->where('name', $role)->exists();
-        }
-        return $this->roles()->where('id', $role->id)->exists();
-    }
-
-    /**
-     * Verifica se o usuário tem uma permissão específica através de seus papéis.
-     *
-     * @param string|Permission $permission
-     * @return bool
-     */
-    public function hasPermission(string|Permission $permission): bool
-    {
-        return $this->roles()->whereHas('permissions', function ($query) use ($permission) {
-            if (is_string($permission)) {
-                $query->where('name', $permission);
-            } else {
-                $query->where('id', $permission->id);
-            }
-        })->exists();
-    }
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.

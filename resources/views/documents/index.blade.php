@@ -4,7 +4,7 @@
     @section('header-title', 'Listagem de Documentos')
 
     {{-- Verificação principal de permissão para visualizar a página --}}
-    @can('documents.view')
+    @if(auth()->user()->hasPermissionTo('documents.view'))
         {{-- Inicializa o Alpine.js para gerenciar o estado do modal de detalhes do documento --}}
         {{-- Todo o conteúdo que interage com o modal (botões de abrir, o modal em si)
              precisa estar dentro deste escopo do x-data. --}}
@@ -19,15 +19,6 @@
             @can('documents.import')
                 @include('documents.import-form')
             @endcan
-
-            @can('documents.export') {{-- Ou a permissão que você usa para exportar --}}
-    <a href="{{ route('documents.export') }}" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700">
-        Exportar Excel
-    </a>
-    <a href="{{ route('documents.export.pdf') }}" class="px-4 py-2 ml-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">
-        Exportar PDF
-    </a>
-@endcan
 
             {{-- Tabela de Documentos --}}
             {{-- O componente x-document-table precisa que seus botões "Ver" chamem openDocumentModal(documentId) --}}

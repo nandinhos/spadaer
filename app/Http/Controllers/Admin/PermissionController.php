@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Spatie\Permission\Models\Role;
 
 class PermissionController extends Controller
 {
@@ -15,7 +15,7 @@ class PermissionController extends Controller
      */
     public function index(): View
     {
-        $users = User::with(['roles.permissions'])->get();
+        $users = User::with(['roles', 'roles.permissions'])->get();
         $roles = Role::with('permissions')->get();
 
         return view('admin.permissions', [
@@ -31,7 +31,7 @@ class PermissionController extends Controller
     {
         $validated = $request->validate([
             'roles' => ['required', 'array'],
-            'roles.*' => ['exists:roles,id'],
+            'roles.*' => ['exists:'.config('permission.table_names.roles').',id'],
         ]);
 
         $user->roles()->sync($validated['roles']);

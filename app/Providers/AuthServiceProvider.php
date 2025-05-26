@@ -111,12 +111,20 @@ class AuthServiceProvider extends ServiceProvider
         // Gate::define('documents.view', function (User $user) {
         //     return $user->hasPermission('documents.view');
         // });
-         Gate::define('documents.import', function (User $user) {
-             return $user->hasPermission('documents.import');
-         });
+        Gate::define('documents.import', function (User $user) {
+            return $user->hasPermission('documents.import');
+        });
 
-         Gate::define('documents.export', function (User $user) {
-            return $user->hasPermission('documents.export');
+        Gate::define('documents.export.excel', function (User $user) {
+            $result = $user->hasPermission('documents.export.excel');
+            Log::info('Gate documents.export.excel', ['user_id' => $user->id, 'result' => $result]);
+            return $result;
+        });
+
+        Gate::define('documents.export.pdf', function (User $user) {
+            $result = $user->hasPermission('documents.export.pdf');
+            Log::info('Gate documents.export.pdf', ['user_id' => $user->id, 'result' => $result]);
+            return $result;
         });
         // ... e assim por diante para outras permissões
     }

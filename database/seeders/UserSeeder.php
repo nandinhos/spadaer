@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -78,7 +79,7 @@ class UserSeeder extends Seeder
                  $warName = Str::upper(end($nameParts));
             }
 
-            User::updateOrCreate(
+            $user = User::updateOrCreate(
                 ['email' => $userData['login']], // Usar email como chave única
                 [
                     'name' => $warName, // Usando o nome de guerra extraído
@@ -89,6 +90,13 @@ class UserSeeder extends Seeder
                     'password' => Hash::make((string)$userData['order_number']), // Hashing do 'order_number' como senha
                 ]
             );
+
+            // Atribui o papel de administrador ao usuário específico
+            if ($userData['login'] === 'fernandofss@fab.mil.br') {
+                $user->assignRole('admin');
+            } else {
+                $user->assignRole('user');
+            }
         }
     }
 }

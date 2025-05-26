@@ -4,11 +4,11 @@
         @method('PUT')
 
         <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-            {{ __('Editar Papéis do Usuário') }}
+            {{ __('Editar Funções do Usuário') }}
         </h2>
 
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            {{ __('Selecione os papéis que deseja atribuir a este usuário.') }}
+            {{ __('Selecione as funções que deseja atribuir a este usuário.') }}
         </p>
 
         <div class="mt-6">
@@ -27,7 +27,7 @@
                     for="role-{{ $role->id }}-{{ $user->id }}"
                     class="ml-2 text-sm text-gray-600 dark:text-gray-400"
                 >
-                    {{ $role->display_name }}
+                    {{ $role->display_name ?? $role->name }}
                 </label>
             </div>
             @endforeach

@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Role;
-use App\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 use Illuminate\Database\Seeder;
 
 class RoleSeeder extends Seeder
@@ -16,66 +16,54 @@ class RoleSeeder extends Seeder
         // Criar papel de Administrador
         $adminRole = Role::create([
             'name' => 'admin',
-            'display_name' => 'Administrador',
-            'description' => 'Administrador do sistema com acesso total',
-            'is_active' => true
+            'guard_name' => 'web',
+            'display_name' => 'Administrador'
         ]);
-
         // Atribuir todas as permissões ao administrador
-        $adminRole->permissions()->attach(
-            Permission::where('is_active', true)->pluck('id')
-        );
+        $adminRole->givePermissionTo(Permission::all());
 
         // Criar papel de Usuário Padrão
         $userRole = Role::create([
             'name' => 'user',
-            'display_name' => 'Usuário',
-            'description' => 'Usuário padrão do sistema',
-            'is_active' => true
+            'guard_name' => 'web',
+            'display_name' => 'Usuário'
         ]);
-
         // Atribuir permissões básicas ao usuário padrão
-        $userRole->permissions()->attach(
-            Permission::whereIn('name', [
-                'documents.view',
-                'commissions.view'
-            ])->pluck('id')
-        );
+        $userRole->givePermissionTo([
+            'documents.view',
+            'commissions.view'
+        ]);
 
         // Criar papel de Presidente de Comissão
         $presidentRole = Role::create([
             'name' => 'commission_president',
-            'display_name' => 'Presidente de Comissão',
-            'description' => 'Presidente de comissão com permissões específicas',
-            'is_active' => true
+            'guard_name' => 'web',
+            'display_name' => 'Presidente de Comissão'
         ]);
-
         // Atribuir permissões ao presidente de comissão
-        $presidentRole->permissions()->attach(
-            Permission::whereIn('name', [
-                'documents.view',
-                'documents.create',
-                'documents.edit',
-                'commissions.view',
-                'commissions.edit'
-            ])->pluck('id')
-        );
+        $presidentRole->givePermissionTo([
+            'documents.view',
+            'documents.create',
+            'documents.edit',
+            'documents.export.excel',
+            'documents.export.pdf',
+            'commissions.view',
+            'commissions.edit'
+        ]);
 
         // Criar papel de Membro de Comissão
         $memberRole = Role::create([
             'name' => 'commission_member',
-            'display_name' => 'Membro de Comissão',
-            'description' => 'Membro regular de comissão',
-            'is_active' => true
+            'guard_name' => 'web',
+            'display_name' => 'Membro de Comissão'
         ]);
-
         // Atribuir permissões ao membro de comissão
-        $memberRole->permissions()->attach(
-            Permission::whereIn('name', [
-                'documents.view',
-                'documents.create',
-                'commissions.view'
-            ])->pluck('id')
-        );
+        $memberRole->givePermissionTo([
+            'documents.view',
+            'documents.create',
+            'documents.export.excel',
+            'documents.export.pdf',
+            'commissions.view'
+        ]);
     }
 }

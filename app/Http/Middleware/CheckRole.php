@@ -26,15 +26,7 @@ class CheckRole
             $roles = explode(',', $roles[0]);
         }
 
-        $hasRole = false;
-        foreach ($roles as $role) {
-            if (Auth::user()->hasRole(trim($role))) {
-                $hasRole = true;
-                break;
-            }
-        }
-
-        if (!$hasRole) {
+        if (!Auth::user()->hasAnyRole($roles)) {
             throw new AuthorizationException('Você não tem os papéis necessários para acessar este recurso.');
         }
 

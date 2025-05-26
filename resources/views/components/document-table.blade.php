@@ -122,14 +122,16 @@
             </a>
         @endcan
 
-        {{-- Botão Exportar Excel (Verde) - Visível apenas para usuários com permissão de exportação --}}
-        @can('documents.export')
+        {{-- Botão Exportar Excel (Verde) - Visível apenas para usuários com permissão de exportação Excel --}}
+        @can('documents.export.excel')
             <a href="{{ route('documents.export', request()->query()) }}"
                 class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
                 <i class="fas fa-file-excel mr-1.5"></i> Exportar (Excel)
             </a>
+        @endcan
 
-            {{-- Botão Exportar PDF (Vermelho) --}}
+        {{-- Botão Exportar PDF (Vermelho) - Visível apenas para usuários com permissão de exportação PDF --}}
+        @can('documents.export.pdf')
             <a href="{{ route('documents.export.pdf', request()->query()) }}" target="_blank"
                 class="inline-flex items-center px-4 py-2 bg-red-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-600 focus:bg-red-600 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
                 <i class="fas fa-file-pdf mr-1.5"></i> Exportar (PDF)

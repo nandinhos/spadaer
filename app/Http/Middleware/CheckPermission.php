@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Facades\Auth;
 
 class CheckPermission
 {
@@ -16,11 +17,11 @@ class CheckPermission
      */
     public function handle(Request $request, Closure $next, string $permission): Response
     {
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             throw new AuthorizationException('Você precisa estar autenticado para acessar este recurso.');
         }
 
-        if (!auth()->user()->hasPermission($permission)) {
+        if (!Auth::user()->hasPermissionTo($permission)) {
             throw new AuthorizationException('Você não tem permissão para acessar este recurso.');
         }
 

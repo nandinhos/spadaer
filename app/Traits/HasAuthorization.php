@@ -2,7 +2,8 @@
 
 namespace App\Traits;
 
-use App\Models\{Permission, Role};
+use Spatie\Permission\Models\{Permission, Role};
+use Illuminate\Support\Facades\Auth;
 
 trait HasAuthorization
 {
@@ -14,7 +15,7 @@ trait HasAuthorization
      */
     protected function userHasRole(string|Role $role): bool
     {
-        return auth()->user()?->hasRole($role) ?? false;
+        return Auth::user()?->hasRole($role) ?? false;
     }
 
     /**
@@ -25,7 +26,7 @@ trait HasAuthorization
      */
     protected function userHasPermission(string|Permission $permission): bool
     {
-        return auth()->user()?->hasPermission($permission) ?? false;
+        return Auth::user()?->hasPermissionTo($permission) ?? false;
     }
 
     /**
@@ -36,12 +37,7 @@ trait HasAuthorization
      */
     protected function userHasAnyRole(array $roles): bool
     {
-        foreach ($roles as $role) {
-            if ($this->userHasRole($role)) {
-                return true;
-            }
-        }
-        return false;
+        return Auth::user()?->hasAnyRole($roles) ?? false;
     }
 
     /**
