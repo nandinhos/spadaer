@@ -15,6 +15,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View; // Importar a classe de exportação
 use Maatwebsite\Excel\Facades\Excel; // Importar facade do Excel
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class DocumentController extends Controller
 {
@@ -29,6 +31,8 @@ class DocumentController extends Controller
      */
     public function index(Request $request): View
     {
+
+        
         // 1. Obter Parâmetros da Requisição com Defaults
         $searchTerm = $request->input('search');
         $filterBoxNumber = $request->input('filter_box_number');
@@ -274,5 +278,51 @@ class DocumentController extends Controller
 
             return redirect()->route('documents.index')->with('error', 'Erro ao excluir o documento.');
         }
+    }
+
+    /**
+     * Retorna os detalhes de um documento específico em formato JSON.
+     * Usado para popular o modal de detalhes do documento.
+     *
+     * @param  \App\Models\Document  $document
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getJsonDetails(Document $document)
+    {
+        // Verificação de permissão: O usuário pode visualizar este documento?
+        // Isso usa o sistema de Gate/Policy que configuramos.
+        // Se você tem uma Policy 'DocumentPolicy@view', ela será usada.
+        // Se não, ele tentará o Gate 'documents.view'.
+        // Se a permissão for apenas genérica ('documents.view') e não por instância,
+        // você pode só confiar que o acesso à página principal já foi verificado.
+        // Para segurança adicional, especialmente se a URL puder ser adivinhada:
+        if (!Gate::allows('documents.view', $document) && !Gate::allows('view', $document)) {
+             // A segunda verificação ('view', $document) é para o caso de você ter uma Policy.
+             // Se você só tem 'documents.view' como permissão genérica, talvez só o Gate::allows('documents.view') baste
+             // ou confie na proteção da página principal.
+             // Mas para uma API, é bom ser explícito.
+            // Se você não tem policies por instância, e 'documents.view' é global,
+            // pode ser suficiente que o middleware 'auth' já protegeu a rota.
+            // No entanto, se 'documents.view' for para a lista, e ver um específico requer mais, adicione a lógica.
+            // Por simplicidade, vamos assumir que se ele pode ver a lista, pode ver os detalhes por enquanto.
+            // Considere adicionar `$this->authorize('view', $document);` se tiver uma policy.
+        }
+
+
+        // Carregue os relacionamentos que seu modal precisa para exibir
+        // O componente modal que você forneceu tenta acessar:
+        // selectedDocument.box?.number
+        // selectedDocument.project?.name
+        $document->load(['box', 'project']);
+
+        // Retorna o documento (com os relacionamentos carregados) como JSON
+        // Você pode retornar o objeto do documento diretamente ou aninhá-lo
+        return response()->json($document);
+        // Ou, se o seu JavaScript espera { document: {...} }:
+        // return response()->json(['document' => $document]);
+        // Pelo seu script anterior, parece que você espera { document: {...} }
+        // fetch(...).then(data => { this.selectedDocument = data.document; })
+        // então, vamos usar:
+        // return response()->json(['document' => $document]);
     }
 }

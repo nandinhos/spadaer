@@ -114,27 +114,27 @@
 
     <!-- Botões de Ações Rápidas -->
     <div class="flex flex-wrap gap-2">
+        {{-- Botão Adicionar (Indigo) - Visível apenas para usuários com permissão de criação --}}
+        @can('documents.create')
+            <a href="{{ route('documents.create') }}"
+                class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+                <i class="fas fa-plus-circle mr-1.5"></i> Adicionar
+            </a>
+        @endcan
 
-        {{-- Botão Adicionar (Indigo) - Refatorado para <a> com classes --}}
-        {{-- @can('create', App\Models\Document::class) --}}
-        <a href="{{ route('documents.create') }}"
-            class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
-            <i class="fas fa-plus-circle mr-1.5"></i> Adicionar
-        </a>
-        {{-- @endcan --}}
+        {{-- Botão Exportar Excel (Verde) - Visível apenas para usuários com permissão de exportação --}}
+        @can('documents.export')
+            <a href="{{ route('documents.export', request()->query()) }}"
+                class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+                <i class="fas fa-file-excel mr-1.5"></i> Exportar (Excel)
+            </a>
 
-        {{-- Botão Exportar (Verde) --}}
-        <a href="{{ route('documents.export', request()->query()) }}"
-            class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
-            <i class="fas fa-file-excel mr-1.5"></i> Exportar (Excel)
-        </a>
-
-        {{-- Botão Exportar PDF (Vermelho) --}}
-        <a href="{{ route('documents.export.pdf', request()->query()) }}" target="_blank"
-            class="inline-flex items-center px-4 py-2 bg-red-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-600 focus:bg-red-600 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
-            <i class="fas fa-file-pdf mr-1.5"></i> Exportar (PDF)
-        </a>
-
+            {{-- Botão Exportar PDF (Vermelho) --}}
+            <a href="{{ route('documents.export.pdf', request()->query()) }}" target="_blank"
+                class="inline-flex items-center px-4 py-2 bg-red-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-600 focus:bg-red-600 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+                <i class="fas fa-file-pdf mr-1.5"></i> Exportar (PDF)
+            </a>
+        @endcan
     </div>
 
     {{-- Exibir erros de importação, se houver --}}
@@ -249,32 +249,38 @@
                     @endforeach
                     {{-- Coluna de Ações --}}
                     <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
-                        {{-- Botão para abrir o Modal --}}
-                        <button type="button" @click="openDocumentModal({{ $document->id }})"
-                            class="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-200 focus:outline-none focus:underline"
-                            title="Ver Detalhes do Documento">
-                            <i class="mr-1 fas fa-eye"></i>Ver
-                        </button>
+                        {{-- Botão para abrir o Modal (Visualização) --}}
+                        @can('documents.view')
+                            <button type="button" @click="openDocumentModal({{ $document->id }})"
+                                class="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-200 focus:outline-none focus:underline"
+                                title="Ver Detalhes do Documento">
+                                <i class="mr-1 fas fa-eye"></i>Ver
+                            </button>
+                        @endcan
 
                         {{-- Botão Editar --}}
-                        <a href="{{ route('documents.edit', $document) }}"
-                            class="ml-2 font-medium text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-white focus:outline-none focus:underline"
-                            title="Editar Documento">
-                            <i class="mr-1 fas fa-edit"></i>Editar
-                        </a>
+                        @can('documents.edit')
+                            <a href="{{ route('documents.edit', $document) }}"
+                                class="ml-2 font-medium text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-white focus:outline-none focus:underline"
+                                title="Editar Documento">
+                                <i class="mr-1 fas fa-edit"></i>Editar
+                            </a>
+                        @endcan
 
                         {{-- Botão Excluir --}}
-                        <form method="POST" action="{{ route('documents.destroy', $document) }}"
-                            class="inline ml-2"
-                            onsubmit="return confirm('Tem certeza que deseja excluir este documento?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit"
-                                class="font-medium text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200 focus:outline-none focus:underline"
-                                title="Excluir Documento">
-                                <i class="mr-1 fas fa-trash-alt"></i>Excluir
-                            </button>
-                        </form>
+                        @can('documents.delete')
+                            <form method="POST" action="{{ route('documents.destroy', $document) }}"
+                                class="inline ml-2"
+                                onsubmit="return confirm('Tem certeza que deseja excluir este documento?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit"
+                                    class="font-medium text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200 focus:outline-none focus:underline"
+                                    title="Excluir Documento">
+                                    <i class="mr-1 fas fa-trash-alt"></i>Excluir
+                                </button>
+                            </form>
+                        @endcan
                     </td>
                 </tr>
                 @empty

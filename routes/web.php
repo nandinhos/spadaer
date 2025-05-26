@@ -6,129 +6,103 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DocumentExportController;
 use App\Http\Controllers\DocumentImportController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProjectController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProjectController;
 
 /*
 |--------------------------------------------------------------------------
 | Rotas Públicas
 |--------------------------------------------------------------------------
-|
-| Rotas acessíveis sem autenticação.
-|
 */
 
 Route::get('/', function () {
-    // Redireciona para o dashboard se logado, senão mostra a view 'dashboard' (ou 'welcome'/'login')
-    if (Auth::check()) {
-        return redirect()->route('dashboard'); // Redireciona para a rota nomeada 'dashboard'
-    }
-
-    // Se não estiver logado, mostre a view 'auth.login' ou uma landing page
-    // return view('welcome');
-    return view('auth.login'); // Exemplo: envia direto para login
-})->name('home'); // Nomear a rota raiz é uma boa prática
+    return Auth::check()
+        ? redirect()->route('dashboard')
+        : view('auth.login');
+})->name('home');
 
 /*
 |--------------------------------------------------------------------------
 | Rotas Autenticadas
 |--------------------------------------------------------------------------
-|
-| Rotas que exigem que o usuário esteja logado.
-| O middleware 'auth' cuida disso.
-|
 */
-Route::middleware(['auth'])->group(function () { // Adicionar 'verified' se usar verificação de email
 
-    // --- Rota Dashboard ---
-    // Aponta para a listagem de documentos como página inicial após login
+Route::middleware(['auth'])->group(function () {
+
+    // Dashboard redireciona para documentos
     Route::get('/dashboard', function () {
         return redirect()->route('documents.index');
-    })->name('dashboard'); // Rota nomeada 'dashboard'
+    })->name('dashboard');
 
-    // --- Rotas de Documentos ---
-    // Rotas específicas (sem parâmetros de ID) devem vir primeiro
+    /*
+    |--------------------------------------------------------------------------
+    | Rotas de Documentos
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('documents')->name('documents.')->group(function () {
+        // Rotas acessíveis para todos os usuários autenticados
+        Route::get('/', [DocumentController::class, 'index'])->name('index');
+        Route::get('/{document}', [DocumentController::class, 'show'])->name('show');
 
-    // Rota para gerar o PDF dos documentos (usando o mesmo controller da exportação Excel)
-    Route::get('/documents/export/pdf', [DocumentExportController::class, 'exportPdf'])->name('documents.export.pdf');
+        // NOVA ROTA PARA RETORNAR DADOS DO DOCUMENTO EM JSON PARA O MODAL
+        Route::get('/{document}/details', [DocumentController::class, 'getJsonDetails'])->name('getJsonDetails');
+        
 
-    // Rota para exibir o formulário de criação
-    Route::get('/documents/create', [DocumentController::class, 'create'])->name('documents.create');
+        // Rotas que requerem papel de administrador ou presidente de comissão
+        Route::middleware(['role:admin,presidente_comissao'])->group(function () {
+            Route::get('/create', [DocumentController::class, 'create'])->name('create');
+            Route::post('/', [DocumentController::class, 'store'])->name('store');
+            Route::post('/import', [DocumentImportController::class, 'import'])->name('import');
+            Route::get('/export', [DocumentExportController::class, 'exportExcel'])->name('export');
+            Route::get('/export/pdf', [DocumentExportController::class, 'exportPdf'])->name('export.pdf');
+            Route::get('/{document}/edit', [DocumentController::class, 'edit'])->name('edit');
+            Route::put('/{document}', [DocumentController::class, 'update'])->name('update');
+            Route::delete('/{document}', [DocumentController::class, 'destroy'])->name('destroy');
+        });
+    });
 
-    // Rota para processar a criação de um novo documento
-    Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
+    /*
+    |--------------------------------------------------------------------------
+    | Rotas de Caixas (Boxes)
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('boxes')->name('boxes.')->group(function () {
+        Route::delete('/batch-destroy', [BoxController::class, 'batchDestroy'])->name('batch-destroy');
+        Route::post('/batch-assign-checker', [BoxController::class, 'batchAssignChecker'])->name('batchAssignChecker');
+        Route::post('/{box}/documents/import', [DocumentImportController::class, 'importForBox'])->name('documents.import');
+        Route::delete('/{box}/documents/batch-destroy', [BoxController::class, 'batchDestroyDocuments'])->name('documents.batchDestroy');
+    });
 
-    // Rota para processar a importação de CSV
-    Route::post('/documents/import', [DocumentImportController::class, 'import'])->name('documents.import');
-
-    // Rota para importar documentos para uma caixa específica
-    // Usa o ID da caixa na URL
-    Route::post('/boxes/{box}/documents/import', [DocumentImportController::class, 'importForBox'])->name('boxes.documents.import');
-
-    // Rota para processar a exportação para Excel/CSV
-    Route::get('/documents/export', [DocumentExportController::class, 'exportExcel'])->name('documents.export');
-
-
-    Route::delete('/boxes/{box}/documents/batch-destroy', [BoxController::class, 'batchDestroyDocuments'])
-        ->name('boxes.documents.batchDestroy');
-    // Rotas padrão de recurso (com parâmetro {document})
-
-    // Rota para exibir a lista principal de documentos (com filtros, etc.)
-    Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
-
-    // Rota para obter detalhes de um documento (usada pelo Modal AJAX)
-    // Deve vir depois das outras rotas GET /documents/* para não capturá-las
-    Route::get('/documents/{document}', [DocumentController::class, 'show'])->name('documents.show');
-
-    // Rota para exibir o formulário de edição
-    Route::get('/documents/{document}/edit', [DocumentController::class, 'edit'])->name('documents.edit');
-
-    // Rota para processar a atualização de um documento
-    Route::put('/documents/{document}', [DocumentController::class, 'update'])->name('documents.update');
-    // Route::patch('/documents/{document}', [DocumentController::class, 'update']); // Alias comum para PUT
-
-    // Rota para excluir um documento
-    Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
-
-     // Nova rota para ação em lote    
-     Route::delete('boxes/batch-destroy', [BoxController::class, 'batchDestroy'])->name('boxes.batch-destroy');
-
-     Route::post('/boxes/batch-assign-checker', [BoxController::class, 'batchAssignChecker'])->name('boxes.batchAssignChecker');
- 
-    // --- Rotas de Caixas ---
-    // Usando Route::resource para gerar automaticamente as rotas CRUD padrão:
-    // GET /boxes (index)
-    // GET /boxes/create (create)
-    // POST /boxes (store)
-    // GET /boxes/{box} (show)
-    // GET /boxes/{box}/edit (edit)
-    // PUT/PATCH /boxes/{box} (update)
-    // DELETE /boxes/{box} (destroy)
+    // Rotas padrão de recurso (deixadas por último para não interferirem com rotas específicas acima)
     Route::resource('boxes', BoxController::class);
-    
-   
-    // --- Rotas para Comissões ---
-    // Usando Route::resource para as rotas CRUD padrão
     Route::resource('commissions', CommissionController::class);
-
-    // --- Rotas de Projetos ---
-    // Usando Route::resource para as rotas CRUD padrão
     Route::resource('projects', ProjectController::class);
 
-    // --- Rotas de Perfil (Breeze) ---
+    /*
+    |--------------------------------------------------------------------------
+    | Rotas de Perfil (Laravel Breeze)
+    |--------------------------------------------------------------------------
+    */
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-}); // Fim do grupo middleware('auth')
+
+    /*
+    |--------------------------------------------------------------------------
+    | Rotas de Administração (Somente admin)
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/permissions', [\App\Http\Controllers\Admin\PermissionController::class, 'index'])->name('permissions');
+        Route::put('/users/{user}/roles', [\App\Http\Controllers\Admin\PermissionController::class, 'updateUserRoles'])->name('users.roles.update');
+    });
+
+});
 
 /*
 |--------------------------------------------------------------------------
-| Rotas de Autenticação (Breeze)
+| Rotas de Autenticação (Laravel Breeze)
 |--------------------------------------------------------------------------
-|
-| Inclui as rotas para login, registro, esqueceu senha, etc.
-| definidas pelo Laravel Breeze.
-|
 */
 require __DIR__ . '/auth.php';

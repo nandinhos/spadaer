@@ -69,13 +69,19 @@
                     </span>
                 </a>
             </li>
+            <!-- Divisor para Comissão -->
+            <li class="py-2">
+                <div class="border-t border-gray-200 dark:border-gray-700"></div>
+            </li>
+
+            <!-- Seção de Administração -->
             <li :class="sidebarOpen ? '' : 'justify-center'">
-                <a href="{{ route('profile.edit') }}"
-                    class="flex items-center space-x-2 p-2 rounded-lg {{ request()->routeIs('profile.edit') ? 'bg-primary bg-opacity-10 text-primary dark:text-primary-light font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
-                    <i class="fas fa-cog w-5 text-center"></i>
+                <a href="{{ route('admin.permissions') }}"
+                    class="flex items-center space-x-2 p-2 rounded-lg {{ request()->routeIs('admin.*') ? 'bg-primary bg-opacity-10 text-primary dark:text-primary-light font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                    <i class="fas fa-user-shield w-5 text-center"></i>
                     <span class="whitespace-nowrap overflow-hidden transition-opacity duration-300"
                         :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0'">
-                        Configurações
+                        Administração
                     </span>
                 </a>
             </li>
