@@ -1,5 +1,6 @@
 {{-- resources/views/boxes/edit.blade.php --}}
 <x-app-layout>
+    @can('boxes.edit')
     <x-slot name="header">
         <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
@@ -127,4 +128,5 @@
     {{-- REMOVIDO: Bloco completo do Modal de Importação (Ele estará na view 'show') --}}
     {{-- REMOVIDO: O Modal de Detalhes do Documento (Geralmente fica no layout principal) --}}
 
+    @endcan
 </x-app-layout>

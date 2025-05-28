@@ -9,6 +9,7 @@
     aria-modal="true" 
     style="display: none;"
 >
+    @can('documents.view')
     <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:items-center sm:block sm:p-0">
         {{-- Background overlay --}}
         <div 
@@ -151,7 +152,7 @@
                 </x-secondary-button>
 
                 {{-- Botões de Ação com Verificação de Permissão --}}
-                @can('update', 'App\Models\Document')
+                @can('documents.edit')
                     <x-primary-button 
                         type="button"
                         x-show="selectedDocument.id"
@@ -161,7 +162,7 @@
                         <i class="fas fa-edit mr-2"></i>Editar Documento
                     </x-primary-button>
                 @endcan
-                @can('delete', 'App\Models\Document')
+                @can('documents.delete')
                     <x-danger-button 
                         type="button"
                         x-show="selectedDocument.id"
@@ -174,4 +175,10 @@
             </div>
         </div>
     </div>
+    @else
+        <div class="p-4 mt-4 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-900 dark:text-red-300" role="alert">
+            <p class="font-medium">Acesso Negado</p>
+            <p>Você não tem permissão para visualizar este documento.</p>
+        </div>
+    @endcan
 </div>

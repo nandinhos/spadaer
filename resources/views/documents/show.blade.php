@@ -5,9 +5,11 @@
                 {{ __('Visualizar Documento') }}
             </h2>
             <div class="space-x-4">
+                @can('documents.edit')
                 <a href="{{ route('documents.edit', $document) }}" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors duration-200">
                     <i class="fas fa-edit mr-2"></i>Editar
                 </a>
+                @endcan
                 <a href="{{ route('documents.index') }}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
                     <i class="fas fa-arrow-left mr-2"></i>Voltar
                 </a>
@@ -95,6 +97,7 @@
 
                     <!-- Ações -->
                     <div class="mt-8 flex justify-between items-center border-t dark:border-gray-700 pt-6">
+                        @can('documents.delete')
                         <form action="{{ route('documents.destroy', $document) }}" method="POST" class="inline">
                             @csrf
                             @method('DELETE')
@@ -103,11 +106,14 @@
                                 <i class="fas fa-trash-alt mr-2"></i>Excluir Documento
                             </button>
                         </form>
+                        @endcan
 
                         <div class="space-x-4">
+                            @can('documents.edit')
                             <a href="{{ route('documents.edit', $document) }}" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors duration-200">
                                 <i class="fas fa-edit mr-2"></i>Editar
                             </a>
+                            @endcan
                             <a href="{{ route('documents.index') }}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
                                 <i class="fas fa-arrow-left mr-2"></i>Voltar
                             </a>
@@ -117,4 +123,5 @@
             </div>
         </div>
     </div>
+
 </x-app-layout>

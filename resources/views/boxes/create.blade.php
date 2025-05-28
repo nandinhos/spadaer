@@ -1,5 +1,6 @@
 {{-- resources/views/boxes/create.blade.php --}}
 <x-app-layout>
+    @can('boxes.create')
     <x-slot name="header">
         <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
             {{ __('Adicionar Nova Caixa') }}
@@ -114,4 +115,5 @@
             </div>
         </div>
     </div>
+    @endcan
 </x-app-layout>

@@ -50,16 +50,14 @@ Route::middleware(['auth'])->group(function () {
         
 
         // Rotas que requerem papel de administrador ou presidente de comissão
-        Route::middleware(['role:admin,presidente_comissao'])->group(function () {
-            Route::get('/create', [DocumentController::class, 'create'])->name('create');
-            Route::post('/', [DocumentController::class, 'store'])->name('store');
-            Route::post('/import', [DocumentImportController::class, 'import'])->name('import');
-            Route::get('/export', [DocumentExportController::class, 'exportExcel'])->name('export');
-            Route::get('/export/pdf', [DocumentExportController::class, 'exportPdf'])->name('export.pdf');
-            Route::get('/{document}/edit', [DocumentController::class, 'edit'])->name('edit');
-            Route::put('/{document}', [DocumentController::class, 'update'])->name('update');
-            Route::delete('/{document}', [DocumentController::class, 'destroy'])->name('destroy');
-        });
+        Route::get('/create', [DocumentController::class, 'create'])->name('create')->middleware('role:admin,presidente_comissao');
+        Route::post('/', [DocumentController::class, 'store'])->name('store')->middleware('role:admin,presidente_comissao');
+        Route::post('/import', [DocumentImportController::class, 'import'])->name('import')->middleware('role:admin,presidente_comissao');
+        Route::get('/export', [DocumentExportController::class, 'exportExcel'])->name('export')->middleware('role:admin,presidente_comissao');
+        Route::get('/export/pdf', [DocumentExportController::class, 'exportPdf'])->name('export.pdf')->middleware('role:admin,presidente_comissao');
+        Route::get('/{document}/edit', [DocumentController::class, 'edit'])->name('edit')->middleware('role:admin,presidente_comissao');
+        Route::put('/{document}', [DocumentController::class, 'update'])->name('update')->middleware('role:admin,presidente_comissao');
+        Route::delete('/{document}', [DocumentController::class, 'destroy'])->name('destroy')->middleware('role:admin,presidente_comissao');
     });
 
     /*
@@ -77,7 +75,7 @@ Route::middleware(['auth'])->group(function () {
     // Rotas padrão de recurso (deixadas por último para não interferirem com rotas específicas acima)
     Route::resource('boxes', BoxController::class);
     Route::resource('commissions', CommissionController::class);
-    Route::resource('projects', ProjectController::class);
+    Route::resource('projects', ProjectController::class)->middleware('role:admin');
 
     /*
     |--------------------------------------------------------------------------

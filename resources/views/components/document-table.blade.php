@@ -165,6 +165,7 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
             @forelse ($documents as $document)
+                @can('documents.view')
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-750/50">
                     {{-- Itera sobre as colunas definidas para exibir os dados corretos --}}
                     @foreach ($columns as $column)
@@ -285,7 +286,8 @@
                         @endcan
                     </td>
                 </tr>
-                @empty
+                @endcan
+            @empty
                     {{-- Linha para quando não há documentos --}}
                     <tr>
                         <td colspan="{{ count($columns) + 1 }}"

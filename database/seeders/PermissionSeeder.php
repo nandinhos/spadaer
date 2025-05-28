@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Spatie\Permission\Models\Permission;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
 
 class PermissionSeeder extends Seeder
 {
@@ -12,6 +13,11 @@ class PermissionSeeder extends Seeder
      */
     public function run(): void
     {
+
+        // Limpa o cache para evitar problemas com permissões existentes
+
+        // Limpa as permissões existentes antes de recriá-las
+        Permission::query()->delete();
         // Permissões para gerenciamento de usuários
         Permission::create(['name' => 'users.view', 'guard_name' => 'web']);
         Permission::create(['name' => 'users.create', 'guard_name' => 'web']);
@@ -32,6 +38,12 @@ class PermissionSeeder extends Seeder
         Permission::create(['name' => 'commissions.create', 'guard_name' => 'web']);
         Permission::create(['name' => 'commissions.edit', 'guard_name' => 'web']);
         Permission::create(['name' => 'commissions.delete', 'guard_name' => 'web']);
+
+        // Permissões para gerenciamento de caixas
+        Permission::create(['name' => 'boxes.view', 'guard_name' => 'web']);
+        Permission::create(['name' => 'boxes.create', 'guard_name' => 'web']);
+        Permission::create(['name' => 'boxes.edit', 'guard_name' => 'web']);
+        Permission::create(['name' => 'boxes.delete', 'guard_name' => 'web']);
 
     }
 }

@@ -13,6 +13,9 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
+        // Delete existing roles to prevent duplicates
+        Role::query()->delete();
+
         // Criar papel de Administrador
         $adminRole = Role::create([
             'name' => 'admin',
@@ -31,7 +34,11 @@ class RoleSeeder extends Seeder
         // Atribuir permissões básicas ao usuário padrão
         $userRole->givePermissionTo([
             'documents.view',
-            'commissions.view'
+            'commissions.view',
+            'boxes.view',
+            'boxes.create',
+            'boxes.edit',
+            'boxes.delete'
         ]);
 
         // Criar papel de Presidente de Comissão

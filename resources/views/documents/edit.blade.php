@@ -3,7 +3,6 @@
     @section('title', 'Documentos')
     @section('header-title', 'Editar Documento')
 
-
     <x-slot name="header">
         <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center justify-between">
             <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
@@ -30,7 +29,7 @@
                                 @endforeach
                             </ul>
                         </div>
-                    @endif
+                
 
                     <form method="POST" action="{{ route('documents.update', $document) }}"
                         enctype="multipart/form-data" class="space-y-6">
@@ -181,4 +180,5 @@
             </div>
         </div>
     </div>
+
 </x-app-layout>

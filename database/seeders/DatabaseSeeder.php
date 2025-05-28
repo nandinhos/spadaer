@@ -23,9 +23,9 @@ class DatabaseSeeder extends Seeder
     $this->call(ProjectSeeder::class);
 
     // 5. Criar Caixas (precisa de Users e Projects)
-    $this->call(BoxSeeder::class);
+    //$this->call(BoxSeeder::class);
 
     // 6. Criar Documentos (precisa de Boxes e Projects)
-    $this->call(DocumentSeeder::class);
+   //$this->call(DocumentSeeder::class);
   }
 }

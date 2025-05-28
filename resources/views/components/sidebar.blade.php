@@ -49,6 +49,7 @@
                     </span>
                 </a>
             </li>
+             @role('admin')
             <li :class="sidebarOpen ? '' : 'justify-center'">
                 <a href="{{ route('projects.index') }}"
                     class="flex items-center space-x-2 p-2 rounded-lg {{ request()->routeIs('projects.*') ? 'bg-primary bg-opacity-10 text-primary dark:text-primary-light font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
@@ -59,6 +60,7 @@
                     </span>
                 </a>
             </li>
+            @endrole
             <li :class="sidebarOpen ? '' : 'justify-center'">
                 <a href="{{ route('commissions.index') }}"
                     class="flex items-center space-x-2 p-2 rounded-lg {{ request()->routeIs('commissions.*') ? 'bg-primary bg-opacity-10 text-primary dark:text-primary-light font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
@@ -75,6 +77,7 @@
             </li>
 
             <!-- Seção de Administração -->
+            @role('admin')
             <li :class="sidebarOpen ? '' : 'justify-center'">
                 <a href="{{ route('admin.permissions') }}"
                     class="flex items-center space-x-2 p-2 rounded-lg {{ request()->routeIs('admin.*') ? 'bg-primary bg-opacity-10 text-primary dark:text-primary-light font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
@@ -85,6 +88,7 @@
                     </span>
                 </a>
             </li>
+            @endrole
         </ul>
     </nav>
 

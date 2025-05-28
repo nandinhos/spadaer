@@ -4,7 +4,6 @@
     @section('header-title', 'Listagem de Documentos')
 
     {{-- Verificação principal de permissão para visualizar a página --}}
-    @if(auth()->user()->can('documents.view'))
         {{-- Inicializa o Alpine.js para gerenciar o estado do modal de detalhes do documento --}}
         {{-- Todo o conteúdo que interage com o modal (botões de abrir, o modal em si)
              precisa estar dentro deste escopo do x-data. --}}
@@ -42,13 +41,7 @@
 
         </div> {{-- Fim do div x-data="documentViewer()" --}}
 
-    @else
-        {{-- Mensagem para usuários sem permissão de visualização --}}
-        <div class="p-4 mt-4 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-900 dark:text-red-300" role="alert">
-            <p class="font-medium">Acesso Negado</p>
-            <p>Você não tem permissão para visualizar documentos.</p>
-        </div>
-    @endcan
+
 
     {{-- O script Alpine.js é colocado no final, idealmente antes do fechamento do body ou em um @push('scripts') se seu layout tiver um @stack('scripts') --}}
     @push('scripts')

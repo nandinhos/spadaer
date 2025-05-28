@@ -13,12 +13,12 @@
             </div>
             {{-- Botões de Ação Principais (Editar/Excluir Caixa) --}}
             <div class="flex items-center flex-shrink-0 space-x-2">
-                <x-secondary-button onclick="window.location='{{ route('boxes.edit', $box) }}'">
+                <x-secondary-button onclick="window.location='{{ route('boxes.edit', $box) }}';">
                     <i class="mr-1 fas fa-edit"></i> {{ __('Editar Caixa') }}
                 </x-secondary-button>
 
                 <form method="POST" action="{{ route('boxes.destroy', $box) }}"
-                    onsubmit="return confirm('{{ __('Tem certeza que deseja excluir esta caixa e TODOS os documentos contidos nela?') }}');">
+                    onsubmit="return confirm({{ json_encode(__('Tem certeza que deseja excluir esta caixa e TODOS os documentos contidos nela?')) }});">
                     @csrf
                     @method('DELETE')
                     <x-danger-button type="submit">
@@ -251,11 +251,27 @@
                                         {{ $document->document_date ?? '--' }}
                                     </td>
                                     <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
-                                        {{-- Botão Ver Detalhes --}}
-                                        <button type="button" @click="openDocumentModal({{ $document->id }})"
-                                            class="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-200 focus:outline-none focus:underline">
-                                            {{ __('Ver Detalhes') }}
-                                        </button>
+                                        @can('documents.view')
+                                            <a href="{{ route('documents.show', $document) }}"
+                                                class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-200"><i
+                                                    class="mr-1 fas fa-eye"></i></a>
+                                        @endcan
+                                        @can('documents.edit')
+                                            <a href="{{ route('documents.edit', $document) }}"
+                                                class="text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-white"><i
+                                                    class="mr-1 fas fa-edit"></i></a>
+                                        @endcan
+                                        @can('documents.delete')
+                                            <form method="POST" action="{{ route('documents.destroy', $document) }}"
+                                                class="inline"
+                                                onsubmit="return confirm('Tem certeza que deseja excluir este documento?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                    class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200"><i
+                                                        class="mr-1 fas fa-trash-alt"></i></button>
+                                            </form>
+                                        @endcan
                                     </td>
                                 </tr>
                             @empty

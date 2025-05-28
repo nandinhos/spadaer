@@ -40,7 +40,7 @@
                         <div>
                             <x-input-label for="description" :value="__('Descrição')" />
                             {{-- Textarea repopulada corretamente com o conteúdo --}}
-                            <x-textarea id="description" name="description"
+                            <x-textarea id="description" name="description" required
                                 class="block w-full mt-1">{{ old('description') }}</x-textarea>
                             <x-input-error :messages="$errors->get('description')" class="mt-2" />
                         </div>
@@ -98,16 +98,13 @@
                         {{-- Botões --}}
                         <div class="flex items-center gap-4">
                             <x-primary-button>{{ __('Salvar Comissão') }}</x-primary-button>
-                            {{-- Link Cancelar estilizado como botão secundário (exemplo) --}}
-                            <a href="{{ route('commissions.index') }}"
-                                class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md shadow-sm dark:bg-gray-800 dark:border-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-25">
-                                {{ __('Cancelar') }}
-                            </a>
-                            {{-- Alternativa usando componente Breeze:
-                            <x-secondary-button type="button" onclick="window.location='{{ route('commissions.index') }}'">
-                                {{ __('Cancelar') }}
+                           
+                            <x-secondary-button type="button">
+                                <a href="{{ route('commissions.index') }}" class="block w-full h-full flex items-center justify-center">
+                                    {{ __('Cancelar') }}
+                                </a>
                             </x-secondary-button>
-                            --}}
+                            
                         </div>
                     </form>
                 </div>

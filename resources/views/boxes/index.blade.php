@@ -1,5 +1,6 @@
 <x-app-layout>
     @section('title', 'Caixas')
+    @can('boxes.view')
     @section('header-title', 'Gerenciamento de Caixas')
     @push('scripts')
     <script>
@@ -151,21 +152,24 @@
             </x-select-input>
         </form>
         {{-- Botão Adicionar --}}
-        <x-primary-button onclick="window.location.href='{{ route('boxes.create') }}'">
-            <i class="mr-2 fas fa-plus"></i> Adicionar Caixa
-        </x-primary-button>
+        @can('boxes.create')
+            <x-primary-button onclick="window.location.href='{{ route('boxes.create') }}'">
+                <i class="mr-2 fas fa-plus"></i> Adicionar Caixa
+            </x-primary-button>
+        @endcan
     </div>
 
 
     <div class="overflow-hidden bg-white rounded-lg shadow dark:bg-gray-800">
         <div class="overflow-x-auto">
-            <form method="POST" action="{{ route('boxes.batch-destroy') }}">
-                @csrf
-                @method('DELETE')
-                <div class="mb-4 p-4 flex items-center space-x-2">
-                    <x-danger-button type="submit" id="batch-delete-button" disabled>
-                        <i class="fas fa-trash-alt mr-2"></i> Excluir Selecionados
-                    </x-danger-button>
+            @can('boxes.delete')
+                <form method="POST" action="{{ route('boxes.batch-destroy') }}">
+                    @csrf
+                    @method('DELETE')
+                    <div class="mb-4 p-4 flex items-center space-x-2">
+                        <x-danger-button type="submit" id="batch-delete-button" disabled>
+                            <i class="fas fa-trash-alt mr-2"></i> Excluir Selecionados
+                        </x-danger-button>
                     <x-secondary-button type="button" id="toggle-all-button"> {{-- ID adicionado e onclick removido --}}
                         <i class="fas fa-check-square mr-2"></i> Selecionar Todos
                     </x-secondary-button>
@@ -276,21 +280,27 @@
                                 {{ $box->documents_count ?? '0' }}
                             </td>
                             <td class="px-6 py-4 space-x-2 text-sm font-medium text-right whitespace-nowrap">
-                                <a href="{{ route('boxes.show', $box) }}"
-                                    class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-200"><i
-                                        class="mr-1 fas fa-eye"></i></a>
-                                <a href="{{ route('boxes.edit', $box) }}"
-                                    class="text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-white"><i
-                                        class="mr-1 fas fa-edit"></i></a>
-                                {{-- Botão Excluir com formulário --}}
-                                <form method="POST" action="{{ route('boxes.destroy', $box) }}" class="inline"
-                                    onsubmit="return confirm('Tem certeza que deseja excluir esta caixa e TODOS os documentos contidos nela?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit"
-                                        class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200"><i
-                                            class="mr-1 fas fa-trash-alt"></i></button>
-                                </form>
+                                @can('boxes.view')
+                                    <a href="{{ route('boxes.show', $box) }}"
+                                        class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-200"><i
+                                            class="mr-1 fas fa-eye"></i></a>
+                                @endcan
+                                @can('boxes.edit')
+                                    <a href="{{ route('boxes.edit', $box) }}"
+                                        class="text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-white"><i
+                                            class="mr-1 fas fa-edit"></i></a>
+                                @endcan
+                                @can('boxes.delete')
+                                    {{-- Botão Excluir com formulário --}}
+                                    <form method="POST" action="{{ route('boxes.destroy', $box) }}" class="inline"
+                                        onsubmit="return confirm('Tem certeza que deseja excluir esta caixa e TODOS os documentos contidos nela?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200"><i
+                                                class="mr-1 fas fa-trash-alt"></i></button>
+                                    </form>
+                                @endcan
                             </td>
                         </tr>
                         @empty
@@ -308,4 +318,6 @@
             {{ $boxes->links() }}
         </div>
     </div>
+    @endcan
+    @endcan
 </x-app-layout>

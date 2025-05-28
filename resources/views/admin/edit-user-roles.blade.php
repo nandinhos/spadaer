@@ -1,3 +1,4 @@
+@role('admin')
 <x-modal name="edit-user-roles-{{ $user->id }}" focusable>
     <form method="POST" action="{{ route('admin.users.roles.update', $user) }}" class="p-6">
         @csrf
@@ -44,3 +45,4 @@
         </div>
     </form>
 </x-modal>
+@endrole

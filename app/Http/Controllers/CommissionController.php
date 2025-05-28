@@ -66,7 +66,7 @@ class CommissionController extends Controller
         $commission = Commission::create([
             'name' => $validated['name'],
             'description' => $validated['description'],
-            'ordinance' => $validated['ordinance_number'], // Use o nome validado
+            'ordinance_number' => $validated['ordinance_number'], // Use o nome validado
             'ordinance_date' => $validated['ordinance_date'],
             'ordinance_file' => $path,
         ]);
@@ -153,7 +153,7 @@ class CommissionController extends Controller
             $commission->update([
                 'name' => $validated['name'],
                 'description' => $validated['description'],
-                'ordinance' => $validated['ordinance_number'], // Use o nome validado/consistente
+                'ordinance_number' => $validated['ordinance_number'], // Use o nome validado/consistente
                 'ordinance_date' => $validated['ordinance_date'],
                 'ordinance_file' => $path,
             ]);
