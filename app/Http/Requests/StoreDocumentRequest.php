@@ -27,12 +27,12 @@ class StoreDocumentRequest extends FormRequest
         if ($this->has('document_date')) {
             $dateString = $this->input('document_date');
             // Tenta validar/normalizar para MES/ANO
-            if ($dateString && preg_match('/^([a-zA-Z]{3})[\/\s]?(\d{4})$/', $dateString, $matches)) {
-                $monthAbbr = strtoupper($matches[1]);
+            if ($dateString && preg_match('/^(\d{2})[\/\s]?(\d{4})$/', $dateString, $matches)) {
+                $month = $matches[1];
                 $year = $matches[2];
-                $validMonths = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
-                if (in_array($monthAbbr, $validMonths)) {
-                    $normalizedDate = $monthAbbr.'/'.$year; // Salva normalizado
+                // Basic validation for month range (1-12)
+                if ((int)$month >= 1 && (int)$month <= 12) {
+                    $normalizedDate = sprintf('%02d/%s', (int)$month, $year);
                 } else {
                     Log::warning('Mês inválido detectado em prepareForValidation: '.$dateString);
                 }
@@ -48,7 +48,7 @@ class StoreDocumentRequest extends FormRequest
             // Converte is_copy para string ou null (se for checkbox, usa boolean())
             // 'is_copy' => $this->boolean('is_copy'), // Se fosse checkbox
             // Se is_copy é text input, apenas garanta que vazio seja null
-            'is_copy' => $this->input('is_copy') === '' ? null : $this->input('is_copy'),
+            'is_copy' => (string) $this->input('is_copy') === '' ? null : (string) $this->input('is_copy'),
         ]);
 
         Log::debug('Data prepared for validation in StoreDocumentRequest:', $this->all());
@@ -114,13 +114,13 @@ class StoreDocumentRequest extends FormRequest
                 'required',      // Garante que não ficou nulo (ou seja, formato era válido)
                 'string',        // Garante que é uma string
                 // 'size:8'      // Garante que tem o formato XXX/YYYY (3 + 1 + 4 = 8)
-                'regex:/^[A-Z]{3}\/\d{4}$/', // Garante formato MES/ANO (ex: JAN/2024) após normalização
+                'regex:/^\d{2}\/\d{4}$/', // Garante formato MM/AAAA (ex: 01/2024) após normalização
             ],
             'confidentiality' => [
                 'required', // Sigilo é obrigatório na criação? Se sim, required. Senão, nullable.
                 'string',
                 'max:255',
-                Rule::in(['Público', 'Restrito', 'Confidencial'/* Adicione outras variações se necessário */]),
+                Rule::in(['Ostensivo', 'Público', 'Restrito', 'Confidencial', 'ostensivo', 'público', 'restrito', 'confidencial', 'Restricted', 'restricted', 'confidential', 'Confidential', 'Unclassified', 'unclassified', 'sem classificação', 'Sem Classificação', 'Secreto', 'secreto', 'Secret', 'secret']),
             ],
             'version' => [
                 'nullable',
@@ -148,9 +148,8 @@ class StoreDocumentRequest extends FormRequest
             'document_number.required' => 'O número do Documento é obrigatório.',
             'document_number.unique' => 'Já existe um documento com este Número e informação de Cópia.',
             'title.required' => 'O Título do documento é obrigatório.',
-            'document_date.required' => 'A Data do Documento é obrigatória ou está em formato inválido: (ex: FEV/2020)',
-            'document_date.size' => 'O formato da Data do Documento deve ser Mês/Ano (ex: JAN/2024).',
-            'document_date.regex' => 'O formato da Data do Documento deve ser Mês/Ano (ex: JAN/2024).',
+            'document_date.required' => 'A Data do Documento é obrigatória ou está em formato inválido: (ex: 01/2020)',
+            'document_date.regex' => 'O formato da Data do Documento deve ser Mês/Ano (ex: 01/2024).',
             'confidentiality.required' => 'O Nível de Sigilo é obrigatório.',
             'confidentiality.in' => 'O Nível de Sigilo selecionado é inválido.',
             // ... outras mensagens ...

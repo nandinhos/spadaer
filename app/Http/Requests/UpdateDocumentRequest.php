@@ -100,7 +100,7 @@ class UpdateDocumentRequest extends FormRequest
             if ($dateString && preg_match('/^([a-zA-Z]{3})[\/\s]?(\d{4})$/', $dateString, $matches)) {
                 $monthAbbr = strtoupper($matches[1]);
                 $year = $matches[2];
-                $validMonths = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+                $validMonths = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
                 if (in_array($monthAbbr, $validMonths)) {
                     $normalizedDate = $monthAbbr.'/'.$year;
                 }

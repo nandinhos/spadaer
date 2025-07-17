@@ -3,31 +3,26 @@
 namespace App\Imports;
 
 use App\Models\Box;
-use App\Models\Document;    // Necessário para validação 'exists'
-// Necessário para validação 'exists'
-use Illuminate\Support\Collection; // Usado em collection()
+use App\Models\Document;
+use App\Models\Project; // Garanta que o model Project está sendo importado
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Concerns\Importable;
-use Maatwebsite\Excel\Concerns\OnFailure; // Lê tudo para uma coleção
-use Maatwebsite\Excel\Concerns\SkipsFailures; // Usa a primeira linha como cabeçalho
-use Maatwebsite\Excel\Concerns\SkipsOnFailure; // Permite usar o método rules()
-use Maatwebsite\Excel\Concerns\ToCollection; // Permite coletar falhas de rules()
-use Maatwebsite\Excel\Concerns\WithHeadingRow; // Pula linhas que falham em rules()
-// Para obter número da linha
-use Maatwebsite\Excel\Concerns\WithValidation; // Para capturar falhas de rules() mais detalhadamente (opcional)
+use Maatwebsite\Excel\Concerns\SkipsFailures;
+use Maatwebsite\Excel\Concerns\SkipsOnFailure;
+use Maatwebsite\Excel\Concerns\ToCollection;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithValidation;
 
-class DocumentsImport implements SkipsOnFailure, ToCollection, WithHeadingRow, WithValidation // Pula linhas que falham nas rules() abaixo
-    // OnFailure // Implementar se quiser tratar falhas de rules() mais finamente
+class DocumentsImport implements SkipsOnFailure, ToCollection, WithHeadingRow, WithValidation
 {
-    // SkipsFailures coleta falhas das rules(), Importable permite $this->failures()
     use Importable, SkipsFailures;
 
     private ?int $userId;
 
-    // !! MAPEAMENTO: CABEÇALHO CSV (Esquerda, Case-Insensitive) -> CHAVE INTERNA (Direita) !!
-    // !! Ajuste as chaves à ESQUERDA para corresponderem 100% ao seu CSV !!
+    // Mapeamento de colunas do CSV para chaves internas
     private array $columnMap = [
         'box_id' => 'box_id',
         'project_id' => 'project_id',
@@ -36,16 +31,14 @@ class DocumentsImport implements SkipsOnFailure, ToCollection, WithHeadingRow, W
         'descriptor' => 'descriptor',
         'document_number' => 'document_number',
         'title' => 'title',
-        'document_date' => 'document_date_csv', // Cabeçalho no CSV
+        'document_date' => 'document_date_csv',
         'confidentiality' => 'confidentiality',
         'version' => 'version',
         'is_copy' => 'is_copy',
     ];
 
-    // Armazena os dados que passaram em TODAS as validações
     private array $validatedData = [];
 
-    // Armazena TODOS os erros encontrados [linha => ['errors' => [campo => [mensagem]], 'values' => [...]]]
     private array $collectedErrors = [];
 
     public function __construct(?int $userId = null)
@@ -54,8 +47,7 @@ class DocumentsImport implements SkipsOnFailure, ToCollection, WithHeadingRow, W
     }
 
     /**
-     * Processa a coleção de linhas lidas do CSV.
-     * Valida cada linha e armazena dados válidos ou erros.
+     * Processa a coleção de linhas do CSV.
      */
     public function collection(Collection $rows)
     {
@@ -63,10 +55,10 @@ class DocumentsImport implements SkipsOnFailure, ToCollection, WithHeadingRow, W
 
         foreach ($rows as $row) {
             $rowNumber++;
-            $originalRowData = $row->toArray(); // Dados originais da linha
+            $originalRowData = $row->toArray();
             Log::debug("----- Processing CSV Row #{$rowNumber} -----", $originalRowData);
 
-            // Pular linhas completamente vazias
+            // Pula linhas completamente vazias
             if (collect($originalRowData)->filter()->isEmpty()) {
                 Log::debug("[Row {$rowNumber}] Skipping empty row.");
 
@@ -75,7 +67,6 @@ class DocumentsImport implements SkipsOnFailure, ToCollection, WithHeadingRow, W
 
             $mappedRow = $this->mapRowKeys($originalRowData);
             Log::debug("[Row {$rowNumber}] Mapped data:", $mappedRow);
-            Log::debug("[Row {$rowNumber}] Mapped confidentiality value:", ['value' => $mappedRow['confidentiality'] ?? 'NOT MAPPED']);
 
             // --- Processamento Prévio ---
             $documentDateMonthYear = $this->validateAndNormalizeMonthYear($mappedRow['document_date_csv'] ?? null);
@@ -84,22 +75,20 @@ class DocumentsImport implements SkipsOnFailure, ToCollection, WithHeadingRow, W
             $versionString = isset($mappedRow['version']) ? (string) $mappedRow['version'] : null;
             $isCopyString = $mappedRow['is_copy'] ?? null;
 
-            // Array para passar ao Validator manual
+            // Array para passar ao Validator
             $dataToValidate = $mappedRow;
-            $dataToValidate['item_number'] = $itemNumberString; // Usa string
-            $dataToValidate['code'] = $codeString;             // Usa string
-            $dataToValidate['version'] = $versionString;       // Usa string
-            $dataToValidate['processed_date'] = $documentDateMonthYear; // Data validada/normalizada
-            // 'is_copy' já está como string ou null em $mappedRow
+            $dataToValidate['item_number'] = $itemNumberString;
+            $dataToValidate['code'] = $codeString;
+            $dataToValidate['version'] = $versionString;
+            $dataToValidate['processed_date'] = $documentDateMonthYear; // Usa a data processada
 
             Log::debug("[Row {$rowNumber}] Data prepared for validation:", $dataToValidate);
 
-            // --- Validação Manual Detalhada ---
+            // --- Validação Manual ---
             $validator = Validator::make($dataToValidate, $this->getValidationRules($isCopyString), $this->customValidationMessages());
 
             $validator->after(function ($validator) use ($mappedRow, $itemNumberString) {
                 // Valida item único na caixa (só se box_id for válido)
-                // Usamos $mappedRow['box_id'] pois é o ID que veio do CSV
                 if (! $validator->errors()->has('box_id') && ($boxId = $mappedRow['box_id'] ?? null)) {
                     if ($itemNumberString !== null) {
                         $exists = Document::where('box_id', $boxId)
@@ -112,66 +101,58 @@ class DocumentsImport implements SkipsOnFailure, ToCollection, WithHeadingRow, W
                 }
             });
 
-            // Se a validação desta linha falhar
             if ($validator->fails()) {
-                $rowIdentifier = $mappedRow['document_number'] ?? ($mappedRow['item_number'] ?? 'Linha inválida');
+                $rowIdentifier = $mappedRow['document_number'] ?? ($mappedRow['item_number'] ?? "Linha {$rowNumber}");
                 $this->collectError($rowNumber, $validator->errors()->messages(), $originalRowData, $rowIdentifier);
                 Log::warning("[Row {$rowNumber}] Validation failed.", ['errors' => $validator->errors()->messages()]);
             } else {
-                // Se passou, prepara os dados para inserção posterior
-                $validated = $validator->validated(); // Pega os dados validados
+                // Prepara dados para inserção
+                $validated = $validator->validated();
                 $this->validatedData[] = [
                     'box_id' => $validated['box_id'],
                     'project_id' => $validated['project_id'] ?? null,
-                    'item_number' => $itemNumberString, // String
-                    'code' => $codeString,       // String
+                    'item_number' => $itemNumberString,
+                    'code' => $codeString,
                     'descriptor' => $validated['descriptor'] ?? null,
                     'document_number' => $validated['document_number'],
                     'title' => $validated['title'],
-                    'document_date' => $documentDateMonthYear, // String MES/ANO
+                    'document_date' => $documentDateMonthYear, // Salva a data MÊS/ANO
                     'confidentiality' => $validated['confidentiality'] ?? null,
-                    'version' => $versionString,      // String
-                    'is_copy' => $validated['is_copy'] ?? null,   // String
-                    'created_at' => now(),               // Adiciona timestamp
-                    'updated_at' => now(),               // Adiciona timestamp
-                    // 'created_by'     => $this->userId,      // Opcional
+                    'version' => $versionString,
+                    'is_copy' => $validated['is_copy'] ?? null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                    // 'created_by' => $this->userId,
                 ];
                 Log::info("[Row {$rowNumber}] Row validated successfully.");
-
-                // $validatedData = $validator->validated();
-                // Log::debug("[Row {$rowNumber}] Validated Data Array:", $validatedData); // Log para ver dados validados
             }
-        } // Fim foreach $rows
+        }
     }
 
     /**
-     * Define as regras de validação BÁSICAS aplicadas pelo pacote ANTES do collection().
-     * Erros aqui são coletados via SkipsFailures e podem ser acessados com $this->failures().
+     * Regras de validação básicas aplicadas antes do collection().
      */
     public function rules(): array
     {
-        // Chaves são os CABEÇALHOS DO CSV (case-insensitive)
-        // Mantenha regras simples aqui, principalmente 'required' e 'numeric' para IDs
         return [
             '*.box_id' => ['required', 'numeric'],
-            '*.project_id' => ['nullable', 'numeric'], // Permite vazio, mas valida se for número
+            '*.project_id' => ['nullable', 'numeric'],
             '*.item_number' => ['required'],
-            '*.document_number' => ['required'], // Único no CSV
+            '*.document_number' => ['required'],
             '*.title' => ['required'],
-            '*.document_date' => ['required'], // Verifica se a coluna existe
-            // Não validar 'exists' ou 'unique' complexo aqui, será feito no model() / validação manual
+            '*.document_date' => ['required'],
         ];
     }
 
     /**
-     * Retorna as regras de validação detalhadas para o Validator manual.
+     * Regras de validação detalhadas para o Validator manual.
      */
     private function getValidationRules($isCopyString): array
     {
         return [
             'box_id' => ['required', 'integer', 'exists:boxes,id'],
             'project_id' => ['nullable', 'integer', 'exists:projects,id'],
-            'item_number' => ['required', 'string', 'max:255'], // Valida a string
+            'item_number' => ['required', 'string', 'max:255'],
             'document_number' => [
                 'required', 'string', 'max:255',
                 Rule::unique('documents', 'document_number')->where(function ($query) use ($isCopyString) {
@@ -185,33 +166,30 @@ class DocumentsImport implements SkipsOnFailure, ToCollection, WithHeadingRow, W
                 }),
             ],
             'title' => ['required', 'string', 'max:65535'],
-            'document_date_csv' => ['required'], // Valida presença da data original
-            'processed_date' => ['required'], // Valida se o parse MES/ANO funcionou
+            'document_date_csv' => ['required'],
+            'processed_date' => ['required'], // Valida se o parse MÊS/ANO funcionou
             'confidentiality' => ['nullable', 'string', 'max:255', Rule::in(['Ostensivo', 'Público', 'Restrito', 'Confidencial', 'ostensivo', 'público', 'restrito', 'confidencial', 'Restricted', 'restricted', 'confidential', 'Confidential', 'Unclassified', 'unclassified', 'Secreto', 'secreto', 'Secret', 'secret'])],
-            'code' => ['nullable', 'string', 'max:255'], // Valida string
+            'code' => ['nullable', 'string', 'max:255'],
             'descriptor' => ['nullable', 'string', 'max:255'],
-            'version' => ['nullable', 'string', 'max:255'], // Valida string
+            'version' => ['nullable', 'string', 'max:255'],
             'is_copy' => ['nullable', 'string', 'max:50'],
         ];
     }
 
     /**
-     * Mensagens customizadas (usadas por rules() e pelo Validator manual).
+     * Mensagens de validação customizadas.
      */
     public function customValidationMessages(): array
     {
         return [
-            // Mensagens para rules() básicas (com *. prefixo)
-            '*.box_id.required' => 'A coluna/cabeçalho "box_id" é obrigatória.',
+            '*.box_id.required' => 'A coluna "box_id" é obrigatória.',
             '*.box_id.numeric' => 'O valor em "box_id" deve ser um número.',
             '*.project_id.numeric' => 'O valor em "project_id" deve ser um número.',
-            '*.item_number.required' => 'A coluna/cabeçalho "item_number" é obrigatória.',
-            '*.document_number.required' => 'A coluna/cabeçalho "document_number" é obrigatória.',
-            // '*.document_number.distinct' => 'O "document_number" está duplicado neste arquivo CSV.',
-            '*.title.required' => 'A coluna/cabeçalho "title" (ou titulo) é obrigatória.',
-            '*.document_date.required' => 'A coluna/cabeçalho "document_date" (ou data_documento) é obrigatória.',
+            '*.item_number.required' => 'A coluna "item_number" é obrigatória.',
+            '*.document_number.required' => 'A coluna "document_number" é obrigatória.',
+            '*.title.required' => 'A coluna "title" é obrigatória.',
+            '*.document_date.required' => 'A coluna "document_date" é obrigatória.',
 
-            // Mensagens para validação manual (sem *. prefixo)
             'box_id.required' => 'O ID da Caixa é obrigatório.',
             'box_id.integer' => 'O ID da Caixa deve ser um número inteiro.',
             'box_id.exists' => 'A Caixa com o ID fornecido não existe no sistema.',
@@ -221,66 +199,43 @@ class DocumentsImport implements SkipsOnFailure, ToCollection, WithHeadingRow, W
             'document_number.required' => 'O Número do Documento é obrigatório.',
             'document_number.unique' => 'Já existe um documento com este Número e informação de Cópia.',
             'title.required' => 'O Título é obrigatório.',
-            'document_date_csv.required' => 'A Data do Documento é obrigatória no CSV.', // Erro se coluna faltar
-            'processed_date.required' => 'O formato da Data do Documento é inválido. Use MES/ANO (ex: JAN/2024).', // Mensagem se o parse falhar
+            'document_date_csv.required' => 'A Data do Documento é obrigatória no CSV.',
+            'processed_date.required' => 'O formato da Data do Documento é inválido. Use MÊS/ANO (ex: 01/2025).', // <-- MENSAGEM AJUSTADA
             'confidentiality.in' => 'O Nível de Sigilo fornecido é inválido.',
-            'item.unique_in_box' => 'Este Item já existe nesta Caixa.', // Mensagem para erro manual de item
-            // Adicione outras mensagens conforme necessário
+            'item.unique_in_box' => 'Este Item já existe nesta Caixa.',
         ];
     }
 
-    // --- Métodos auxiliares e Getters ---
-    public function batchSize(): int
+    /**
+     * Valida e normaliza a string de data para "MM/YYYY". Retorna null se for inválida.
+     */
+    private function validateAndNormalizeMonthYear(?string $dateString): ?string
     {
-        return 200;
-    } // Mantido para referência, mas não usado por ToCollection
+        if (empty($dateString)) {
+            return null;
+        }
+        $dateString = trim($dateString);
 
-    public function chunkSize(): int
-    {
-        return 500;
-    } // Mantido, ToCollection pode usar chunks implicitamente
+        // Regex para validar o formato MM/YYYY (ex: 01/2025)
+        if (preg_match('/^(\d{2})\/(\d{4})$/', $dateString, $matches)) {
+            $month = (int) $matches[1];
+            $year = (int) $matches[2];
 
-    public function getValidatedData(): array
-    {
-        return $this->validatedData;
-    }
-
-    public function getErrors(): array
-    { /* ... implementação anterior com $this->collectedErrors e $this->failures() ... */
-        // Processa falhas da validação básica (rules()) e adiciona aos erros coletados
-        foreach ($this->failures() as $failure) {
-            $rowNumber = $failure->row();
-            $errors = [];
-            // Pega a primeira mensagem de erro para cada atributo que falhou
-            foreach ($failure->errors() as $message) {
-                $errors[$failure->attribute() ?? 'geral'][] = $message;
-            }
-            // Evita sobrescrever erros já coletados manualmente para a mesma linha
-            if (! isset($this->collectedErrors[$rowNumber])) {
-                $this->collectedErrors[$rowNumber] = [
-                    'row' => $rowNumber,
-                    'errors' => $errors,
-                    'values' => $failure->values() ?? [], // Adiciona os valores da linha que falhou
-                ];
-            } else {
-                // Mescla os erros se já houver erros manuais para essa linha
-                $this->collectedErrors[$rowNumber]['errors'] = array_merge_recursive(
-                    $this->collectedErrors[$rowNumber]['errors'],
-                    $errors
-                );
-                // Adiciona valores se não existirem ainda
-                if (empty($this->collectedErrors[$rowNumber]['values'])) {
-                    $this->collectedErrors[$rowNumber]['values'] = $failure->values() ?? [];
-                }
+            // Valida se o mês está entre 1 e 12 e o ano é um valor razoável
+            if ($month >= 1 && $month <= 12 && $year >= 1900 && $year <= 2100) {
+                // Retorna a data no formato MM/YYYY, garantindo que o mês tenha dois dígitos.
+                return sprintf('%02d/%d', $month, $year);
             }
         }
-        // Retorna os erros ordenados pela linha
-        ksort($this->collectedErrors);
 
-        return array_values($this->collectedErrors); // Retorna como array indexado
+        Log::warning('Formato de data inválido durante a importação. Esperado "MM/YYYY", recebido: '.$dateString);
+
+        return null;
     }
 
-    // Mapeia as chaves do $row usando $columnMap (case-insensitive)
+    /**
+     * Mapeia as chaves da linha do CSV.
+     */
     private function mapRowKeys(array $row): array
     {
         $mappedRow = [];
@@ -288,42 +243,61 @@ class DocumentsImport implements SkipsOnFailure, ToCollection, WithHeadingRow, W
         foreach ($this->columnMap as $csvHeader => $internalKey) {
             $lowerCsvHeader = strtolower(trim($csvHeader));
             $value = $lowerCaseRowKeys[$lowerCsvHeader] ?? null;
-            // Trim strings, mantenha outros tipos como estão
             $mappedRow[$internalKey] = is_string($value) ? trim($value) : $value;
         }
 
         return $mappedRow;
     }
 
-    // Valida/Normaliza string de data para "MES/ANO", retorna null se inválido
-    private function validateAndNormalizeMonthYear(?string $dateString): ?string
-    {
-        if (empty($dateString)) {
-            return null;
-        }
-        $dateString = trim($dateString);
-        // Aceita 3 letras, barra ou espaço opcional, 4 dígitos
-        if (preg_match('/^([a-zA-Z]{3})[\/\s]?(\d{4})$/', $dateString, $matches)) {
-            $monthAbbr = strtoupper($matches[1]);
-            $year = $matches[2];
-            // Valida mês (Português)
-            $validMonths = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
-            if (in_array($monthAbbr, $validMonths)) {
-                return $monthAbbr.'/'.$year; // Retorna normalizado
-            }
-        }
-        Log::warning('Invalid month/year format during import: '.$dateString);
-
-        return null;
-    }
-
-    // Coleta erros manuais (gerados pela validação dentro do model())
+    /**
+     * Coleta erros de validação.
+     */
     private function collectError(int $rowNumber, array $errors, array $originalValues = [], string $identifier = 'Dados Inválidos')
     {
-        $this->collectedErrors[$rowNumber] = [ // Usa número da linha como chave para evitar duplicação
-            'row' => $rowNumber,
-            'errors' => $errors, // Formato [campo => [mensagem]]
-            'values' => $originalValues, // Guarda os dados originais
-        ];
+        if (! isset($this->collectedErrors[$rowNumber])) {
+            $this->collectedErrors[$rowNumber] = [
+                'row' => $rowNumber,
+                'identifier' => $identifier,
+                'errors' => $errors,
+                'values' => $originalValues,
+            ];
+        }
     }
-} // Fim da classe DocumentsImport
+
+    /**
+     * Retorna os dados validados.
+     */
+    public function getValidatedData(): array
+    {
+        return $this->validatedData;
+    }
+
+    /**
+     * Retorna todos os erros coletados.
+     */
+    public function getErrors(): array
+    {
+        foreach ($this->failures() as $failure) {
+            $rowNumber = $failure->row();
+            $errors = [];
+            foreach ($failure->errors() as $message) {
+                $errors[$failure->attribute() ?? 'geral'][] = $message;
+            }
+            if (! isset($this->collectedErrors[$rowNumber])) {
+                $this->collectedErrors[$rowNumber] = [
+                    'row' => $rowNumber,
+                    'errors' => $errors,
+                    'values' => $failure->values() ?? [],
+                ];
+            } else {
+                $this->collectedErrors[$rowNumber]['errors'] = array_merge_recursive(
+                    $this->collectedErrors[$rowNumber]['errors'],
+                    $errors
+                );
+            }
+        }
+        ksort($this->collectedErrors);
+
+        return array_values($this->collectedErrors);
+    }
+}
