@@ -31,8 +31,8 @@ class StoreDocumentRequest extends FormRequest
                 $month = $matches[1];
                 $year = $matches[2];
                 // Basic validation for month range (1-12)
-                if ((int)$month >= 1 && (int)$month <= 12) {
-                    $normalizedDate = sprintf('%02d/%s', (int)$month, $year);
+                if ((int) $month >= 1 && (int) $month <= 12) {
+                    $normalizedDate = sprintf('%02d/%s', (int) $month, $year);
                 } else {
                     Log::warning('Mês inválido detectado em prepareForValidation: '.$dateString);
                 }
@@ -120,7 +120,7 @@ class StoreDocumentRequest extends FormRequest
                 'required', // Sigilo é obrigatório na criação? Se sim, required. Senão, nullable.
                 'string',
                 'max:255',
-                Rule::in(['Ostensivo', 'Público', 'Restrito', 'Confidencial', 'ostensivo', 'público', 'restrito', 'confidencial', 'Restricted', 'restricted', 'confidential', 'Confidential', 'Unclassified', 'unclassified', 'sem classificação', 'Sem Classificação', 'Secreto', 'secreto', 'Secret', 'secret']),
+                Rule::in(['OSTENSIVO', 'PÚBLICO', 'RESTRITO', 'CONFIDENCIAL', 'Ostensivo', 'Público', 'Restrito', 'Confidencial', 'ostensivo', 'público', 'restrito', 'confidencial', 'Restricted', 'restricted', 'confidential', 'Confidential', 'Unclassified', 'unclassified', 'sem classificação', 'Sem Classificação', 'Secreto', 'secreto', 'Secret', 'secret']),
             ],
             'version' => [
                 'nullable',

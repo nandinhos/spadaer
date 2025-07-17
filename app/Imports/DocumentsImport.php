@@ -70,17 +70,21 @@ class DocumentsImport implements SkipsOnFailure, ToCollection, WithHeadingRow, W
 
             // --- Processamento Prévio ---
             $documentDateMonthYear = $this->validateAndNormalizeMonthYear($mappedRow['document_date_csv'] ?? null);
+            $documentNumberString = isset($mappedRow['document_number']) ? (string) $mappedRow['document_number'] : null;
             $itemNumberString = isset($mappedRow['item_number']) ? (string) $mappedRow['item_number'] : null;
             $codeString = isset($mappedRow['code']) ? (string) $mappedRow['code'] : null;
             $versionString = isset($mappedRow['version']) ? (string) $mappedRow['version'] : null;
-            $isCopyString = $mappedRow['is_copy'] ?? null;
+            $isCopyValue = $mappedRow['is_copy'] ?? null;
+            $isCopyString = ($isCopyValue !== null) ? (string) $isCopyValue : null;
 
             // Array para passar ao Validator
             $dataToValidate = $mappedRow;
+            $dataToValidate['document_number'] = $documentNumberString;
             $dataToValidate['item_number'] = $itemNumberString;
             $dataToValidate['code'] = $codeString;
             $dataToValidate['version'] = $versionString;
             $dataToValidate['processed_date'] = $documentDateMonthYear; // Usa a data processada
+            $dataToValidate['is_copy'] = $isCopyString; // Adicione esta linha para garantir que o valor convertido seja usado
 
             Log::debug("[Row {$rowNumber}] Data prepared for validation:", $dataToValidate);
 
@@ -114,7 +118,7 @@ class DocumentsImport implements SkipsOnFailure, ToCollection, WithHeadingRow, W
                     'item_number' => $itemNumberString,
                     'code' => $codeString,
                     'descriptor' => $validated['descriptor'] ?? null,
-                    'document_number' => $validated['document_number'],
+                    'document_number' => $documentNumberString,
                     'title' => $validated['title'],
                     'document_date' => $documentDateMonthYear, // Salva a data MÊS/ANO
                     'confidentiality' => $validated['confidentiality'] ?? null,
@@ -168,7 +172,13 @@ class DocumentsImport implements SkipsOnFailure, ToCollection, WithHeadingRow, W
             'title' => ['required', 'string', 'max:65535'],
             'document_date_csv' => ['required'],
             'processed_date' => ['required'], // Valida se o parse MÊS/ANO funcionou
-            'confidentiality' => ['nullable', 'string', 'max:255', Rule::in(['Ostensivo', 'Público', 'Restrito', 'Confidencial', 'ostensivo', 'público', 'restrito', 'confidencial', 'Restricted', 'restricted', 'confidential', 'Confidential', 'Unclassified', 'unclassified', 'Secreto', 'secreto', 'Secret', 'secret'])],
+            'confidentiality' => ['nullable', 'string', 'max:255', Rule::in([
+                'Ostensivo', 'Público', 'Restrito', 'Confidencial', 'Secreto',
+                'ostensivo', 'público', 'restrito', 'confidencial', 'secreto',
+                'OSTENSIVO', 'PÚBLICO', 'RESTRITO', 'CONFIDENCIAL', 'SECRETO', // Adicionado
+                'UNCLASSIFIED', 'PUBLIC', 'RESTRICTED', 'CONFIDENTIAL', 'SECRET',
+                'Public', 'Restricted', 'Confidential', 'Secret', 'Unclassified', '-',
+                'public', 'restricted', 'confidential', 'secret', 'unclassified'])],
             'code' => ['nullable', 'string', 'max:255'],
             'descriptor' => ['nullable', 'string', 'max:255'],
             'version' => ['nullable', 'string', 'max:255'],

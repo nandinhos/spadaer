@@ -12,11 +12,11 @@ use App\Models\Project;
 // Outros
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\View\View; // Importar a classe de exportação
-use Maatwebsite\Excel\Facades\Excel; // Importar facade do Excel
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Gate; // Importar a classe de exportação
+use Illuminate\Support\Facades\Log; // Importar facade do Excel
+use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DocumentController extends Controller
 {
@@ -32,7 +32,6 @@ class DocumentController extends Controller
     public function index(Request $request): View
     {
 
-        
         // 1. Obter Parâmetros da Requisição com Defaults
         $searchTerm = $request->input('search');
         $filterBoxNumber = $request->input('filter_box_number');
@@ -97,7 +96,22 @@ class DocumentController extends Controller
         }
 
         // 6. Aplicar Ordenação (já validada)
-        $query->orderBy($sortBy, $sortDir);
+        if ($request->has('sort_by')) {
+            // O usuário clicou em um cabeçalho, usar a ordenação solicitada
+            if ($sortBy === 'documents.item_number') {
+                // Se for a coluna 'item', usar ordenação numérica
+                $query->orderByRaw('CAST(documents.item_number AS UNSIGNED) '.$sortDir);
+            } else {
+                // Para outras colunas, usar a ordenação padrão
+                $query->orderBy($sortBy, $sortDir);
+            }
+        } else {
+            // Nenhuma ordenação solicitada na URL, aplicar o default inteligente:
+            // 1. Ordenar por número da caixa (alfabeticamente)
+            // 2. Ordenar por item (numericamente)
+            $query->orderBy('boxes.number', 'asc')
+                ->orderByRaw('CAST(documents.item_number AS UNSIGNED) asc');
+        }
 
         // 7. Paginar Resultados
         // Clonar a query *antes* do groupBy e paginate para calcular estatísticas filtradas totais
@@ -284,7 +298,6 @@ class DocumentController extends Controller
      * Retorna os detalhes de um documento específico em formato JSON.
      * Usado para popular o modal de detalhes do documento.
      *
-     * @param  \App\Models\Document  $document
      * @return \Illuminate\Http\JsonResponse
      */
     public function getJsonDetails(Document $document)
@@ -296,18 +309,17 @@ class DocumentController extends Controller
         // Se a permissão for apenas genérica ('documents.view') e não por instância,
         // você pode só confiar que o acesso à página principal já foi verificado.
         // Para segurança adicional, especialmente se a URL puder ser adivinhada:
-        if (!Gate::allows('documents.view', $document) && !Gate::allows('view', $document)) {
-             // A segunda verificação ('view', $document) é para o caso de você ter uma Policy.
-             // Se você só tem 'documents.view' como permissão genérica, talvez só o Gate::allows('documents.view') baste
-             // ou confie na proteção da página principal.
-             // Mas para uma API, é bom ser explícito.
+        if (! Gate::allows('documents.view', $document) && ! Gate::allows('view', $document)) {
+            // A segunda verificação ('view', $document) é para o caso de você ter uma Policy.
+            // Se você só tem 'documents.view' como permissão genérica, talvez só o Gate::allows('documents.view') baste
+            // ou confie na proteção da página principal.
+            // Mas para uma API, é bom ser explícito.
             // Se você não tem policies por instância, e 'documents.view' é global,
             // pode ser suficiente que o middleware 'auth' já protegeu a rota.
             // No entanto, se 'documents.view' for para a lista, e ver um específico requer mais, adicione a lógica.
             // Por simplicidade, vamos assumir que se ele pode ver a lista, pode ver os detalhes por enquanto.
             // Considere adicionar `$this->authorize('view', $document);` se tiver uma policy.
         }
-
 
         // Carregue os relacionamentos que seu modal precisa para exibir
         // O componente modal que você forneceu tenta acessar:

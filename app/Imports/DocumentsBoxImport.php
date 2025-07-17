@@ -174,7 +174,13 @@ class DocumentsBoxImport implements SkipsOnFailure, ToCollection, WithHeadingRow
             'document_date_csv' => ['required'],
             'processed_date' => ['required'], // Valida se o parse MÊS/ANO funcionou
             'project_id' => ['nullable', 'integer', 'exists:projects,id'],
-            'confidentiality' => ['nullable', 'string', 'max:255', Rule::in(['Ostensivo', 'Público', 'Restrito', 'Confidencial', 'ostensivo', 'público', 'restrito', 'confidencial', 'Restricted', 'restricted', 'confidential', 'Confidential', 'Unclassified', 'unclassified', 'Secreto', 'secreto', 'Secret', 'secret', 'RESERVADO', 'CONFIDENCIAL', 'SECRETO', 'OSTENSIVO'])],
+            'confidentiality' => ['nullable', 'string', 'max:255', Rule::in([
+                'Ostensivo', 'Público', 'Restrito', 'Confidencial', 'Secreto',
+                'ostensivo', 'público', 'restrito', 'confidencial', 'secreto',
+                'OSTENSIVO', 'PÚBLICO', 'RESTRITO', 'CONFIDENCIAL', 'SECRETO', // Adicionado
+                'UNCLASSIFIED', 'PUBLIC', 'RESTRICTED', 'CONFIDENTIAL', 'SECRET', '-',
+                'Public', 'Restricted', 'Confidential', 'Secret', 'Unclassified',
+                'public', 'restricted', 'confidential', 'secret', 'unclassified'])],
             'code' => ['nullable', 'string', 'max:255'],
             'descriptor' => ['nullable', 'string', 'max:255'],
             'version' => ['nullable', 'string', 'max:255'],

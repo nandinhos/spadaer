@@ -29,7 +29,7 @@
                                 @endforeach
                             </ul>
                         </div>
-                
+                    @endif
 
                     <form method="POST" action="{{ route('documents.update', $document) }}"
                         enctype="multipart/form-data" class="space-y-6">

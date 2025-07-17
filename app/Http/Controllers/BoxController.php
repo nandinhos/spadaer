@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 // Models
-use App\Models\Box;
-use App\Models\CommissionMember;
-use App\Models\Project;
-use App\Models\Document; // Importar para o show
-// Requests
 use App\Http\Requests\StoreBoxRequest;
 use App\Http\Requests\UpdateBoxRequest;
+use App\Models\Box;
+use App\Models\CommissionMember; // Importar para o show
+// Requests
+use App\Models\Document;
+use App\Models\Project;
 // Outros
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -47,7 +47,7 @@ class BoxController extends Controller
             'boxes.conference_date',
             'projects.name',
             'checker_users.name',
-            'documents_count' // Inclui contagem
+            'documents_count', // Inclui contagem
         ];
         if (! in_array($sortBy, $validSortColumns)) {
             $sortBy = 'boxes.number';
@@ -66,7 +66,19 @@ class BoxController extends Controller
             ->leftJoin('users as checker_users', 'commission_members.user_id', '=', 'checker_users.id');
 
         // 4. Aplicar Busca Textual
-        if ($search) { /* ... lógica where ... */
+        if ($search) {
+            // Usar where para aplicar a busca em múltiplas colunas
+            // Certifique-se de que o search é seguro (não contém caracteres perigosos)
+            // Aqui usamos where para cada coluna, mas poderia ser um orWhere se necessário
+            // O uso de where() com closure permite combinar condições de forma mais flexível
+            // Usamos where() para evitar problemas de SQL Injection
+            $query->where(function ($q) use ($search) {
+                $searchWild = "%{$search}%";
+                $q->where('boxes.number', 'like', $searchWild)
+                    ->orWhere('boxes.physical_location', 'like', 'like', $searchWild)
+                    ->orWhere('projects.name', 'like', $searchWild) // Busca no nome do projeto (join já existe)
+                    ->orWhere('checker_users.name', 'like', $searchWild); // Busca no nome do conferente (join já existe)
+            });
         }
 
         // 5. Aplicar Filtros Específicos
@@ -76,12 +88,15 @@ class BoxController extends Controller
         if ($commissionMemberId) {
             $query->where('boxes.commission_member_id', $commissionMemberId);
         }
-        // Filtro de Status
+        // >>> INÍCIO DA NOVA LÓGICA PARA FILTRO DE STATUS <<<
         if ($filterStatus === 'with_docs') {
+            // has() verifica se o relacionamento 'documents' tem pelo menos um registro.
             $query->has('documents');
         } elseif ($filterStatus === 'empty') {
+            // doesntHave() verifica se o relacionamento 'documents' não tem registros.
             $query->doesntHave('documents');
         }
+        // Se $filterStatus for nulo ou vazio, nenhum filtro de status é aplicado.
 
         // 6. Aplicar Ordenação
         if ($sortBy === 'documents_count') {
@@ -89,7 +104,7 @@ class BoxController extends Controller
         } elseif (str_contains($sortBy, '.')) {
             $query->orderBy($sortBy, $sortDir);
         } else {
-            $query->orderBy('boxes.' . $sortBy, $sortDir);
+            $query->orderBy('boxes.'.$sortBy, $sortDir);
         }
 
         // 7. Paginar Resultados
@@ -101,11 +116,12 @@ class BoxController extends Controller
                 ->withQueryString();
         } catch (\Throwable $e) {
             // Adicionado log da query SQL para depuração
-            Log::error("Erro ao buscar caixas: " . $e->getMessage(), [
+            Log::error('Erro ao buscar caixas: '.$e->getMessage(), [
                 'exception' => $e,
                 'query' => $query->toSql(), // Loga a query SQL gerada
-                'bindings' => $query->getBindings() // Loga os bindings da query
+                'bindings' => $query->getBindings(), // Loga os bindings da query
             ]);
+
             // Retornar view com erro ou redirecionar
             // É uma boa prática retornar algo útil aqui em caso de erro
             return view('boxes.index', [
@@ -119,7 +135,7 @@ class BoxController extends Controller
                 'statusOptions' => ['' => 'Todos os Status', 'with_docs' => 'Com Documentos', 'empty' => 'Vazias'],
                 'requestParams' => $request->all(),
                 'request' => $request,
-                'errorMessage' => 'Ocorreu um erro ao buscar as caixas. Por favor, tente novamente.' // Mensagem para o usuário
+                'errorMessage' => 'Ocorreu um erro ao buscar as caixas. Por favor, tente novamente.', // Mensagem para o usuário
             ]);
         }
 
@@ -150,6 +166,7 @@ class BoxController extends Controller
             ->orderBy('users.name')
             ->select('commission_members.id', 'users.name as user_name')
             ->get()->pluck('user_name', 'id');
+
         return view('boxes.create', compact('projects', 'activeMembers'));
     }
 
@@ -191,11 +208,12 @@ class BoxController extends Controller
             return redirect()->route('boxes.index')->with('success', $message);
         } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('Erro ao criar caixas em lote: ' . $e->getMessage(), [
+            Log::error('Erro ao criar caixas em lote: '.$e->getMessage(), [
                 'exception' => $e,
                 'quantidade' => $boxQuantity,
-                'base_number' => $baseNumber ?? null
+                'base_number' => $baseNumber ?? null,
             ]);
+
             return back()->with('error', 'Erro ao salvar as caixas. Verifique os logs.')->withInput();
         }
     }
@@ -205,10 +223,12 @@ class BoxController extends Controller
      */
     public function show(Box $box) // Sem tipo de retorno
     {
-        // Carrega relacionamentos necessários
         $box->load(['project', 'commissionMember.user', 'documents' => function ($query) {
-            $query->orderBy('item_number', 'asc');
+            // Usa orderByRaw para converter a coluna de texto para um número antes de ordenar.
+            // Isso garante que '2' venha antes de '10'.
+            $query->orderByRaw('CAST(item_number AS UNSIGNED) asc');
         }]);
+
         return view('boxes.show', compact('box'));
     }
 
@@ -223,6 +243,7 @@ class BoxController extends Controller
             ->orderBy('users.name')
             ->select('commission_members.id', 'users.name as user_name')
             ->get()->pluck('user_name', 'id');
+
         return view('boxes.edit', compact('box', 'projects', 'activeMembers'));
     }
 
@@ -238,12 +259,14 @@ class BoxController extends Controller
 
         try {
             $box->update($validatedBoxData);
+
             // Redireciona para a view da caixa após editar suas informações
             return redirect()->route('boxes.show', $box)->with('success', 'Caixa atualizada com sucesso.');
             // Ou redireciona para o index:
             // return redirect()->route('boxes.index')->with('success', 'Caixa atualizada com sucesso.');
         } catch (\Throwable $e) {
-            Log::error("Erro ao atualizar caixa {$box->id}: " . $e->getMessage(), ['exception' => $e]);
+            Log::error("Erro ao atualizar caixa {$box->id}: ".$e->getMessage(), ['exception' => $e]);
+
             return back()->with('error', 'Erro ao salvar as alterações da caixa. Verifique os logs.')->withInput();
         }
     }
@@ -261,7 +284,7 @@ class BoxController extends Controller
 
             return redirect()->route('boxes.index')->with('success', 'Caixa excluída com sucesso.');
         } catch (\Throwable $e) {
-            Log::error("Erro ao excluir caixa {$box->id}: " . $e->getMessage());
+            Log::error("Erro ao excluir caixa {$box->id}: ".$e->getMessage());
             // Verificar se o erro é devido a FKs restritivas (se não usou cascade/set null)
             if ($e instanceof \Illuminate\Database\QueryException && str_contains($e->getMessage(), 'constraint violation')) {
                 return redirect()->route('boxes.index')->with('error', 'Não é possível excluir a caixa pois ela contém documentos.');
@@ -274,7 +297,6 @@ class BoxController extends Controller
     /**
      * Remove múltiplas caixas selecionadas, desassociando documentos se existirem.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function batchDestroy(Request $request)
@@ -292,7 +314,6 @@ class BoxController extends Controller
         $orphanedCount = 0; // Contador para caixas com documentos desassociados
         $skippedCount = 0; // Contador para caixas não encontradas ou sem IDs (improvável com exists:boxes,id)
 
-
         try {
             // Iniciar Transação de Banco de Dados
             // Garante que se algo der errado durante o processo, tudo pode ser desfeito.
@@ -303,8 +324,9 @@ class BoxController extends Controller
                 $box = Box::find($boxId); // Usar find para obter o modelo ou null
 
                 // Verificar se a caixa existe (redundante com exists:boxes,id na validação, mas seguro)
-                if (!$box) {
+                if (! $box) {
                     $skippedCount++; // Conta como pulada se não encontrada
+
                     continue; // Pula para a próxima iteração se a caixa não for encontrada
                 }
 
@@ -339,12 +361,11 @@ class BoxController extends Controller
             }
             // Caso nenhum processamento elegível tenha ocorrido
             if ($deletedCount === 0 && $orphanedCount === 0 && $skippedCount === 0 && count($boxIds) > 0) {
-                $message[] = "Nenhuma caixa selecionada pôde ser processada (verifique se todas continham documentos e foram desassociadas).";
+                $message[] = 'Nenhuma caixa selecionada pôde ser processada (verifique se todas continham documentos e foram desassociadas).';
             } elseif (count($boxIds) === 0) {
                 // Caso a requisição tenha vindo sem IDs (impedido pela validação 'required|array', mas bom ter)
-                $message[] = "Nenhuma caixa foi selecionada para processar.";
+                $message[] = 'Nenhuma caixa foi selecionada para processar.';
             }
-
 
             // 4. Redirecionar com mensagem
             // Usar 'success' ou 'warning' se alguma operação bem-sucedida (exclusão OU desassociação) ocorreu
@@ -352,11 +373,16 @@ class BoxController extends Controller
             $status = 'success'; // Padrão otimista
             if ($deletedCount === 0 && $orphanedCount === 0) {
                 $status = 'warning'; // Nada foi excluído nem desassociado
-                if ($skippedCount > 0) $status = 'warning'; // Pelo menos pulou algo
-                if (count($boxIds) > 0 && $skippedCount == count($boxIds)) $status = 'warning'; // Todos pulados/não encontrados
-                if (count($boxIds) === 0) $status = 'info'; // Nenhuma caixa selecionada
+                if ($skippedCount > 0) {
+                    $status = 'warning';
+                } // Pelo menos pulou algo
+                if (count($boxIds) > 0 && $skippedCount == count($boxIds)) {
+                    $status = 'warning';
+                } // Todos pulados/não encontrados
+                if (count($boxIds) === 0) {
+                    $status = 'info';
+                } // Nenhuma caixa selecionada
             }
-
 
             return redirect()->route('boxes.index')
                 ->with($status, implode(' ', $message)); // Concatena as mensagens
@@ -364,23 +390,20 @@ class BoxController extends Controller
         } catch (\Throwable $e) {
             // Em caso de erro genérico na transação, reverter tudo
             DB::rollBack();
-            Log::error("Erro crítico ao processar exclusão em lote de caixas: " . $e->getMessage(), [
+            Log::error('Erro crítico ao processar exclusão em lote de caixas: '.$e->getMessage(), [
                 'exception' => $e,
-                'box_ids' => $boxIds ?? 'Não disponíveis'
+                'box_ids' => $boxIds ?? 'Não disponíveis',
             ]);
+
             // Redirecionar com mensagem de erro
             return redirect()->route('boxes.index')
                 ->with('error', 'Ocorreu um erro crítico ao tentar processar a exclusão em lote. Verifique os logs do servidor.');
         }
     }
 
-
-
     /**
      * Remove múltiplos documentos de uma caixa específica.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Box  $box
      * @return \Illuminate\Http\RedirectResponse
      */
     public function batchDestroyDocuments(Request $request, Box $box)
@@ -411,7 +434,7 @@ class BoxController extends Controller
 
             if ($deletedCount > 0) {
                 return redirect()->route('boxes.show', $box)
-                    ->with('success', $deletedCount . ' documento(s) excluído(s) com sucesso.');
+                    ->with('success', $deletedCount.' documento(s) excluído(s) com sucesso.');
             } else {
                 return redirect()->route('boxes.show', $box)
                     ->with('warning', 'Nenhum documento correspondente foi encontrado para exclusão.');
@@ -429,8 +452,8 @@ class BoxController extends Controller
     /**
      * Gera um número sequencial para caixas baseado no número base.
      *
-     * @param string $baseNumber Número base da caixa (ex: 'CX001' ou 'AD-2024-01')
-     * @param int $sequence Número da sequência (começando em 1)
+     * @param  string  $baseNumber  Número base da caixa (ex: 'CX001' ou 'AD-2024-01')
+     * @param  int  $sequence  Número da sequência (começando em 1)
      * @return string Novo número sequencial
      */
     private function generateSequentialNumber(string $baseNumber, int $sequence): string
@@ -439,11 +462,12 @@ class BoxController extends Controller
         if (preg_match('/(\d+)$/', $baseNumber, $matches)) {
             $baseDigits = $matches[1];
             $prefix = substr($baseNumber, 0, -strlen($baseDigits));
-            $newNumber = str_pad((int)$baseDigits + $sequence, strlen($baseDigits), '0', STR_PAD_LEFT);
-            return $prefix . $newNumber;
+            $newNumber = str_pad((int) $baseDigits + $sequence, strlen($baseDigits), '0', STR_PAD_LEFT);
+
+            return $prefix.$newNumber;
         }
 
         // Se não encontrar números no final, apenas adiciona o número da sequência
-        return $baseNumber . '-' . ($sequence + 1);
+        return $baseNumber.'-'.($sequence + 1);
     }
 } // Fim da classe BoxController

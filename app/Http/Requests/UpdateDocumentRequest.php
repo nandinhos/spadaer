@@ -75,7 +75,7 @@ class UpdateDocumentRequest extends FormRequest
                 'required', 'string',
                 'regex:/^([a-zA-Z]{3})\/?(\d{4})$/i', // Valida formato MES/ANO
             ],
-            'confidentiality' => ['nullable', 'string', 'max:255', Rule::in(['Ostensivo', 'Público', 'Restrito', 'Confidencial', 'ostensivo', 'público', 'restrito', 'confidencial', 'Restricted', 'restricted', 'confidential', 'Confidential', 'Unclassified', 'unclassified', 'Secreto', 'secreto', 'Secret', 'secret'])],
+            'confidentiality' => ['nullable', 'string', 'max:255', Rule::in(['OSTENSIVO', 'PÚBLICO', 'RESTRITO', 'CONFIDENCIAL', 'Ostensivo', 'Público', 'Restrito', 'Confidencial', 'ostensivo', 'público', 'restrito', 'confidencial', 'Restricted', 'restricted', 'confidential', 'Confidential', 'Unclassified', 'unclassified', 'Secreto', 'secreto', 'Secret', 'secret'])],
             'code' => [
                 'nullable', 'string', 'max:255',
                 // Se 'code' precisar ser único (ignorando o atual):
@@ -128,7 +128,7 @@ class UpdateDocumentRequest extends FormRequest
             // ... mensagens anteriores ...
             'document_number.unique' => 'Já existe outro documento com este Número e informação de Cópia.',
             'item_number.unique' => 'Este Item já existe nesta Caixa.',
-            'document_date.regex' => 'O formato da Data do Documento deve ser Mês/Ano (ex: JAN/2024).',
+            'document_date.regex' => 'O formato da Data do Documento deve ser Mês/Ano (ex: 01/2024).',
             // ...
         ];
     }
