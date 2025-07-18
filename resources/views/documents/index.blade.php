@@ -3,97 +3,98 @@
     @section('title', 'Documentos')
     @section('header-title', 'Listagem de Documentos')
 
-    {{-- Verificação principal de permissão para visualizar a página --}}
-        {{-- Inicializa o Alpine.js para gerenciar o estado do modal de detalhes do documento --}}
-        {{-- Todo o conteúdo que interage com o modal (botões de abrir, o modal em si)
-             precisa estar dentro deste escopo do x-data. --}}
-        <div x-data="documentViewer()">
+    <div x-data="{ documentViewer: documentViewer(), showFilters: {{ request()->hasAny(['filter_box_number', 'filter_project_id', 'filter_year']) ? 'true' : 'false' }} }">
 
-            {{-- Estatísticas --}}
-            @isset($stats)
-                <x-document-stats :stats="$stats" :hasActiveFilters="$hasActiveFilters ?? false" :totalDocuments="$stats['totalDocuments'] ?? 0" />
-            @endisset
+        {{-- Estatísticas --}}
+        @isset($stats)
+            <x-document-stats :stats="$stats" :hasActiveFilters="$hasActiveFilters" :totalDocuments="$stats['totalDocuments'] ?? 0" />
+        @endisset
 
-            {{-- Formulário de importação (protegido por permissão) --}}
-            @can('documents.import')
-                @include('documents.import-form')
-            @endcan
+        {{-- Exibe o painel de filtros ativos se houver algum --}}
+        @if ($hasActiveFilters)
+            <x-active-filters :requestParams="$requestParams" :projects="$availableProjects" />
+        @endif
 
-            {{-- Tabela de Documentos --}}
-            {{-- O componente x-document-table precisa que seus botões "Ver" chamem openDocumentModal(documentId) --}}
-            {{-- Exemplo de como o botão "Ver" DENTRO de x-document-table poderia ser:
-                 <button type="button" @click="openDocumentModal({{ $document->id }})">Ver</button>
-            --}}
-            <div class="mt-6 overflow-hidden bg-white rounded-lg shadow dark:bg-gray-800">
-                <x-document-table :documents="$documents" :requestParams="$requestParams ?? []" />
-                {{-- Paginação --}}
-                @if ($documents->hasPages())
-                    <div class="px-4 py-3 bg-gray-50 border-t border-gray-200 dark:bg-gray-700 dark:border-gray-600">
-                        {{ $documents->links() }}
-                    </div>
-                @endif
-            </div>
+        {{-- NOVO PAINEL DE FILTROS AVANÇADOS --}}
+        <x-document-filters :projects="$availableProjects" :years="$availableYears" :requestParams="$requestParams" />
 
-            {{-- Inclusão do Componente Modal --}}
-            {{-- As variáveis showModal, loadingModal, selectedDocument e as funções
-                 openDocumentModal, closeModal são fornecidas pelo x-data="documentViewer()" --}}
+        {{-- Formulário de importação --}}
+        @can('documents.import')
+            @include('documents.import-form')
+        @endcan
+
+        {{-- Tabela de Documentos (MANTÉM A BUSCA GERAL AQUI DENTRO) --}}
+        <div class="mt-6 overflow-hidden bg-white rounded-lg shadow dark:bg-gray-800">
+            <x-document-table :documents="$documents" :requestParams="$requestParams ?? []" />
+            @if ($documents->hasPages())
+                <div class="px-4 py-3 bg-gray-50 border-t border-gray-200 dark:bg-gray-700 dark:border-gray-600">
+                    {{ $documents->links() }}
+                </div>
+            @endif
+        </div>
+
+        {{-- Modal de Detalhes --}}
+        <div @document-open.window="documentViewer.openDocumentModal($event.detail.id)">
             <x-document-modal />
-
-        </div> {{-- Fim do div x-data="documentViewer()" --}}
+        </div>
+    </div>
 
 
 
     {{-- O script Alpine.js é colocado no final, idealmente antes do fechamento do body ou em um @push('scripts') se seu layout tiver um @stack('scripts') --}}
     @push('scripts')
-    <script>
-        function documentViewer() {
-    return {
-        showModal: false,
-        loadingModal: false,
-        selectedDocument: {},
+        <script>
+            function documentViewer() {
+                return {
+                    showModal: false,
+                    loadingModal: false,
+                    selectedDocument: {},
 
-        openDocumentModal(documentId) {
-            if (!documentId) {
-                console.error('ID do documento não fornecido para openDocumentModal.');
-                return;
-            }
-            this.showModal = true;
-            this.loadingModal = true;
-            this.selectedDocument = {};
+                    openDocumentModal(documentId) {
+                        if (!documentId) {
+                            console.error('ID do documento não fornecido para openDocumentModal.');
+                            return;
+                        }
+                        this.showModal = true;
+                        this.loadingModal = true;
+                        this.selectedDocument = {};
 
-            // ATUALIZE ESTA URL para usar a nova rota web que retorna JSON
-            fetch(`/documents/${documentId}/details`) // << MUDANÇA AQUI
-                .then(response => {
-                    if (!response.ok) {
-                        console.error(`Erro HTTP ${response.status} ao buscar o documento.`);
-                        return response.json().then(errData => {
-                            // Tenta pegar uma mensagem de erro da resposta JSON, se houver
-                            throw new Error(errData.message || `Erro ${response.status}`);
-                        });
+                        // ATUALIZE ESTA URL para usar a nova rota web que retorna JSON
+                        fetch(`/documents/${documentId}/details`) // << MUDANÇA AQUI
+                            .then(response => {
+                                if (!response.ok) {
+                                    console.error(`Erro HTTP ${response.status} ao buscar o documento.`);
+                                    return response.json().then(errData => {
+                                        // Tenta pegar uma mensagem de erro da resposta JSON, se houver
+                                        throw new Error(errData.message || `Erro ${response.status}`);
+                                    });
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                // Como o controller agora retorna o objeto do documento diretamente:
+                                this.selectedDocument = data;
+                                // Se você mudou o controller para retornar {'document': data}, então use:
+                                // this.selectedDocument = data.document;
+                                this.loadingModal = false;
+                            })
+                            .catch(error => {
+                                console.error('Falha ao carregar detalhes do documento:', error);
+                                this.loadingModal = false;
+                                this.selectedDocument = {
+                                    id: null,
+                                    document_number: 'Falha ao carregar'
+                                };
+                                // Você pode querer mostrar uma mensagem de erro mais específica aqui, se `error.message` for útil.
+                            });
+                    },
+
+                    closeModal() {
+                        this.showModal = false;
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    // Como o controller agora retorna o objeto do documento diretamente:
-                    this.selectedDocument = data;
-                    // Se você mudou o controller para retornar {'document': data}, então use:
-                    // this.selectedDocument = data.document;
-                    this.loadingModal = false;
-                })
-                .catch(error => {
-                    console.error('Falha ao carregar detalhes do documento:', error);
-                    this.loadingModal = false;
-                    this.selectedDocument = { id: null, document_number: 'Falha ao carregar' };
-                    // Você pode querer mostrar uma mensagem de erro mais específica aqui, se `error.message` for útil.
-                });
-        },
-
-        closeModal() {
-            this.showModal = false;
-        }
-    };
-}
-    </script>
+                };
+            }
+        </script>
     @endpush
 
 </x-app-layout>

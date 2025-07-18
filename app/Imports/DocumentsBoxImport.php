@@ -178,7 +178,7 @@ class DocumentsBoxImport implements SkipsOnFailure, ToCollection, WithHeadingRow
                 'Ostensivo', 'Público', 'Restrito', 'Confidencial', 'Secreto',
                 'ostensivo', 'público', 'restrito', 'confidencial', 'secreto',
                 'OSTENSIVO', 'PÚBLICO', 'RESTRITO', 'CONFIDENCIAL', 'SECRETO', // Adicionado
-                'UNCLASSIFIED', 'PUBLIC', 'RESTRICTED', 'CONFIDENTIAL', 'SECRET', '-',
+                'UNCLASSIFIED', 'PUBLIC', 'RESTRICTED', 'CONFIDENTIAL', 'RESERVADO', 'SECRET', '-',
                 'Public', 'Restricted', 'Confidential', 'Secret', 'Unclassified',
                 'public', 'restricted', 'confidential', 'secret', 'unclassified'])],
             'code' => ['nullable', 'string', 'max:255'],

@@ -40,6 +40,7 @@ class DocumentController extends Controller
         $sortBy = $request->input('sort_by', 'documents.id'); // Mudar default para ID talvez? Ou data?
         $sortDir = $request->input('sort_dir', 'desc'); // Descendente para ID ou data é comum
         $perPage = $request->input('per_page', 15);
+        $hasActiveFilters = $request->filled(['search', 'filter_box_number', 'filter_project_id', 'filter_year']);
 
         // 2. Validar Parâmetros de Ordenação
         $validSortColumns = [
