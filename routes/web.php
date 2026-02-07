@@ -41,20 +41,17 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::prefix('documents')->name('documents.')->group(function () {
-        // Rotas acessíveis para todos os usuários autenticados
+        // 1. Rotas Estáticas / Específicas (Devem vir ANTES dos wildcards)
         Route::get('/', [DocumentController::class, 'index'])->name('index');
-        Route::get('/{document}', [DocumentController::class, 'show'])->name('show');
-
-        // NOVA ROTA PARA RETORNAR DADOS DO DOCUMENTO EM JSON PARA O MODAL
-        Route::get('/{document}/details', [DocumentController::class, 'getJsonDetails'])->name('getJsonDetails');
-        
-
-        // Rotas que requerem papel de administrador ou presidente de comissão
         Route::get('/create', [DocumentController::class, 'create'])->name('create')->middleware('role:admin,presidente_comissao');
         Route::post('/', [DocumentController::class, 'store'])->name('store')->middleware('role:admin,presidente_comissao');
         Route::post('/import', [DocumentImportController::class, 'import'])->name('import')->middleware('role:admin,presidente_comissao');
         Route::get('/export', [DocumentExportController::class, 'exportExcel'])->name('export')->middleware('role:admin,presidente_comissao');
         Route::get('/export/pdf', [DocumentExportController::class, 'exportPdf'])->name('export.pdf')->middleware('role:admin,presidente_comissao');
+
+        // 2. Rotas com Wildcards / Parâmetros
+        Route::get('/{document}', [DocumentController::class, 'show'])->name('show');
+        Route::get('/{document}/details', [DocumentController::class, 'getJsonDetails'])->name('getJsonDetails');
         Route::get('/{document}/edit', [DocumentController::class, 'edit'])->name('edit')->middleware('role:admin,presidente_comissao');
         Route::put('/{document}', [DocumentController::class, 'update'])->name('update')->middleware('role:admin,presidente_comissao');
         Route::delete('/{document}', [DocumentController::class, 'destroy'])->name('destroy')->middleware('role:admin,presidente_comissao');
@@ -66,13 +63,14 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::prefix('boxes')->name('boxes.')->group(function () {
+        // Rotas estáticas primeiro
         Route::delete('/batch-destroy', [BoxController::class, 'batchDestroy'])->name('batch-destroy');
         Route::post('/batch-assign-checker', [BoxController::class, 'batchAssignChecker'])->name('batchAssignChecker');
+
+        // Rotas com wildcard de caixa
         Route::post('/{box}/documents/import', [DocumentImportController::class, 'importForBox'])->name('documents.import');
         Route::delete('/{box}/documents/batch-destroy', [BoxController::class, 'batchDestroyDocuments'])->name('documents.batchDestroy');
     });
-
-    // Rotas padrão de recurso (deixadas por último para não interferirem com rotas específicas acima)
     Route::resource('boxes', BoxController::class);
     Route::resource('commissions', CommissionController::class);
     Route::resource('projects', ProjectController::class)->middleware('role:admin');
