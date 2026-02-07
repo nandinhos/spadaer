@@ -6,13 +6,15 @@
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-semibold">Detalhes do Projeto</h2>
                         <div class="space-x-2">
-                            <a href="{{ route('projects.edit', $project) }}"
-                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                <i class="fas fa-edit mr-2"></i>Editar
+                            <a href="{{ route('projects.edit', $project) }}" wire:navigate>
+                                <x-ui.button variant="primary" icon="fas fa-edit">
+                                    Editar
+                                </x-ui.button>
                             </a>
-                            <a href="{{ route('projects.index') }}"
-                                class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                                <i class="fas fa-arrow-left mr-2"></i>Voltar
+                            <a href="{{ route('projects.index') }}" wire:navigate>
+                                <x-ui.button variant="secondary" icon="fas fa-arrow-left">
+                                    Voltar
+                                </x-ui.button>
                             </a>
                         </div>
                     </div>

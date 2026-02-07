@@ -115,9 +115,9 @@
 
                     {{-- Botões --}}
                     <div class="flex items-center space-x-2">
-                        <x-primary-button type="submit">Filtrar</x-primary-button>
-                        <x-secondary-button type="button"
-                            onclick="window.location.href='{{ route('boxes.index', ['sort_by' => request('sort_by'), 'sort_dir' => request('sort_dir'), 'per_page' => request('per_page')]) }}'">Limpar</x-secondary-button>
+                        <x-ui.button variant="primary" size="sm" type="submit">Filtrar</x-ui.button>
+                        <x-ui.button variant="ghost" size="sm" type="button"
+                            onclick="window.location.href='{{ route('boxes.index', ['sort_by' => request('sort_by'), 'sort_dir' => request('sort_dir'), 'per_page' => request('per_page')]) }}'">Limpar</x-ui.button>
                     </div>
                 </div>
             </form>
@@ -145,9 +145,11 @@
             </form>
             {{-- Botão Adicionar --}}
             @can('boxes.create')
-                <x-primary-button onclick="window.location.href='{{ route('boxes.create') }}'">
-                    <i class="mr-2 fas fa-plus"></i> Adicionar Caixa
-                </x-primary-button>
+                <a href="{{ route('boxes.create') }}" wire:navigate>
+                    <x-ui.button variant="primary" icon="fas fa-plus">
+                        Adicionar Caixa
+                    </x-ui.button>
+                </a>
             @endcan
         </div>
 
@@ -159,12 +161,12 @@
                         @csrf
                         @method('DELETE')
                         <div class="mb-4 p-4 flex items-center space-x-2">
-                            <x-danger-button type="submit" id="batch-delete-button" disabled>
-                                <i class="fas fa-trash-alt mr-2"></i> Excluir Selecionados
-                            </x-danger-button>
-                            <x-secondary-button type="button" id="toggle-all-button"> {{-- ID adicionado e onclick removido --}}
-                                <i class="fas fa-check-square mr-2"></i> Selecionar Todos
-                            </x-secondary-button>
+                            <x-ui.button variant="danger" type="submit" id="batch-delete-button" icon="fas fa-trash-alt" disabled>
+                                Excluir Selecionados
+                            </x-ui.button>
+                            <x-ui.button variant="secondary" type="button" id="toggle-all-button" icon="fas fa-check-square">
+                                Selecionar Todos
+                            </x-ui.button>
                         </div>
 
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -283,14 +285,14 @@
                                         </td>
                                         <td class="px-6 py-4 space-x-2 text-sm font-medium text-right whitespace-nowrap">
                                             @can('boxes.view')
-                                                <a href="{{ route('boxes.show', $box) }}"
-                                                    class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-200"><i
-                                                        class="mr-1 fas fa-eye"></i></a>
+                                                <a href="{{ route('boxes.show', $box) }}" wire:navigate>
+                                                    <x-ui.button variant="ghost-primary" size="sm" icon="fas fa-eye" />
+                                                </a>
                                             @endcan
                                             @can('boxes.edit')
-                                                <a href="{{ route('boxes.edit', $box) }}"
-                                                    class="text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-white"><i
-                                                        class="mr-1 fas fa-edit"></i></a>
+                                                <a href="{{ route('boxes.edit', $box) }}" wire:navigate>
+                                                    <x-ui.button variant="ghost-warning" size="sm" icon="fas fa-edit" />
+                                                </a>
                                             @endcan
                                             @can('boxes.delete')
                                                 {{-- Botão Excluir com formulário --}}
@@ -298,9 +300,7 @@
                                                     onsubmit="return confirm('Tem certeza que deseja excluir esta caixa e TODOS os documentos contidos nela?');">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit"
-                                                        class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200"><i
-                                                            class="mr-1 fas fa-trash-alt"></i></button>
+                                                    <x-ui.button variant="ghost-danger" size="sm" icon="fas fa-trash-alt" type="submit" />
                                                 </form>
                                             @endcan
                                         </td>

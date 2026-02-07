@@ -42,14 +42,19 @@ class AuthServiceProvider extends ServiceProvider
             'commissions.create',
             'commissions.edit',
             'commissions.delete',
+            'projects.view',
+            'projects.create',
+            'projects.edit',
+            'projects.delete',
+            'boxes.view',
+            'boxes.create',
+            'boxes.edit',
+            'boxes.delete',
         ]);
     }
 
     /**
      * Define Gates para uma lista de permissões.
-     *
-     * @param array $permissions
-     * @return void
      */
     protected function defineGates(array $permissions): void
     {
