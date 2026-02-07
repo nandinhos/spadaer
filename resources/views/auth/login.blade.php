@@ -1,45 +1,115 @@
 <x-guest-layout>
     <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <x-auth-session-status class="mb-6" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
-
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" class="text-sm font-medium text-gray-700" />
-            <x-text-input id="email" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-1 text-xs text-red-600" />
-        </div>
-
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Senha')" class="text-sm font-medium text-gray-700" />
-            <x-text-input id="password" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-1 text-xs text-red-600" />
-        </div>
-
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 focus:ring-offset-0" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Lembrar-me') }}</span>
-            </label>
-        </div>
-
-        <div class="flex items-center justify-between mt-6">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Esqueceu sua senha?') }}
+    <div class="w-full max-w-[420px] animate-fade-in-up">
+        <!-- Card Premium Glassmorphism -->
+        <div class="relative backdrop-blur-2xl bg-white/85 dark:bg-gray-900/85 rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15),0_0_0_1px_rgba(255,255,255,0.4)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.05)] p-8 sm:p-10 overflow-hidden">
+            
+            <!-- Glow Effect Decorativo -->
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl"></div>
+            
+            <!-- Logo e Branding -->
+            <div class="relative text-center mb-10">
+                <a href="/" class="inline-block transition-transform duration-300 hover:scale-105">
+                    <img src="{{ asset('images/logo.png') }}" alt="SPADAER GAC-PAC" class="h-28 w-auto mx-auto mb-5 drop-shadow-lg">
                 </a>
-            @endif
+                <h1 class="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-indigo-600 via-blue-500 to-indigo-600 dark:from-indigo-400 dark:via-blue-400 dark:to-indigo-400 bg-clip-text text-transparent tracking-tight">
+                    SPADAER GAC-PAC
+                </h1>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Sistema de Gestão de Caixas e PAC</p>
+            </div>
 
-            <x-primary-button class="ms-3 bg-indigo-600 hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-800 focus:ring-indigo-500">
-                {{ __('Entrar') }}
-            </x-primary-button>
+            <!-- Formulário -->
+            <form method="POST" action="{{ route('login') }}" class="relative space-y-5">
+                @csrf
+
+                <!-- Email Input Premium -->
+                <div class="group">
+                    <x-input-label for="email" :value="__('Email')" class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block" />
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-envelope text-gray-400 group-focus-within:text-indigo-500 transition-colors duration-200"></i>
+                        </div>
+                        <input 
+                            id="email" 
+                            type="email" 
+                            name="email" 
+                            :value="old('email')" 
+                            required 
+                            autofocus 
+                            autocomplete="username"
+                            placeholder="seu.email@exemplo.com"
+                            class="block w-full pl-11 pr-4 py-3.5 bg-gray-50/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 hover:bg-white dark:hover:bg-gray-800"
+                        />
+                    </div>
+                    <x-input-error :messages="$errors->get('email')" class="mt-1.5 text-xs text-red-500" />
+                </div>
+
+                <!-- Password Input Premium -->
+                <div class="group">
+                    <x-input-label for="password" :value="__('Senha')" class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block" />
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400 group-focus-within:text-indigo-500 transition-colors duration-200"></i>
+                        </div>
+                        <input 
+                            id="password" 
+                            type="password" 
+                            name="password" 
+                            required 
+                            autocomplete="current-password"
+                            placeholder="••••••••"
+                            class="block w-full pl-11 pr-4 py-3.5 bg-gray-50/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 hover:bg-white dark:hover:bg-gray-800"
+                        />
+                    </div>
+                    <x-input-error :messages="$errors->get('password')" class="mt-1.5 text-xs text-red-500" />
+                </div>
+
+                <!-- Remember Me + Esqueceu Senha -->
+                <div class="flex items-center justify-between pt-1">
+                    <label for="remember_me" class="flex items-center cursor-pointer group">
+                        <input 
+                            id="remember_me" 
+                            type="checkbox" 
+                            name="remember"
+                            class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500/20 focus:ring-2 transition-all duration-200 cursor-pointer"
+                        >
+                        <span class="ml-2.5 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-200">{{ __('Lembrar-me') }}</span>
+                    </label>
+
+                    @if (Route::has('password.request'))
+                        <a 
+                            href="{{ route('password.request') }}" 
+                            class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors duration-200 hover:underline underline-offset-4"
+                        >
+                            {{ __('Esqueceu sua senha?') }}
+                        </a>
+                    @endif
+                </div>
+
+                <!-- Botão Entrar Premium -->
+                <div class="pt-4">
+                    <button 
+                        type="submit" 
+                        class="group relative w-full flex justify-center items-center py-4 px-6 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-semibold text-base shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 overflow-hidden"
+                    >
+                        <!-- Shine Effect -->
+                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                        
+                        <span class="relative flex items-center">
+                            {{ __('Entrar') }}
+                            <i class="fas fa-arrow-right ml-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300"></i>
+                        </span>
+                    </button>
+                </div>
+            </form>
         </div>
-    </form>
+        
+        <!-- Footer -->
+        <p class="mt-6 text-center text-xs text-gray-500 dark:text-gray-500">
+            © {{ date('Y') }} SPADAER GAC-PAC. Todos os direitos reservados.
+        </p>
+    </div>
 </x-guest-layout>
