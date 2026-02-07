@@ -103,18 +103,25 @@ class DocumentController extends Controller
     /**
      * Display the specified resource details (for AJAX/Modal).
      */
-    public function show(Document $document) // Sem tipo de retorno para compatibilidade
+    public function show(Document $document)
     {
         try {
-            // Carrega relacionamentos necessários, selecionando colunas específicas
+            // Carrega relacionamentos necessários
             $document->load(['box:id,number', 'project:id,name']);
 
-            return response()->json($document);
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json($document);
+            }
+
+            return view('documents.show', compact('document'));
         } catch (\Throwable $e) {
             Log::error("Erro ao buscar detalhes do documento {$document->id}: ".$e->getMessage());
 
-            // Retorna um erro JSON padrão
-            return response()->json(['error' => 'Não foi possível carregar os detalhes do documento.'], 500);
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json(['error' => 'Não foi possível carregar os detalhes do documento.'], 500);
+            }
+
+            return back()->with('error', 'Não foi possível carregar os detalhes do documento.');
         }
     }
 

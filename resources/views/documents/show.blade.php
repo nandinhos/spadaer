@@ -6,12 +6,12 @@
             </h2>
             <div class="space-x-4">
                 @can('documents.edit')
-                <a href="{{ route('documents.edit', $document) }}" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors duration-200">
-                    <i class="fas fa-edit mr-2"></i>Editar
+                <a href="{{ route('documents.edit', $document) }}" wire:navigate>
+                    <x-ui.button variant="primary" icon="fas fa-edit">Editar</x-ui.button>
                 </a>
                 @endcan
-                <a href="{{ route('documents.index') }}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
-                    <i class="fas fa-arrow-left mr-2"></i>Voltar
+                <a href="{{ route('documents.index') }}" wire:navigate>
+                    <x-ui.button variant="secondary" icon="fas fa-arrow-left">Voltar</x-ui.button>
                 </a>
             </div>
         </div>
@@ -96,26 +96,25 @@
                     </div>
 
                     <!-- Ações -->
-                    <div class="mt-8 flex justify-between items-center border-t dark:border-gray-700 pt-6">
+                                        <div class="mt-8 flex justify-between items-center border-t dark:border-gray-700 pt-6">
                         @can('documents.delete')
                         <form action="{{ route('documents.destroy', $document) }}" method="POST" class="inline">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200"
-                                onclick="return confirm('Tem certeza que deseja excluir este documento?')">
-                                <i class="fas fa-trash-alt mr-2"></i>Excluir Documento
-                            </button>
+                            <x-ui.button variant="danger" icon="fas fa-trash-alt" type="submit" onclick="return confirm('Tem certeza que deseja excluir este documento?')">
+                                Excluir Documento
+                            </x-ui.button>
                         </form>
                         @endcan
 
                         <div class="space-x-4">
                             @can('documents.edit')
-                            <a href="{{ route('documents.edit', $document) }}" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors duration-200">
-                                <i class="fas fa-edit mr-2"></i>Editar
+                            <a href="{{ route('documents.edit', $document) }}" wire:navigate>
+                                <x-ui.button variant="primary" icon="fas fa-edit">Editar</x-ui.button>
                             </a>
                             @endcan
-                            <a href="{{ route('documents.index') }}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
-                                <i class="fas fa-arrow-left mr-2"></i>Voltar
+                            <a href="{{ route('documents.index') }}" wire:navigate>
+                                <x-ui.button variant="secondary" icon="fas fa-arrow-left">Voltar</x-ui.button>
                             </a>
                         </div>
                     </div>

@@ -45,15 +45,16 @@
                         {{-- Adicione o status aqui se tiver --}}
 
                     </dl>
-                    <div class="flex gap-4 mt-6">
-                        <x-primary-button
-                            onclick="window.location='{{ route('commissions.edit', $commission) }}'">Editar</x-primary-button>
+                                        <div class="flex gap-4 mt-6">
+                        <a href="{{ route('commissions.edit', $commission) }}" wire:navigate>
+                            <x-ui.button variant="primary" icon="fas fa-edit">Editar</x-ui.button>
+                        </a>
                         {{-- Botão de Excluir com formulário --}}
                         <form method="POST" action="{{ route('commissions.destroy', $commission) }}"
                             onsubmit="return confirm('Tem certeza que deseja excluir esta comissão?');">
                             @csrf
                             @method('DELETE')
-                            <x-danger-button type="submit">Excluir</x-danger-button>
+                            <x-ui.button variant="danger" icon="fas fa-trash-alt" type="submit">Excluir</x-ui.button>
                         </form>
                     </div>
                 </div>
@@ -114,9 +115,10 @@
                 </div>
             </div>
             <div class="flex justify-start mt-6">
-                <a href="{{ route('commissions.index') }}"
-                    class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md shadow-sm dark:bg-gray-800 dark:border-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-25">
-                    ← Voltar para Lista
+                <a href="{{ route('commissions.index') }}" wire:navigate>
+                    <x-ui.button variant="secondary" icon="fas fa-arrow-left">
+                        Voltar para Lista
+                    </x-ui.button>
                 </a>
             </div>
         </div>

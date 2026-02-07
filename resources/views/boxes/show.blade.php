@@ -14,9 +14,11 @@
             {{-- Botões de Ação Principais (Editar/Excluir Caixa) --}}
             <div class="flex items-center flex-shrink-0 space-x-2">
                 @can('boxes.edit')
-                    <x-secondary-button onclick="window.location='{{ route('boxes.edit', $box) }}';">
-                        <i class="mr-1 fas fa-edit"></i> {{ __('Editar Caixa') }}
-                    </x-secondary-button>
+                    <a href="{{ route('boxes.edit', $box) }}" wire:navigate>
+                        <x-ui.button variant="secondary" icon="fas fa-edit">
+                            {{ __('Editar Caixa') }}
+                        </x-ui.button>
+                    </a>
                 @endcan
 
                 @can('boxes.delete')
@@ -24,9 +26,9 @@
                         onsubmit="return confirm({{ json_encode(__('Tem certeza que deseja excluir esta caixa e TODOS os documentos contidos nela?')) }});">
                         @csrf
                         @method('DELETE')
-                        <x-danger-button type="submit">
-                            <i class="mr-1 fas fa-trash-alt"></i> {{ __('Excluir Caixa') }}
-                        </x-danger-button>
+                        <x-ui.button variant="danger" icon="fas fa-trash-alt" type="submit">
+                            {{ __('Excluir Caixa') }}
+                        </x-ui.button>
                     </form>
                 @endcan
             </div>
@@ -35,10 +37,10 @@
 
     {{-- Botão Voltar para a Lista --}}
     <div class="flex justify-start mt-6">
-        <a href="{{ route('boxes.index') }}"
-            class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-gray-700 uppercase ...">
-            <i class="mr-2 fas fa-arrow-left"></i>
-            {{ __('Voltar para a Lista de Caixas') }}
+        <a href="{{ route('boxes.index') }}" wire:navigate>
+            <x-ui.button variant="secondary" icon="fas fa-arrow-left">
+                {{ __('Voltar para a Lista de Caixas') }}
+            </x-ui.button>
         </a>
     </div>
 
@@ -57,11 +59,10 @@
                             <i class="mr-2 text-gray-500 fas fa-info-circle"></i> {{ __('Informações da Caixa') }}
                         </h3>
                         @can('boxes.edit')
-                            <a href="{{ route('boxes.edit', $box) }}"
-                                class="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 shadow-sm text-xs font-medium rounded text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150"
-                                title="{{ __('Editar Informações da Caixa') }}">
-                                <i class="fas fa-edit mr-1"></i>
-                                {{ __('Editar') }}
+                            <a href="{{ route('boxes.edit', $box) }}" wire:navigate>
+                                <x-ui.button variant="ghost-warning" size="sm" icon="fas fa-edit" title="{{ __('Editar Informações da Caixa') }}">
+                                    {{ __('Editar') }}
+                                </x-ui.button>
                             </a>
                         @endcan
                     </div>
@@ -143,18 +144,15 @@
                                     <template x-for="docId in selectedDocuments" :key="docId">
                                         <input type="hidden" name="document_ids[]" :value="docId">
                                     </template>
-                                    <x-danger-button type="submit" x-bind:disabled="selectedDocuments.length === 0">
-                                        <i class="mr-1 fas fa-trash-alt"></i> Excluir (<span
-                                            x-text="selectedDocuments.length"></span>)
-                                    </x-danger-button>
+                                    <x-ui.button variant="danger" type="submit" x-bind:disabled="selectedDocuments.length === 0" icon="fas fa-trash-alt">
+                                        Excluir (<span x-text="selectedDocuments.length"></span>)
+                                    </x-ui.button>
                                 </form>
                             @endcan
                             @can('documents.import')
-                                <button type="button"
-                                    class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase transition duration-150 ease-in-out bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
-                                    @click="$store.modals.openBoxImportModal()">
-                                    <i class="fas fa-upload mr-1.5"></i> {{ __('Importar Documentos') }}
-                                </button>
+                                <x-ui.button variant="warning" icon="fas fa-upload" type="button" @click="$store.modals.openBoxImportModal()">
+                                    {{ __('Importar Documentos') }}
+                                </x-ui.button>
                             @endcan
                         </div>
                     </div>
@@ -246,32 +244,22 @@
                                         <td class="px-6 py-4 ... truncate" title="{{ $document->title }}">
                                             {{ Str::limit($document->title, 60) }}</td>
                                         <td class="px-6 py-4 ...">{{ $document->document_date ?? '--' }}</td>
-                                        <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
-
-                                            {{-- ===== BOTÃO "VER" MODIFICADO ===== --}}
+                                                                                <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
                                             @can('documents.view')
-                                                <button type="button" @click="openDocumentModal({{ $document->id }})"
-                                                    class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-200 focus:outline-none"
-                                                    title="Ver Detalhes">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
+                                                <x-ui.button variant="ghost-primary" size="sm" icon="fas fa-eye" @click="openDocumentModal({{ $document->id }})" title="Ver Detalhes" />
                                             @endcan
 
                                             @can('documents.edit')
-                                                <a href="{{ route('documents.edit', $document) }}"
-                                                    class="ml-2 text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-white"
-                                                    title="Editar"><i class="fas fa-edit"></i></a>
+                                                <a href="{{ route('documents.edit', $document) }}" wire:navigate>
+                                                    <x-ui.button variant="ghost-warning" size="sm" icon="fas fa-edit" title="Editar" />
+                                                </a>
                                             @endcan
 
                                             @can('documents.delete')
-                                                <form method="POST" action="{{ route('documents.destroy', $document) }}"
-                                                    class="inline ml-2"
-                                                    onsubmit="return confirm('Tem certeza que deseja excluir este documento?');">
+                                                <form method="POST" action="{{ route('documents.destroy', $document) }}" class="inline ml-2" onsubmit="return confirm('Tem certeza que deseja excluir este documento?');">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit"
-                                                        class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200"
-                                                        title="Excluir"><i class="fas fa-trash-alt"></i></button>
+                                                    <x-ui.button variant="ghost-danger" size="sm" icon="fas fa-trash-alt" type="submit" title="Excluir" />
                                                 </form>
                                             @endcan
                                         </td>
