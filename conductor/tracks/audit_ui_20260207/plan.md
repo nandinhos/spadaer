@@ -3,7 +3,7 @@
 ## Fase 1: Conclusão da Padronização UI (Sincronia aidev)
 - [x] Task: Validar e converter botões em Listagens (boxes/index, projects/show) conforme aidev 5.1 (7f3e72b)
 - [x] Task: Validar e converter botões em Páginas de Detalhe (boxes/show, commissions/show, documents/show) conforme aidev 5.2 (4f40707)
-- [ ] Task: Validar e converter botões em Formulários conforme aidev 5.3
+- [x] Task: Validar e converter botões em Formulários conforme aidev 5.3 (a5ac9e6)
 - [ ] Task: Validar e converter botões em Componentes Reutilizáveis conforme aidev 5.4
 - [ ] Task: Validar e converter botões em Auth, Profile e Admin conforme aidev 5.5
 - [ ] Task: Conductor - User Manual Verification 'Conclusão da Padronização UI' (Protocol in workflow.md)
