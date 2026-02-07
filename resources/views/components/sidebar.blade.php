@@ -6,9 +6,12 @@
     x-cloak
 >
     <!-- Logo & Toggle -->
-    <div class="flex items-center justify-between h-20 px-4 border-b border-gray-100 dark:border-gray-800">
+    <div 
+        class="flex items-center justify-between h-20 px-4 border-b border-gray-100 dark:border-gray-800 transition-all duration-300"
+        :class="sidebarOpen ? '' : 'flex-col justify-center h-auto py-4 gap-4'"
+    >
         <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center overflow-hidden group">
-            <div class="flex items-center justify-center min-w-[48px] h-12 rounded-xl bg-primary/10 text-primary shadow-inner group-hover:bg-primary group-hover:text-white transition-all">
+            <div class="flex items-center justify-center min-w-[48px] h-12 rounded-xl bg-primary/10 text-primary shadow-inner group-hover:bg-primary group-hover:text-white transition-all shrink-0">
                 <i class="fas fa-box-archive text-xl"></i>
             </div>
             <div 
@@ -26,8 +29,8 @@
         </a>
         
         <button
-            @click="toggleSidebar(); document.documentElement.classList.toggle('sidebar-collapsed')"
-            class="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-primary/5 transition-all duration-200 focus:outline-none"
+            @click="toggleSidebar()"
+            class="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-primary/5 transition-all duration-200 focus:outline-none shrink-0"
             title="Alternar menu (Ctrl+B)"
         >
             <i class="fas" :class="sidebarOpen ? 'fa-indent' : 'fa-outdent'"></i>

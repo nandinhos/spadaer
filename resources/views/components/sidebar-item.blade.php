@@ -2,7 +2,6 @@
 
 <li>
     <a href="{{ $href }}" wire:navigate
-        wire:navigate
         class="group flex items-center px-4 py-2.5 rounded-xl transition-all duration-200 ease-in-out {{ $active 
             ? 'bg-primary text-white shadow-md shadow-primary/20 font-bold' 
             : 'text-gray-500 dark:text-gray-400 hover:bg-primary/5 hover:text-primary' }}"

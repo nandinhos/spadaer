@@ -26,8 +26,38 @@
     </script>
 
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+
+    <!-- Alpine Layout State (Global) -->
+    <script>
+        window.layout = function() {
+            return {
+                sidebarOpen: localStorage.getItem('sidebarOpen') !== 'false',
+                darkMode: localStorage.getItem('darkMode') === 'true' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches),
+
+                init() {
+                    this.updateDarkModeClass();
+                    this.$watch('sidebarOpen', value => {
+                        localStorage.setItem('sidebarOpen', value);
+                        document.documentElement.classList.toggle('sidebar-collapsed', !value);
+                    });
+                    this.$watch('darkMode', value => {
+                        localStorage.setItem('darkMode', value);
+                        this.updateDarkModeClass();
+                    });
+                },
+
+                toggleSidebar() { this.sidebarOpen = !this.sidebarOpen; },
+                toggleDarkMode() { this.darkMode = !this.darkMode; },
+                updateDarkModeClass() {
+                    if (this.darkMode) { document.documentElement.classList.add('dark'); }
+                    else { document.documentElement.classList.remove('dark'); }
+                }
+            };
+        }
+    </script>
 
     <!-- Scripts and Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -45,7 +75,7 @@
 </head>
 
 <body
-    class="h-full font-sans antialiased bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-200 transition-colors duration-200"
+    class="h-full font-['Outfit'] antialiased bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-200 transition-colors duration-200"
     x-data="layout()"
 >
     <div class="flex h-full overflow-hidden">
@@ -75,6 +105,7 @@
     {{-- Modais Globais --}}
     <x-document-modal />
 
+    @livewireScriptConfig
     @stack('scripts')
 </body>
 
