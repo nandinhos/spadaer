@@ -8,9 +8,10 @@
             <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                 {{ __('Editar Documento') }}: {{ $document->document_number }}
             </h2>
-            <a href="{{ route('documents.index') }}"
-                class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md shadow-sm dark:bg-gray-800 dark:border-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
-                <i class="mr-2 fas fa-arrow-left"></i>{{ __('Voltar para Lista') }}
+            <a href="{{ route('documents.index') }}" wire:navigate>
+                <x-ui.button variant="secondary" icon="fas fa-arrow-left">
+                    {{ __('Voltar para Lista') }}
+                </x-ui.button>
             </a>
         </div>
     </x-slot>
@@ -166,13 +167,14 @@
                         {{-- Botões de Ação --}}
                         <div
                             class="flex items-center justify-end gap-4 pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
-                            <a href="{{ route('documents.index') }}"
-                                class="text-sm text-gray-600 rounded-md dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
-                                {{ __('Cancelar') }}
+                            <a href="{{ route('documents.index') }}" wire:navigate>
+                                <x-ui.button type="button" variant="ghost">
+                                    {{ __('Cancelar') }}
+                                </x-ui.button>
                             </a>
-                            <x-primary-button>
+                            <x-ui.button type="submit" variant="primary">
                                 {{ __('Salvar Alterações') }}
-                            </x-primary-button>
+                            </x-ui.button>
                         </div>
                     </form>
 

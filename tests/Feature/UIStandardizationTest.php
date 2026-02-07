@@ -136,4 +136,18 @@ class UIStandardizationTest extends TestCase
         $response->assertSee('bg-gray-100');
         $response->assertSee('bg-rose-500');
     }
+
+    public function test_boxes_create_uses_new_button_component(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('admin');
+
+        $response = $this->actingAs($user)->get(route('boxes.create'));
+        $response->assertStatus(200);
+
+        $response->assertSee('Salvar Caixa');
+        $response->assertSee('Cancelar');
+        $response->assertSee('bg-primary');
+        $response->assertSee('justify-center');
+    }
 }

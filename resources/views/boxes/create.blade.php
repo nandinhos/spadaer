@@ -104,10 +104,13 @@
 
                         {{-- Botões --}}
                         <div class="flex items-center gap-4 pt-6 mt-8 border-t border-gray-200 dark:border-gray-700">
-                            <x-primary-button>{{ __('Salvar Caixa') }}</x-primary-button>
-                            <a href="{{ route('boxes.index') }}"
-                                class="text-sm text-gray-600 rounded-md dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
-                                {{ __('Cancelar') }}
+                            <x-ui.button type="submit" variant="primary">
+                                {{ __('Salvar Caixa') }}
+                            </x-ui.button>
+                            <a href="{{ route('boxes.index') }}" wire:navigate>
+                                <x-ui.button type="button" variant="ghost">
+                                    {{ __('Cancelar') }}
+                                </x-ui.button>
                             </a>
                         </div>
                     </form>

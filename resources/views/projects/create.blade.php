@@ -5,9 +5,10 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-semibold">Novo Projeto</h2>
-                        <a href="{{ route('projects.index') }}"
-                            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                            <i class="fas fa-arrow-left mr-2"></i>Voltar
+                        <a href="{{ route('projects.index') }}" wire:navigate>
+                            <x-ui.button variant="secondary" icon="fas fa-arrow-left">
+                                Voltar
+                            </x-ui.button>
                         </a>
                     </div>
 
@@ -47,9 +48,9 @@
 
                         {{-- Botão movido para fora do grid --}}
                         <div class="flex justify-end">
-                            <x-primary-button>
-                                <i class="fas fa-save mr-2"></i>Salvar Projeto
-                            </x-primary-button>
+                            <x-ui.button type="submit" variant="primary" icon="fas fa-save">
+                                Salvar Projeto
+                            </x-ui.button>
                         </div>
                     </form>
                 </div>

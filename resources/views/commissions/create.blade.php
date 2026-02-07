@@ -97,14 +97,15 @@
 
                         {{-- Botões --}}
                         <div class="flex items-center gap-4">
-                            <x-primary-button>{{ __('Salvar Comissão') }}</x-primary-button>
+                            <x-ui.button type="submit" variant="primary">
+                                {{ __('Salvar Comissão') }}
+                            </x-ui.button>
                            
-                            <x-secondary-button type="button">
-                                <a href="{{ route('commissions.index') }}" class="block w-full h-full flex items-center justify-center">
+                            <a href="{{ route('commissions.index') }}" wire:navigate>
+                                <x-ui.button type="button" variant="ghost">
                                     {{ __('Cancelar') }}
-                                </a>
-                            </x-secondary-button>
-                            
+                                </x-ui.button>
+                            </a>
                         </div>
                     </form>
                 </div>
