@@ -1,12 +1,20 @@
 {
   "mcpServers": {
     "laravel-boost": {
-      "command": "./vendor/bin/sail",
+      "command": "docker",
       "args": [
+        "compose",
+        "exec",
+        "-T",
+        "laravel.test",
+        "php",
         "artisan",
         "boost:mcp"
       ],
-      "description": "Laravel Boost MCP server for Artisan, DB, and code analysis"
+      "env": {
+        "WWWUSER": "1000",
+        "WWWGROUP": "1000"
+      }
     },
     "context7": {
       "command": "npx",

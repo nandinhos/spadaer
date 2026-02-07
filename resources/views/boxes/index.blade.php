@@ -4,81 +4,56 @@
         @section('header-title', 'Gerenciamento de Caixas')
         @push('scripts')
             <script>
-                // Define variáveis JavaScript com URLs geradas pelo Blade
-                const batchDeleteRoute = "{{ route('boxes.batch-destroy') }}";
+                {
+                    // Usando bloco de escopo para evitar erro de redeclaração com wire:navigate
+                    const batchDeleteRoute = "{{ route('boxes.batch-destroy') }}";
 
-                document.addEventListener('DOMContentLoaded', function() {
-                    const selectAllCheckbox = document.getElementById('select-all');
-                    // você precisa garantir que o name seja esse nos checkboxes das linhas
-                    const checkboxes = document.querySelectorAll('input[name="selected_boxes[]"]');
-                    const toggleAllBtn = document.getElementById('toggle-all-button');
-                    const deleteBtn = document.getElementById('batch-delete-button');
-                    // Obter o formulário de exclusão em lote usando a variável
-                    const batchDeleteForm = document.querySelector(
-                        `form[action="${batchDeleteRoute}"]`); // Note o uso da variável aqui
+                    document.addEventListener('livewire:navigated', function() {
+                        const selectAllCheckbox = document.getElementById('select-all');
+                        const checkboxes = document.querySelectorAll('input[name="selected_boxes[]"]');
+                        const toggleAllBtn = document.getElementById('toggle-all-button');
+                        const deleteBtn = document.getElementById('batch-delete-button');
+                        const batchDeleteForm = document.querySelector(`form[action="${batchDeleteRoute}"]`);
 
-
-                    function updateDeleteButton() {
-                        const anyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
-                        deleteBtn.disabled = !anyChecked;
-                    }
-
-
-                    // Evento de clique no botão "Selecionar Todos"
-                    toggleAllBtn.addEventListener('click', function() {
-                        const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
-                        checkboxes.forEach(checkbox => checkbox.checked = !allChecked);
-                        // Atualiza o checkbox mestre também
-                        if (selectAllCheckbox) { // Verifica se o checkbox mestre existe
-                            selectAllCheckbox.checked = !allChecked;
+                        function updateDeleteButton() {
+                            const anyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
+                            if (deleteBtn) deleteBtn.disabled = !anyChecked;
                         }
+
+                        if (toggleAllBtn) {
+                            toggleAllBtn.addEventListener('click', function() {
+                                const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+                                checkboxes.forEach(checkbox => checkbox.checked = !allChecked);
+                                if (selectAllCheckbox) selectAllCheckbox.checked = !allChecked;
+                                updateDeleteButton();
+                            });
+                        }
+
+                        if (selectAllCheckbox) {
+                            selectAllCheckbox.addEventListener('change', function() {
+                                checkboxes.forEach(checkbox => checkbox.checked = selectAllCheckbox.checked);
+                                updateDeleteButton();
+                            });
+                        }
+
+                        checkboxes.forEach(checkbox => {
+                            checkbox.addEventListener('change', function() {
+                                if (selectAllCheckbox && !this.checked) selectAllCheckbox.checked = false;
+                                updateDeleteButton();
+                            });
+                        });
+
+                        if (batchDeleteForm) {
+                            batchDeleteForm.addEventListener('submit', function(event) {
+                                const checkedCount = Array.from(checkboxes).filter(checkbox => checkbox.checked).length;
+                                const confirmationMessage = `Tem certeza que deseja processar as ${checkedCount} caixa(s) selecionadas? \n\nCaixas vazias serão excluídas permanentemente.\nCaixas com documentos terão seus documentos desassociados e as caixas NÃO serão excluídas.`;
+                                if (!confirm(confirmationMessage)) event.preventDefault();
+                            });
+                        }
+
                         updateDeleteButton();
-                    });
-
-                    // Evento no checkbox mestre (cabeçalho da tabela)
-                    if (selectAllCheckbox) { // Verifica se o checkbox mestre existe antes de adicionar listener
-                        selectAllCheckbox.addEventListener('change', function() {
-                            checkboxes.forEach(checkbox => checkbox.checked = selectAllCheckbox.checked);
-                            updateDeleteButton();
-                        });
-                    }
-
-
-                    // Evento em cada checkbox de item
-                    checkboxes.forEach(checkbox => {
-                        checkbox.addEventListener('change', function() {
-                            // Se algum checkbox individual for desmarcado, desmarca o checkbox mestre
-                            if (selectAllCheckbox && !this.checked) {
-                                selectAllCheckbox.checked = false;
-                            }
-                            updateDeleteButton();
-                        });
-                    });
-
-                    // --- NOVO CÓDIGO: Confirmação para Exclusão em Lote ---
-                    if (batchDeleteForm) { // Verifica se o formulário existe
-                        batchDeleteForm.addEventListener('submit', function(event) {
-                            const checkedCount = Array.from(checkboxes).filter(checkbox => checkbox.checked).length;
-                            // Mensagem de confirmação mais informativa
-                            const confirmationMessage =
-                                `Tem certeza que deseja processar as ${checkedCount} caixa(s) selecionadas? \n\n` +
-                                `Caixas vazias serão excluídas permanentemente.\n` +
-                                `Caixas com documentos terão seus documentos desassociados (ficarão "órfãos") e as caixas NÃO serão excluídas.\n\n` +
-                                `Clique em OK para continuar ou Cancelar para abortar.`;
-
-
-                            if (!confirm(confirmationMessage)) {
-                                event
-                                    .preventDefault(); // Impede o envio do formulário se o usuário clicar em Cancelar
-                            }
-                            // Se o usuário clicar em OK, o formulário será enviado normalmente.
-                        });
-                    }
-                    // --- FIM NOVO CÓDIGO ---
-
-
-                    updateDeleteButton(); // Executa ao carregar a página para definir o estado inicial do botão
-                });
+                    }, { once: false });
+                }
             </script>
         @endpush
 

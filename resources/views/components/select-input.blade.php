@@ -18,13 +18,11 @@
 @if ($currentValue)
 <script>
     // Garante que o select reflita o valor passado, especialmente útil com Alpine/slot
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('livewire:navigated', () => {
         const selectElement = document.getElementById('{{ $attributes->get("id") }}');
         if (selectElement) {
             selectElement.value = '{{ $currentValue }}';
-             // Disparar evento change se necessário para Alpine
-             // selectElement.dispatchEvent(new Event('change'));
         }
-    });
+    }, { once: false });
 </script>
 @endif

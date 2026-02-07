@@ -160,7 +160,7 @@
 
                         {{-- 6. Ações --}}
                         <td class="px-6 py-4 text-right">
-                            <div class="flex items-center justify-end gap-1 lg:gap-2 opacity-40 lg:opacity-0 group-hover:opacity-100 transition-all duration-200">
+                            <div class="flex items-center justify-end gap-1 lg:gap-2">
                                 @can('documents.view')
                                     <button @click="$store.modals.openDocumentDetails({{ $document->id }})" class="p-2 rounded-xl text-primary hover:bg-primary/10 transition-colors" title="Ver Detalhes">
                                         <i class="fa-solid fa-eye text-sm"></i>
