@@ -1,7 +1,7 @@
 # Implementation Plan - Padronização UI e Auditoria
 
 ## Fase 1: Conclusão da Padronização UI (Sincronia aidev)
-- [ ] Task: Validar e converter botões em Listagens (boxes/index, projects/show) conforme aidev 5.1
+- [x] Task: Validar e converter botões em Listagens (boxes/index, projects/show) conforme aidev 5.1 (7f3e72b)
 - [ ] Task: Validar e converter botões em Páginas de Detalhe (boxes/show, commissions/show, documents/show) conforme aidev 5.2
 - [ ] Task: Validar e converter botões em Formulários conforme aidev 5.3
 - [ ] Task: Validar e converter botões em Componentes Reutilizáveis conforme aidev 5.4
