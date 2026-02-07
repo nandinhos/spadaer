@@ -1,307 +1,187 @@
 @props([
-    'documents', // Coleção paginada
-    'requestParams' => [], // Parâmetros da request atual
+    'documents', 
+    'requestParams' => [],
 ])
 
 @php
-    // --- Definição das Colunas e Chaves de Ordenação ---
-    // Usamos as chaves que o controller espera para ordenação (com nome da tabela)
-    // Usamos as keys do modelo para o switch de exibição quando apropriado
-    $columns = [
-        ['key' => 'boxes.number', 'label' => 'Caixa', 'model_key' => 'box'], // 'key' para sort, 'model_key' para acesso ao dado relacionado
-        ['key' => 'projects.name', 'label' => 'Projeto', 'model_key' => 'project'],
-        ['key' => 'documents.item_number', 'label' => 'Item', 'model_key' => 'item_number'],
-        ['key' => 'documents.code', 'label' => 'Código', 'model_key' => 'code'],
-        ['key' => 'documents.descriptor', 'label' => 'Descritor', 'model_key' => 'descriptor'],
-        ['key' => 'documents.document_number', 'label' => 'Número', 'model_key' => 'document_number'],
-        ['key' => 'documents.title', 'label' => 'Título', 'model_key' => 'title'],
-        ['key' => 'documents.document_date', 'label' => 'Data', 'model_key' => 'document_date'],
-        ['key' => 'documents.confidentiality', 'label' => 'Sigilo', 'model_key' => 'confidentiality'],
-        ['key' => 'documents.version', 'label' => 'Versão', 'model_key' => 'version'],
-        ['key' => 'documents.is_copy', 'label' => 'Cópia', 'model_key' => 'is_copy'],
-    ];
-    // Default sort deve corresponder a uma chave válida em $columns
-    $currentSortBy = $requestParams['sort_by'] ?? 'documents.document_date';
+    $currentSortBy = $requestParams['sort_by'] ?? 'documents.id';
     $currentSortDir = $requestParams['sort_dir'] ?? 'desc';
 
-    // Helper para gerar links de ordenação (mantido da view index de caixas)
-    $requestParamsForSort = request()->except(['page']);
-    function sortLink($label, $columnKey, $currentSortBy, $currentSortDir, $params)
-    {
-        $newSortDir = $currentSortBy == $columnKey && $currentSortDir == 'asc' ? 'desc' : 'asc';
+    function sortLink($label, $columnKey, $currentSortBy, $currentSortDir, $params) {
+        $newSortDir = ($currentSortBy == $columnKey && $currentSortDir == 'asc') ? 'desc' : 'asc';
         $url = route('documents.index', array_merge($params, ['sort_by' => $columnKey, 'sort_dir' => $newSortDir]));
-        $icon = '';
-        if ($currentSortBy == $columnKey) {
-            $icon =
-                $currentSortDir == 'asc'
-                    ? '<i class="ml-1 fas fa-sort-up"></i>'
-                    : '<i class="ml-1 fas fa-sort-down"></i>';
-        }
-        return '<a href="' .
-            $url .
-            '" class="flex items-center space-x-1 group hover:text-gray-900 dark:hover:text-gray-100">' .
-            $label .
-            $icon .
-            '</a>';
+        $active = $currentSortBy == $columnKey;
+        $icon = $active ? ($currentSortDir == 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort opacity-20';
+        
+        return "<a href='{$url}' class='group flex items-center gap-1.5 hover:text-primary transition-colors " . ($active ? 'text-primary font-bold' : '') . "'>
+                    <span class='whitespace-nowrap'>{$label}</span>
+                    <i class='fa-solid {$icon} text-[10px]'></i>
+                </a>";
     }
 @endphp
 
-{{-- Cabeçalho da Tabela (Busca, Itens por página, Ações) --}}
-<div class="p-4 border-b border-gray-200 dark:border-gray-700">
-    {{-- Formulário para busca e itens por página --}}
-    {{-- É melhor ter formulários separados para busca e itens por página --}}
-    <div class="flex flex-col items-center justify-between gap-4 mb-4 md:flex-row">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 shrink-0">
-            Documentos
-            <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
-                ({{ $documents->total() > 0 ? $documents->firstItem() . '-' . $documents->lastItem() : 0 }} de
-                {{ $documents->total() }})
-            </span>
-        </h2>
-
-        {{-- Formulário de Busca --}}
-        <form action="{{ route('documents.index') }}" method="GET" class="flex-grow md:max-w-md">
-            {{-- Manter filtros/sort/per_page ao buscar --}}
-            <input type="hidden" name="filter_box_number" value="{{ $requestParams['filter_box_number'] ?? '' }}">
-            <input type="hidden" name="filter_project_id" value="{{ $requestParams['filter_project_id'] ?? '' }}">
-            <input type="hidden" name="filter_year" value="{{ $requestParams['filter_year'] ?? '' }}">
-            <input type="hidden" name="sort_by" value="{{ $currentSortBy }}">
-            <input type="hidden" name="sort_dir" value="{{ $currentSortDir }}">
-            <input type="hidden" name="per_page" value="{{ $requestParams['per_page'] ?? 15 }}">
-
-            <div class="relative">
-                <x-text-input type="text" name="search" placeholder="Pesquisar..."
-                    class="w-full px-4 py-2 pr-10 text-base" :value="$requestParams['search'] ?? ''" aria-label="Pesquisar documentos" />
-                @if (!empty($requestParams['search']))
-                    {{-- Link para limpar busca, mantendo outros params --}}
-                    <a href="{{ route('documents.index', array_merge($requestParams, ['search' => '', 'page' => 1])) }}"
-                        class="absolute text-gray-500 transform -translate-y-1/2 right-10 top-1/2 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light"
-                        title="Limpar pesquisa">
-                        <i class="fas fa-times-circle"></i>
+<div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+    {{-- Header da Tabela --}}
+    <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex flex-col lg:flex-row justify-between items-center gap-4">
+        <div class="flex items-center justify-between w-full lg:w-auto">
+            <h2 class="text-lg font-black text-gray-900 dark:text-white tracking-tight uppercase flex items-center">
+                Documentos 
+                <span class="ml-3 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-lg text-[10px] font-bold text-gray-500 dark:text-gray-400 normal-case tracking-normal">
+                    {{ $documents->total() }} registros
+                </span>
+            </h2>
+            
+            {{-- Ações mobile - visível apenas em telas pequenas --}}
+            <div class="lg:hidden">
+                @can('documents.create')
+                    <a href="{{ route('documents.create') }}" class="p-2 bg-primary text-white rounded-lg">
+                        <i class="fa-solid fa-plus"></i>
                     </a>
-                @endif
-                <button type="submit"
-                    class="absolute text-gray-500 transform -translate-y-1/2 right-3 top-1/2 dark:text-gray-400"
-                    aria-label="Pesquisar">
-                    <i class="fas fa-search"></i>
-                </button>
-            </div>
-        </form>
-
-        {{-- Formulário Itens por Página --}}
-        <form action="{{ route('documents.index') }}" method="GET">
-            {{-- Manter filtros/sort/search ao mudar página --}}
-            <input type="hidden" name="filter_box_number" value="{{ $requestParams['filter_box_number'] ?? '' }}">
-            <input type="hidden" name="filter_project_id" value="{{ $requestParams['filter_project_id'] ?? '' }}">
-            <input type="hidden" name="filter_year" value="{{ $requestParams['filter_year'] ?? '' }}">
-            <input type="hidden" name="sort_by" value="{{ $currentSortBy }}">
-            <input type="hidden" name="sort_dir" value="{{ $currentSortDir }}">
-            <input type="hidden" name="search" value="{{ $requestParams['search'] ?? '' }}">
-
-            <div class="flex items-center gap-2 shrink-0">
-                <label for="per_page"
-                    class="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ __('Por página:') }}</label>
-                <x-select-input id="per_page" name="per_page" class="p-1 text-sm !py-1 !px-2"
-                    onchange="this.form.submit()" :currentValue="$requestParams['per_page'] ?? 15">
-                    <option value="15">15</option>
-                    <option value="25">25</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                </x-select-input>
-            </div>
-        </form>
-    </div>
-
-    <!-- Botões de Ações Rápidas -->
-    <div class="flex flex-wrap gap-2">
-        {{-- Botão Adicionar (Indigo) - Visível apenas para usuários com permissão de criação --}}
-        @can('documents.create')
-            <a href="{{ route('documents.create') }}"
-                class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
-                <i class="fas fa-plus-circle mr-1.5"></i> Adicionar
-            </a>
-        @endcan
-
-        {{-- Botão Exportar Excel (Verde) - Visível apenas para usuários com permissão de exportação Excel --}}
-        @can('documents.export.excel')
-            <a href="{{ route('documents.export', request()->query()) }}"
-                class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
-                <i class="fas fa-file-excel mr-1.5"></i> Exportar (Excel)
-            </a>
-        @endcan
-
-        {{-- Botão Exportar PDF (Vermelho) - Visível apenas para usuários com permissão de exportação PDF --}}
-        @can('documents.export.pdf')
-            <a href="{{ route('documents.export.pdf', request()->query()) }}" target="_blank"
-                class="inline-flex items-center px-4 py-2 bg-red-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-600 focus:bg-red-600 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
-                <i class="fas fa-file-pdf mr-1.5"></i> Exportar (PDF)
-            </a>
-        @endcan
-    </div>
-
-    {{-- Exibir erros de importação, se houver --}}
-    @if (session('import_errors'))
-        {{-- ... (código para exibir erros de importação) ... --}}
-    @endif
-</div>
-
-{{-- Tabela de Dados --}}
-<div class="overflow-x-auto">
-    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-        <thead class="bg-gray-50 dark:bg-gray-700">
-            <tr>
-                {{-- Gera cabeçalhos com links de ordenação --}}
-                @foreach ($columns as $column)
-                    <th scope="col"
-                        class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300">
-                        {!! sortLink($column['label'], $column['key'], $currentSortBy, $currentSortDir, $requestParamsForSort) !!}
-                    </th>
-                @endforeach
-                <th scope="col"
-                    class="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase dark:text-gray-300">
-                    Ações
-                </th>
-            </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-            @forelse ($documents as $document)
-                @can('documents.view')
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-750/50">
-                    {{-- Itera sobre as colunas definidas para exibir os dados corretos --}}
-                    @foreach ($columns as $column)
-                        <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap dark:text-gray-300">
-                            @switch($column['model_key'])
-                                {{-- Usa model_key para acessar o dado --}}
-                                @case('box')
-                                    {{ $document->box?->number ?? '--' }}
-                                @break
-
-                                @case('project')
-                                    {{ $document->project?->name ?? '--' }}
-                                @break
-
-                                @case('document_date')
-                                    {{ $document->document_date }}
-                                @break
-
-                                @case('is_copy')
-                                    {{-- Exibe a string armazenada ou um traço se for nulo/vazio --}}
-                                    {{ $document->is_copy ?: '--' }}
-                                @break
-
-                                @case('confidentiality')
-                                    @php
-                                        // Normaliza o valor para minúsculas para comparação case-insensitive
-                                        $level = strtolower($document->confidentiality ?? '');
-                                        $confidentialityClass = '';
-                                        // Mantém o valor original para exibição (ou '--' se nulo/vazio)
-                                        $confidentialityLabel = $document->confidentiality ?: '--';
-
-                                        // Define as classes CSS baseadas no nível de sigilo normalizado
-                                        switch ($level) {
-                                            case 'unclassified': // Azul
-                                                $confidentialityClass =
-                                                    'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-                                                break;
-
-                                            case 'ostensivo': // Verde
-                                            case 'público': // Verde
-                                            case 'public': // Verde
-                                                $confidentialityClass =
-                                                    'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-                                                break;
-
-                                            case 'confidencial': // Amarelo
-                                            case 'confidential': // Amarelo
-                                                $confidentialityClass =
-                                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-                                                break;
-
-                                            case 'restrito': // Vermelho
-                                            case 'secreto': // Vermelho
-                                            case 'restricted': // Vermelho
-                                                $confidentialityClass =
-                                                    'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-                                                break;
-
-                                            default:
-                                                // Cor padrão cinza para valores vazios ou não reconhecidos
-                                                $confidentialityClass =
-                                                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
-                                                // Garante que o label seja '--' se for um valor não reconhecido ou vazio
-                                                $confidentialityLabel = '--';
-                                                break;
-                                        }
-                                    @endphp
-                                    {{-- Aplica a classe e exibe o label original (capitalizado) ou '--' --}}
-                                    <span
-                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize {{ $confidentialityClass }}">
-                                        {{-- Usar ucfirst() para capitalizar a primeira letra do label exibido --}}
-                                        {{ $confidentialityLabel !== '--' ? ucfirst(strtolower($document->confidentiality)) : '--' }}
-                                    </span>
-                                @break
-
-                                @case('title')
-                                    <span title="{{ $document->title }}">{{ Str::limit($document->title, 50) }}</span>
-                                @break
-
-                                @default
-                                    {{ $document->{$column['model_key']} ?? '--' }}
-                            @endswitch
-                        </td>
-                    @endforeach
-                    {{-- Coluna de Ações --}}
-                    <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
-                        {{-- Botão para abrir o Modal (Visualização) --}}
-                        @can('documents.view')
-                            <button type="button" @click="openDocumentModal({{ $document->id }})"
-                                class="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-200 focus:outline-none focus:underline"
-                                title="Ver Detalhes do Documento">
-                                <i class="mr-1 fas fa-eye"></i>Ver
-                            </button>
-                        @endcan
-
-                        {{-- Botão Editar --}}
-                        @can('documents.edit')
-                            <a href="{{ route('documents.edit', $document) }}"
-                                class="ml-2 font-medium text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-white focus:outline-none focus:underline"
-                                title="Editar Documento">
-                                <i class="mr-1 fas fa-edit"></i>Editar
-                            </a>
-                        @endcan
-
-                        {{-- Botão Excluir --}}
-                        @can('documents.delete')
-                            <form method="POST" action="{{ route('documents.destroy', $document) }}"
-                                class="inline ml-2"
-                                onsubmit="return confirm('Tem certeza que deseja excluir este documento?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit"
-                                    class="font-medium text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200 focus:outline-none focus:underline"
-                                    title="Excluir Documento">
-                                    <i class="mr-1 fas fa-trash-alt"></i>Excluir
-                                </button>
-                            </form>
-                        @endcan
-                    </td>
-                </tr>
                 @endcan
-            @empty
-                    {{-- Linha para quando não há documentos --}}
-                    <tr>
-                        <td colspan="{{ count($columns) + 1 }}"
-                            class="px-6 py-10 text-center text-gray-500 dark:text-gray-400">
-                            <div class="flex flex-col items-center justify-center">
-                                <i class="mb-2 text-gray-400 fas fa-folder-open fa-3x"></i>
-                                Nenhum documento encontrado.
-                                @if (count(array_filter($requestParams)) > 0)
-                                    <p class="mt-1 text-sm">Tente ajustar os filtros ou a pesquisa.</p>
-                                    <a href="{{ route('documents.index', ['sort_by' => $requestParams['sort_by'] ?? null, 'sort_dir' => $requestParams['sort_dir'] ?? null, 'per_page' => $requestParams['per_page'] ?? null]) }}"
-                                        class="mt-3 text-sm text-primary dark:text-primary-light hover:underline">
-                                        Limpar filtros e pesquisa
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+            {{-- Busca Integrada --}}
+            <form action="{{ route('documents.index') }}" method="GET" class="relative w-full sm:w-80 group">
+                <x-text-input 
+                    type="text" 
+                    name="search" 
+                    placeholder="Busca rápida..." 
+                    class="w-full pl-10 pr-4 py-2 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 focus:bg-white dark:focus:bg-gray-800 transition-all text-sm" 
+                    :value="$requestParams['search'] ?? ''" 
+                />
+                <div class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors">
+                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                </div>
+            </form>
+
+            {{-- Botões de Ação Desktop --}}
+            <div class="hidden lg:flex items-center gap-2">
+                @can('documents.create')
+                    <x-primary-button onclick="window.location.href='{{ route('documents.create') }}'" class="!py-2 text-[10px]">
+                        <i class="fa-solid fa-plus mr-2"></i>Novo Documento
+                    </x-primary-button>
+                @endcan
+                @can('documents.export.excel')
+                    <x-secondary-button onclick="window.location.href='{{ route('documents.export', request()->query()) }}'" class="!py-2 text-[10px]">
+                        <i class="fa-solid fa-file-excel mr-2 text-emerald-600"></i>Exportar
+                    </x-secondary-button>
+                @endcan
+            </div>
+        </div>
+    </div>
+
+    {{-- Tabela Responsiva --}}
+    <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse min-w-[800px] lg:min-w-full">
+            <thead>
+                <tr class="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
+                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                        {!! sortLink('Localização (Cx/Item)', 'boxes.number', $currentSortBy, $currentSortDir, $requestParams) !!}
+                    </th>
+                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                        {!! sortLink('Identificação (Nº/Cód)', 'documents.document_number', $currentSortBy, $currentSortDir, $requestParams) !!}
+                    </th>
+                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest w-1/3">
+                        {!! sortLink('Documento (Título/Data)', 'documents.title', $currentSortBy, $currentSortDir, $requestParams) !!}
+                    </th>
+                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                        {!! sortLink('Projeto', 'projects.name', $currentSortBy, $currentSortDir, $requestParams) !!}
+                    </th>
+                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Sigilo</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
+                @forelse($documents as $document)
+                    <tr class="group hover:bg-primary/[0.02] dark:hover:bg-primary/[0.05] transition-colors">
+                        {{-- 1. Localização (Caixa / Item) --}}
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-primary shrink-0">
+                                    <i class="fa-solid fa-box-open text-xs"></i>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-black text-gray-900 dark:text-gray-100 uppercase tracking-tighter">
+                                        {{ $document->box->number ?? '---' }}
+                                    </span>
+                                    <span class="text-[10px] font-bold text-gray-400 uppercase">Item: {{ $document->item_number ?? '--' }}</span>
+                                </div>
+                            </div>
+                        </td>
+
+                        {{-- 2. Identificação (Nº / Código) --}}
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-bold text-gray-900 dark:text-gray-100 tracking-tight">
+                                    {{ $document->document_number }}
+                                </span>
+                                <span class="text-[10px] font-black text-primary/70 uppercase tracking-widest">{{ $document->code ?? 'S/C' }}</span>
+                            </div>
+                        </td>
+
+                        {{-- 3. Documento (Título / Data) --}}
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col">
+                                <p class="text-sm font-medium text-gray-900 dark:text-gray-100 leading-snug truncate max-w-sm lg:max-w-md" title="{{ $document->title }}">
+                                    {{ $document->title }}
+                                </p>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="text-[10px] font-bold text-gray-400 uppercase flex items-center">
+                                        <i class="fa-regular fa-calendar mr-1"></i> {{ $document->document_date ?? 'Sem data' }}
+                                    </span>
+                                    @if($document->version)
+                                        <span class="text-[10px] font-black px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-gray-500 uppercase tracking-tighter">v{{ $document->version }}</span>
+                                    @endif
+                                </div>
+                            </div>
+                        </td>
+
+                        {{-- 4. Projeto --}}
+                        <td class="px-6 py-4">
+                            <span class="text-xs font-bold text-gray-600 dark:text-gray-400 border-b border-dotted border-gray-300 dark:border-gray-700 cursor-help" title="{{ $document->project->name ?? '---' }}">
+                                {{ $document->project->code ?? 'Geral' }}
+                            </span>
+                        </td>
+
+                        {{-- 5. Sigilo --}}
+                        <td class="px-6 py-4 text-center text-xs">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border
+                                {{ match(strtolower($document->confidentiality ?? '')) {
+                                    'público', 'publico' => 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800',
+                                    'restrito' => 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800',
+                                    'confidencial' => 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800',
+                                    default => 'bg-gray-50 text-gray-600 border-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
+                                } }}">
+                                {{ $document->confidentiality ?? '---' }}
+                            </span>
+                        </td>
+
+                        {{-- 6. Ações --}}
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-1 lg:gap-2 opacity-40 lg:opacity-0 group-hover:opacity-100 transition-all duration-200">
+                                @can('documents.view')
+                                    <button @click="$store.modals.openDocumentDetails({{ $document->id }})" class="p-2 rounded-xl text-primary hover:bg-primary/10 transition-colors" title="Ver Detalhes">
+                                        <i class="fa-solid fa-eye text-sm"></i>
+                                    </button>
+                                @endcan
+                                @can('documents.edit')
+                                    <a href="{{ route('documents.edit', $document) }}" class="p-2 rounded-xl text-gray-400 hover:text-primary hover:bg-primary/10 transition-colors" title="Editar">
+                                        <i class="fa-solid fa-pen-to-square text-sm"></i>
                                     </a>
-                                @endif
+                                @endcan
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="px-6 py-20 text-center">
+                            <div class="flex flex-col items-center gap-3">
+                                <div class="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-300 dark:text-gray-600">
+                                    <i class="fa-solid fa-folder-open text-3xl"></i>
+                                </div>
+                                <p class="text-sm font-bold text-gray-400 uppercase tracking-widest">Nenhum documento disponível</p>
                             </div>
                         </td>
                     </tr>
@@ -309,3 +189,4 @@
             </tbody>
         </table>
     </div>
+</div>

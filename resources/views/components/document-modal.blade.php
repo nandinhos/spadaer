@@ -1,184 +1,149 @@
-{{-- Componente Modal (resources/views/components/document-modal.blade.php) --}}
+{{-- Componente Modal Premium --}}
 <div 
-    x-show="showModal" 
-    x-trap.noscroll="showModal"
-    x-on:keydown.escape.window="closeModal()" 
+    x-data 
+    x-show="$store.modals.showDocumentDetails" 
+    x-trap.noscroll="$store.modals.showDocumentDetails"
+    x-on:keydown.escape.window="$store.modals.closeDocumentDetails()" 
     class="fixed inset-0 z-50 overflow-y-auto"
     aria-labelledby="modal-title" 
     role="dialog" 
     aria-modal="true" 
-    style="display: none;"
+    x-cloak
 >
     @can('documents.view')
     <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:items-center sm:block sm:p-0">
         {{-- Background overlay --}}
         <div 
-            x-show="showModal" 
+            x-show="$store.modals.showDocumentDetails" 
             x-transition:enter="ease-out duration-300" 
             x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100" 
             x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100" 
             x-transition:leave-end="opacity-0"
-            class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-80"
-            x-on:click="closeModal()" 
+            class="fixed inset-0 transition-opacity bg-gray-900/75 backdrop-blur-sm"
+            x-on:click="$store.modals.closeDocumentDetails()" 
             aria-hidden="true"
         ></div>
 
-        {{-- Span para ajudar a centralizar o conteúdo do modal verticalmente na tela --}}
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
         {{-- Conteúdo do Modal --}}
         <div
-            x-show="showModal"
+            x-show="$store.modals.showDocumentDetails"
             x-transition:enter="ease-out duration-300"
             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
             x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            class="inline-block w-full overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl dark:bg-gray-800 sm:my-8 sm:align-middle sm:max-w-2xl"
-            {{-- Removido @click.outside="closeModal()" daqui, pois o clique no overlay já faz isso.
-                 Se precisar dele, certifique-se de que não haja conflitos. --}}
+            class="inline-block w-full overflow-hidden text-left align-bottom transition-all transform bg-white rounded-xl shadow-2xl dark:bg-gray-800 sm:my-8 sm:align-middle sm:max-w-2xl"
         >
-            {{-- Header --}}
-            <div class="px-4 pt-5 pb-4 bg-white border-b border-gray-200 dark:bg-gray-800 sm:p-6 sm:pb-4 dark:border-gray-700">
-                <div class="sm:flex sm:items-start">
-                    <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto rounded-full bg-primary-light bg-opacity-20 sm:mx-0 sm:h-10 sm:w-10">
-                        <i class="text-lg fas fa-file-alt text-primary"></i>
+            {{-- Header Premium --}}
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100" id="modal-title">
+                                Detalhes do Documento
+                            </h3>
+                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400"
+                               x-text="$store.modals.selectedDocument?.document_number || 'Carregando...'">
+                            </p>
+                        </div>
                     </div>
-                    <div class="w-full mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                        <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100" id="modal-title">
-                            Detalhes do Documento
-                        </h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400"
-                           x-text="selectedDocument.document_number ? selectedDocument.document_number : 'Carregando...'">
-                        </p>
-                    </div>
-                    {{-- Botão 'x' para fechar no header --}}
                     <button
-                        x-on:click="closeModal()"
-                        type="button"
-                        class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
+                        x-on:click="$store.modals.closeDocumentDetails()"
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
                     >
-                        <span class="sr-only">Fechar</span>
                         <i class="fas fa-times fa-lg"></i>
                     </button>
                 </div>
             </div>
 
-            {{-- Corpo (Conteúdo) --}}
-            <div class="px-4 py-5 sm:p-6">
-                {{-- Indicador de Carregamento --}}
-                <div x-show="loadingModal" class="flex items-center justify-center h-40">
-                    <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
-                    <span class="ml-3 text-gray-600 dark:text-gray-400">Carregando dados...</span>
+            {{-- Corpo --}}
+            <div class="px-6 py-6">
+                <div x-show="$store.modals.loadingDocument" class="flex flex-col items-center justify-center py-12">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                    <p class="mt-4 text-sm text-gray-500">Recuperando informações...</p>
                 </div>
 
-                {{-- Tabela de Detalhes (mostra quando não está carregando e tem dados) --}}
-                <div x-show="!loadingModal && selectedDocument.id" x-transition>
-                    <table class="min-w-full text-sm">
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            {{-- Linhas da tabela --}}
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-750/50">
-                                <td class="w-1/3 px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Título</td>
-                                <td class="px-4 py-3 text-gray-900 dark:text-gray-100" x-text="selectedDocument.title || '-'"></td>
-                            </tr>
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-750/50">
-                                <td class="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Número do Documento</td>
-                                <td class="px-4 py-3 text-gray-900 dark:text-gray-100" x-text="selectedDocument.document_number || '-'"></td>
-                            </tr>
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-750/50">
-                                <td class="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Caixa / Item</td>
-                                <td class="px-4 py-3 text-gray-900 dark:text-gray-100">
-                                    <span x-text="selectedDocument.box?.number || 'N/A'"></span> /
-                                    <span x-text="selectedDocument.item_number || 'N/A'"></span>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-750/50">
-                                <td class="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Projeto</td>
-                                <td class="px-4 py-3 text-gray-900 dark:text-gray-100" x-text="selectedDocument.project?.name || '-- Nenhum --'"></td>
-                            </tr>
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-750/50">
-                                <td class="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Data do Documento</td>
-                                <td class="px-4 py-3 text-gray-900 dark:text-gray-100" x-text="selectedDocument.document_date || '-'"></td>
-                            </tr>
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-750/50">
-                                <td class="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Código</td>
-                                <td class="px-4 py-3 text-gray-900 dark:text-gray-100" x-text="selectedDocument.code || '-'"></td>
-                            </tr>
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-750/50">
-                                <td class="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Descritor</td>
-                                <td class="px-4 py-3 text-gray-900 dark:text-gray-100" x-text="selectedDocument.descriptor || '-'"></td>
-                            </tr>
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-750/50">
-                                <td class="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Sigilo</td>
-                                <td class="px-4 py-3 text-gray-900 dark:text-gray-100">
+                <div x-show="!$store.modals.loadingDocument && $store.modals.selectedDocument?.id" x-transition>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {{-- Seção de Identificação --}}
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Título</label>
+                                <p class="text-sm font-medium text-gray-900 dark:text-gray-100 mt-1" x-text="$store.modals.selectedDocument?.title || '---'"></p>
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Projeto</label>
+                                <p class="text-sm font-medium text-gray-900 dark:text-gray-100 mt-1" x-text="$store.modals.selectedDocument?.project?.name || 'Não associado'"></p>
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Data do Documento</label>
+                                <p class="text-sm font-medium text-gray-900 dark:text-gray-100 mt-1" x-text="$store.modals.selectedDocument?.document_date || '---'"></p>
+                            </div>
+                        </div>
+
+                        {{-- Seção Técnica --}}
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Localização</label>
+                                <p class="text-sm font-medium text-gray-900 dark:text-gray-100 mt-1">
+                                    Caixa <span x-text="$store.modals.selectedDocument?.box?.number || '---'"></span> / Item <span x-text="$store.modals.selectedDocument?.item_number || '---'"></span>
+                                </p>
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Sigilo</label>
+                                <div class="mt-1">
                                     <span
-                                        class="inline-flex px-2 text-xs font-semibold leading-5 capitalize rounded-full"
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
                                         :class="{
-                                            'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': selectedDocument.confidentiality === 'Confidencial',
-                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': selectedDocument.confidentiality === 'Restrito',
-                                            'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': selectedDocument.confidentiality === 'Público',
-                                            'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': !selectedDocument.confidentiality
+                                            'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800': $store.modals.selectedDocument?.confidentiality === 'Confidencial',
+                                            'bg-yellow-50 text-yellow-700 border-yellow-100 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800': $store.modals.selectedDocument?.confidentiality === 'Restrito',
+                                            'bg-green-50 text-green-700 border-green-100 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800': $store.modals.selectedDocument?.confidentiality === 'Público'
                                         }"
-                                        x-text="selectedDocument.confidentiality ? selectedDocument.confidentiality.toLowerCase() : '-'">
+                                        x-text="$store.modals.selectedDocument?.confidentiality || 'Não definido'">
                                     </span>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-750/50">
-                                <td class="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Versão</td>
-                                <td class="px-4 py-3 text-gray-900 dark:text-gray-100" x-text="selectedDocument.version || '-'"></td>
-                            </tr>
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-750/50">
-                                <td class="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">É Cópia?</td>
-                                {{-- Assumindo que 'is_copy' no seu JS/backend seja um booleano ou string que pode ser avaliada como true/false --}}
-                                <td class="px-4 py-3 text-gray-900 dark:text-gray-100" x-text="selectedDocument.is_copy ? (typeof selectedDocument.is_copy === 'boolean' ? (selectedDocument.is_copy ? 'Sim' : 'Não') : (selectedDocument.is_copy === '1' || selectedDocument.is_copy.toLowerCase() === 'sim' ? 'Sim' : 'Não')) : 'Não'"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                {{-- Mensagem se falhar ao carregar (opcional) --}}
-                <div x-show="!loadingModal && !selectedDocument.id" class="py-10 text-center text-gray-500">
-                    Não foi possível carregar os detalhes do documento.
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Versão / Cópia</label>
+                                <p class="text-sm font-medium text-gray-900 dark:text-gray-100 mt-1">
+                                    v<span x-text="$store.modals.selectedDocument?.version || '1.0'"></span> — 
+                                    <span x-text="$store.modals.selectedDocument?.is_copy ? 'Cópia' : 'Original'"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {{-- Footer --}}
-            <div class="px-4 py-3 border-t border-gray-200 bg-gray-50 dark:bg-gray-700 sm:px-6 sm:flex sm:flex-row-reverse dark:border-gray-600">
-                {{-- Botão Fechar --}}
-                <x-secondary-button type="button" x-on:click="closeModal()">
-                    {{ __('Fechar') }}
+            {{-- Footer Premium --}}
+            <div class="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row-reverse gap-3">
+                <x-secondary-button x-on:click="$store.modals.closeDocumentDetails()" class="w-full sm:w-auto justify-center">
+                    Fechar
                 </x-secondary-button>
 
-                {{-- Botões de Ação com Verificação de Permissão --}}
                 @can('documents.edit')
                     <x-primary-button 
-                        type="button"
-                        x-show="selectedDocument.id"
-                        x-on:click="window.location.href='/documents/' + selectedDocument.id + '/edit'"
-                        class="mr-3"
+                        x-show="$store.modals.selectedDocument?.id"
+                        x-on:click="window.location.href='/documents/' + $store.modals.selectedDocument?.id + '/edit'"
+                        class="w-full sm:w-auto justify-center"
                     >
-                        <i class="fas fa-edit mr-2"></i>Editar Documento
+                        <i class="fas fa-edit mr-2"></i>Editar
                     </x-primary-button>
-                @endcan
-                @can('documents.delete')
-                    <x-danger-button 
-                        type="button"
-                        x-show="selectedDocument.id"
-                        x-on:click="if(confirm('Tem certeza que deseja excluir este documento?')) { window.location.href='/documents/' + selectedDocument.id + '/delete' }"
-                        class="mr-3"
-                    >
-                        <i class="fas fa-trash-alt mr-2"></i>Excluir Documento
-                    </x-danger-button>
                 @endcan
             </div>
         </div>
     </div>
     @else
-        <div class="p-4 mt-4 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-900 dark:text-red-300" role="alert">
-            <p class="font-medium">Acesso Negado</p>
-            <p>Você não tem permissão para visualizar este documento.</p>
+        <div class="p-4 m-4 text-sm text-red-700 bg-red-100 rounded-lg shadow-sm" role="alert" x-cloak>
+            <i class="fas fa-exclamation-triangle mr-2"></i>Acesso negado para visualização de documentos.
         </div>
     @endcan
 </div>
