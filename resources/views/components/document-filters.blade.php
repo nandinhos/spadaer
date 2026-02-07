@@ -1,50 +1,63 @@
 @props([
     'projects' => [],
     'years' => [],
-    'requestParams' => [], // Array com os parâmetros da request atual
+    'requestParams' => [],
 ])
 
-{{-- O estado showFilters é controlado pelo Alpine na view principal --}}
-<div class="p-4 mb-6 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm">
-    {{-- Cabeçalho clicável para expandir/recolher --}}
-    <div class="flex items-center justify-between cursor-pointer" @click="showFilters = !showFilters">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-            <i class="mr-2 fas fa-filter"></i> Filtros Avançados / Relatórios
-        </h3>
-        <button class="text-primary dark:text-primary-light" aria-label="Alternar filtros avançados">
-            <i x-show="!showFilters" class="fas fa-chevron-down"></i>
-            <i x-show="showFilters" class="fas fa-chevron-up"></i>
-        </button>
-    </div>
+<div x-data="{ open: {{ request()->hasAny(['filter_box_number', 'filter_project_id', 'filter_year']) ? 'true' : 'false' }} }" class="mb-8 overflow-hidden bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm transition-all duration-300">
+    {{-- Header Clicável --}}
+    <button 
+        @click="open = !open" 
+        class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors focus:outline-none"
+    >
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                <i class="fa-solid fa-sliders text-sm"></i>
+            </div>
+            <h3 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">
+                Filtros Avançados
+            </h3>
+        </div>
+        <i class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
+    </button>
 
-    {{-- Formulário GET para aplicar filtros --}}
-    <form x-show="showFilters" x-transition action="{{ route('documents.index') }}" method="GET" class="mt-4">
-        {{-- Mantém a ordenação, busca e paginação atuais ao filtrar --}}
-        @if (isset($requestParams['sort_by']))
-            <input type="hidden" name="sort_by" value="{{ $requestParams['sort_by'] }}">
-        @endif
-        @if (isset($requestParams['sort_dir']))
-            <input type="hidden" name="sort_dir" value="{{ $requestParams['sort_dir'] }}">
-        @endif
-        @if (isset($requestParams['search']))
-            <input type="hidden" name="search" value="{{ $requestParams['search'] }}">
-        @endif
-        @if (isset($requestParams['per_page']))
-            <input type="hidden" name="per_page" value="{{ $requestParams['per_page'] }}">
-        @endif
+    {{-- Formulário --}}
+    <form 
+        x-show="open" 
+        x-cloak
+        x-collapse
+        action="{{ route('documents.index') }}" 
+        method="GET" 
+        class="px-6 pb-6"
+    >
+        {{-- Preservar outros parâmetros --}}
+        @foreach(['sort_by', 'sort_dir', 'search', 'per_page'] as $param)
+            @if(isset($requestParams[$param]))
+                <input type="hidden" name="{{ $param }}" value="{{ $requestParams[$param] }}">
+            @endif
+        @endforeach
 
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {{-- Filtro por Número da Caixa --}}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
             <div>
-                <x-input-label for="filter_box_number" value="Número da Caixa" />
-                <x-text-input id="filter_box_number" name="filter_box_number" type="text" class="w-full mt-1"
-                    :value="old('filter_box_number', $requestParams['filter_box_number'] ?? '')" placeholder="Ex: AD001" />
+                <x-input-label for="filter_box_number" value="Nº da Caixa" class="text-[10px] font-black uppercase text-gray-400 mb-1.5" />
+                <x-text-input 
+                    id="filter_box_number" 
+                    name="filter_box_number" 
+                    type="text" 
+                    class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50" 
+                    :value="$requestParams['filter_box_number'] ?? ''" 
+                    placeholder="Ex: AD001" 
+                />
             </div>
 
-            {{-- Filtro por Projeto --}}
             <div>
-                <x-input-label for="filter_project_id" value="Projeto" />
-                <x-select-input id="filter_project_id" name="filter_project_id" class="w-full mt-1" :currentValue="old('filter_project_id', $requestParams['filter_project_id'] ?? '')">
+                <x-input-label for="filter_project_id" value="Projeto Vinculado" class="text-[10px] font-black uppercase text-gray-400 mb-1.5" />
+                <x-select-input 
+                    id="filter_project_id" 
+                    name="filter_project_id" 
+                    class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50" 
+                    :currentValue="$requestParams['filter_project_id'] ?? ''"
+                >
                     <option value="">Todos os Projetos</option>
                     @foreach ($projects as $id => $name)
                         <option value="{{ $id }}">{{ $name }}</option>
@@ -52,10 +65,14 @@
                 </x-select-input>
             </div>
 
-            {{-- Filtro por Ano --}}
             <div>
-                <x-input-label for="filter_year" value="Ano do Documento" />
-                <x-select-input id="filter_year" name="filter_year" class="w-full mt-1" :currentValue="old('filter_year', $requestParams['filter_year'] ?? '')">
+                <x-input-label for="filter_year" value="Ano de Referência" class="text-[10px] font-black uppercase text-gray-400 mb-1.5" />
+                <x-select-input 
+                    id="filter_year" 
+                    name="filter_year" 
+                    class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50" 
+                    :currentValue="$requestParams['filter_year'] ?? ''"
+                >
                     <option value="">Todos os Anos</option>
                     @foreach ($years as $year)
                         <option value="{{ $year }}">{{ $year }}</option>
@@ -64,13 +81,15 @@
             </div>
         </div>
 
-        {{-- Botões de Ação --}}
-        <div class="flex justify-end gap-2 pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
-            <x-secondary-button type="button"
-                onclick="window.location.href='{{ route('documents.index', ['sort_by' => $requestParams['sort_by'] ?? null, 'sort_dir' => $requestParams['sort_dir'] ?? null, 'per_page' => $requestParams['per_page'] ?? null]) }}'">
-                Limpar Filtros
-            </x-secondary-button>
-            <x-primary-button type="submit">
+        <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+            <button 
+                type="button"
+                onclick="window.location.href='{{ route('documents.index') }}'"
+                class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 uppercase tracking-widest transition-colors"
+            >
+                Limpar
+            </button>
+            <x-primary-button class="rounded-xl shadow-lg shadow-primary/20">
                 Aplicar Filtros
             </x-primary-button>
         </div>
