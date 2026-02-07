@@ -78,10 +78,52 @@
 
     {{-- Tabela Reativa --}}
     <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
-        <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex flex-col lg:flex-row justify-between items-center gap-4">
-            <h2 class="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">
-                Documentos
-            </h2>
+        <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex flex-wrap items-center gap-3">
+                <h2 class="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight mr-2">
+                    Documentos
+                </h2>
+                <a href="{{ route('documents.create') }}" wire:navigate>
+                    <x-ui.button size="sm" icon="fas fa-plus" variant="primary">
+                        Novo
+                    </x-ui.button>
+                </a>
+                
+                {{-- Ações de Lote / Ferramentas --}}
+                <div class="flex items-center gap-2 ml-2 pl-4 border-l border-gray-100 dark:border-gray-800">
+                    <x-dropdown align="right" width="48">
+                        <x-slot name="trigger">
+                            <x-ui.button size="sm" variant="success" icon="fas fa-download">
+                                Exportar
+                            </x-ui.button>
+                        </x-slot>
+                        <x-slot name="content">
+                            <x-dropdown-link :href="route('documents.export')" class="flex items-center gap-2">
+                                <i class="fa-solid fa-file-excel text-green-600"></i> Excel (XLSX)
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('documents.export.pdf')" class="flex items-center gap-2">
+                                <i class="fa-solid fa-file-pdf text-red-600"></i> PDF
+                            </x-dropdown-link>
+                        </x-slot>
+                    </x-dropdown>
+
+                    <form action="{{ route('documents.import') }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-2">
+                        @csrf
+                        <div class="relative group">
+                            <input type="file" name="csv_file" id="csv_file" class="hidden" onchange="this.form.submit()">
+                            <label for="csv_file" class="cursor-pointer inline-flex items-center justify-center px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition-all duration-200 shadow-sm shadow-amber-500/20">
+                                <i class="fas fa-file-import mr-2"></i>
+                                Importar CSV
+                            </label>
+                        </div>
+                    </form>
+
+                    <a href="{{ asset('files/modelo_importacao.csv') }}" download class="inline-flex items-center gap-1.5 px-2 py-1 text-gray-400 hover:text-primary transition-colors text-xs" title="Baixar Modelo CSV">
+                        <i class="fa-solid fa-file-csv"></i>
+                        <span class="text-[10px] font-bold uppercase tracking-wider">Modelo</span>
+                    </a>
+                </div>
+            </div>
 
             <div class="relative w-full sm:w-80 group">
                 <x-text-input 
@@ -124,7 +166,7 @@
                             </td>
                             <td class="px-6 py-4">
                                 <p class="text-sm font-medium text-gray-900 dark:text-gray-100 leading-snug truncate max-w-sm">{{ $document->title }}</p>
-                                <span class="text-[10px] font-bold text-gray-400 uppercase"><i class="fa-regular fa-calendar mr-1"></i> {{ $document->document_date }}</span>
+                                <span class="text-[10px] font-bold text-gray-400 uppercase"><i class="fa-regular fa-calendar mr-1"></i> {{ $document->formatted_document_date }}</span>
                             </td>
                             <td class="px-6 py-4">
                                 <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border

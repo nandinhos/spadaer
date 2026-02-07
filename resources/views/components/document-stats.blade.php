@@ -8,8 +8,8 @@
     {{-- Card Documentos --}}
     <x-stat-card 
         label="{{ $hasActiveFilters ? 'Documentos Filtrados' : 'Total de Documentos' }}"
-        value="{{ number_format($stats['filteredDocumentsCount'] ?? 0) }}"
-        subvalue="{{ $hasActiveFilters ? 'de ' . number_format($totalDocuments) : '' }}"
+        value="{{ number_format($hasActiveFilters ? ($stats['filteredDocumentsCount'] ?? 0) : ($stats['totalDocuments'] ?? 0)) }}"
+        subvalue="{{ $hasActiveFilters ? 'de ' . number_format($stats['totalDocuments'] ?? 0) : '' }}"
         icon="fa-file-invoice"
         color="primary"
     />
@@ -17,7 +17,7 @@
     {{-- Card Caixas --}}
     <x-stat-card 
         label="{{ $hasActiveFilters ? 'Caixas Encontradas' : 'Total de Caixas' }}"
-        value="{{ number_format($stats['filteredBoxesCount'] ?? 0) }}"
+        value="{{ number_format($hasActiveFilters ? ($stats['filteredBoxesCount'] ?? 0) : ($stats['totalBoxes'] ?? 0)) }}"
         subvalue="{{ $hasActiveFilters ? 'de ' . number_format($stats['totalBoxes'] ?? 0) : '' }}"
         icon="fa-box-archive"
         color="green"
@@ -26,7 +26,7 @@
     {{-- Card Projetos --}}
     <x-stat-card 
         label="{{ $hasActiveFilters ? 'Projetos Encontrados' : 'Total de Projetos' }}"
-        value="{{ number_format($stats['filteredProjectsCount'] ?? 0) }}"
+        value="{{ number_format($hasActiveFilters ? ($stats['filteredProjectsCount'] ?? 0) : ($stats['totalProjects'] ?? 0)) }}"
         subvalue="{{ $hasActiveFilters ? 'de ' . number_format($stats['totalProjects'] ?? 0) : '' }}"
         icon="fa-diagram-project"
         color="amber"

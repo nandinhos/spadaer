@@ -4,8 +4,6 @@ namespace App\Services;
 
 use App\Models\Document;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class DocumentService
 {
@@ -34,8 +32,8 @@ class DocumentService
             $query->where(function ($q) use ($searchTerm) {
                 $wildcard = "%{$searchTerm}%";
                 $q->where('documents.title', 'like', $wildcard)
-                  ->orWhere('documents.document_number', 'like', $wildcard)
-                  ->orWhere('documents.code', 'like', $wildcard);
+                    ->orWhere('documents.document_number', 'like', $wildcard)
+                    ->orWhere('documents.code', 'like', $wildcard);
             });
         }
 
@@ -48,7 +46,10 @@ class DocumentService
         }
 
         if ($filterYear) {
-            $query->where('documents.document_date', 'like', '%/'.$filterYear);
+            $query->where(function ($q) use ($filterYear) {
+                $q->where('documents.document_date', 'like', $filterYear.'-%')
+                    ->orWhere('documents.document_date', 'like', '%/'.$filterYear);
+            });
         }
 
         if ($sortBy === 'documents.item_number') {
@@ -67,18 +68,26 @@ class DocumentService
     {
         // Contagem de documentos (usando distinct para evitar inflação por joins se houver)
         $filteredDocumentsCount = (clone $query)->distinct()->count('documents.id');
-        
+
         $yearRange = '--';
         if ($filteredDocumentsCount > 0) {
             $years = (clone $query)->reorder()
                 ->select('document_date')
                 ->whereNotNull('document_date')
+                ->where('document_date', '!=', '')
                 ->distinct()
                 ->pluck('document_date')
                 ->map(function ($date) {
-                    if (preg_match('/\/(\d{4})$/', (string)$date, $matches)) {
-                        return (int)$matches[1];
+                    $dateStr = (string) $date;
+                    // Tenta YYYY-MM-DD
+                    if (preg_match('/^(\d{4})/', $dateStr, $matches)) {
+                        return (int) $matches[1];
                     }
+                    // Tenta DD/MM/YYYY
+                    if (preg_match('/\/(\d{4})$/', $dateStr, $matches)) {
+                        return (int) $matches[1];
+                    }
+
                     return null;
                 })
                 ->filter()
@@ -87,7 +96,7 @@ class DocumentService
             if ($years->isNotEmpty()) {
                 $min = $years->min();
                 $max = $years->max();
-                $yearRange = ($min === $max) ? (string)$min : "{$min} - {$max}";
+                $yearRange = ($min === $max) ? (string) $min : "{$min} - {$max}";
             }
         }
 

@@ -43,34 +43,28 @@ class Document extends Model
     }
 
     /**
-     * Accessor para obter a data do documento formatada.
-     * Nome: get{CamelCaseAtributo}Attribute -> getFormattedDocumentDateAttribute
+     * Accessor para obter a data do documento formatada (apenas data).
      * Acesso na view: $document->formatted_document_date
      */
-    /*public function getFormattedDocumentDateAttribute(): string
+    public function getFormattedDocumentDateAttribute(): string
     {
-        $originalDate = $this->document_date; // Pega a string salva no banco
+        $originalDate = $this->document_date;
 
-        // Retorna um placeholder se a data original for vazia ou nula
         if (empty($originalDate)) {
             return '--';
         }
 
         try {
-            // Tenta interpretar a string como data (Carbon::parse é flexível)
-            // e formata para o padrão brasileiro se conseguir
-            return Carbon::parse($originalDate)->format('d/m/Y');
+            // Garante pegar apenas a parte da data caso venha com H:i:s
+            $dateOnly = explode(' ', $originalDate)[0];
+
+            return Carbon::parse($dateOnly)->format('d/m/Y');
         } catch (\Throwable $e) {
-            // Se Carbon::parse falhar (string inválida)
-            // Loga um aviso para ajudar a encontrar dados ruins
             Log::warning("Could not format document_date string '{$originalDate}' for Document ID {$this->id}: ".$e->getMessage());
 
-            // Retorna uma indicação de erro para a view
-            return 'Data Inválida';
-            // Alternativa: retornar a string original: return $originalDate;
-            // Alternativa: retornar o placeholder: return '--';
+            return $originalDate;
         }
-    }*/
+    }
 
     // Você pode adicionar outros accessors aqui se precisar formatar
     // ou calcular outros atributos "virtuais". Ex:

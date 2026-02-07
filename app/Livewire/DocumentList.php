@@ -2,13 +2,13 @@
 
 namespace App\Livewire;
 
+use App\Models\Box;
 use App\Models\Document;
 use App\Models\Project;
-use App\Models\Box;
 use App\Services\DocumentService;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\Url;
 
 class DocumentList extends Component
 {
@@ -33,6 +33,8 @@ class DocumentList extends Component
     public $sort_dir = 'desc';
 
     public $per_page = 15;
+
+    public $hasActiveFilters = false;
 
     public function updatedSearch()
     {
@@ -71,6 +73,8 @@ class DocumentList extends Component
 
         $documents = $query->paginate($this->per_page);
 
+        $this->hasActiveFilters = ! empty($this->search) || ! empty($this->filter_project_id) || ! empty($this->filter_box_number) || ! empty($this->filter_year);
+
         return view('livewire.document-list', [
             'documents' => $documents,
             'stats' => array_merge([
@@ -83,12 +87,21 @@ class DocumentList extends Component
             'availableProjects' => Project::orderBy('name')->pluck('name', 'id'),
             'availableYears' => Document::query()
                 ->whereNotNull('document_date')
+                ->where('document_date', '!=', '')
                 ->select('document_date')
                 ->distinct()
                 ->pluck('document_date')
-                ->map(fn($d) => preg_match('/\/(\d{4})$/', $d, $m) ? (int)$m[1] : null)
+                ->map(function ($d) {
+                    $dStr = (string)$d;
+                    if (preg_match('/^(\d{4})/', $dStr, $m)) {
+                        return (int)$m[1];
+                    }
+                    if (preg_match('/\/(\d{4})$/', $dStr, $m)) {
+                        return (int)$m[1];
+                    }
+                    return null;
+                })
                 ->filter()->unique()->sortDesc()->values(),
-            'hasActiveFilters' => !empty($this->search) || !empty($this->filter_project_id) || !empty($this->filter_box_number) || !empty($this->filter_year)
         ]);
     }
 }
