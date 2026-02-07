@@ -1,0 +1,38 @@
+{
+  "project": "laravel",
+  "stack": "laravel",
+  "session_id": "2026-02-07-001",
+  "started_at": "2026-02-07T03:00:00Z",
+  "last_activity": "2026-02-07T03:00:00Z",
+  "current_sprint": 5,
+  "current_feature": null,
+  "active_agent": null,
+  "active_skill": null,
+  "context": {
+    "last_intent": "refactor",
+    "last_action": "Plano de padronização de botões salvo em .aidev/plans/features/5.1-5.5",
+    "pending_work": [
+      "Sprint 4.3 - Refatoração DocumentController (pendente)",
+      "Sprint 4.4 - Melhoria Performance Consultas (pendente)",
+      "Sprint 5.1 - Padronização Listagens (pendente)",
+      "Sprint 5.2 - Padronização Páginas Show (pendente)",
+      "Sprint 5.3 - Padronização Formulários (pendente)",
+      "Sprint 5.4 - Padronização Componentes (pendente)",
+      "Sprint 5.5 - Padronização Auth/Profile/Admin (pendente)"
+    ],
+    "completed_recently": [
+      "Fix sidebar textos não apareciam (Alpine.store + CSS duplicado)",
+      "Fix modal tela preta (inject_assets + instâncias duplicadas)",
+      "Fix botões de ação invisíveis (opacity-0 removido)",
+      "Criação variantes ghost-primary/ghost-warning/ghost-danger no x-ui.button",
+      "Criação variantes success/warning no x-ui.button",
+      "Padronização botões document-list (Exportar verde, Importar laranja, Modelo cinza)"
+    ]
+  },
+  "decisions": {
+    "comunicacao": "Sempre em português do Brasil (pt-BR)",
+    "sidebar_state": "Alpine inline script no head (decisão do usuário)",
+    "livewire_assets": "inject_assets: false + bundle manual via livewire.esm",
+    "button_component": "x-ui.button com 10 variantes é o padrão do sistema"
+  }
+}
