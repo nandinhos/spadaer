@@ -48,7 +48,9 @@
         </div>
 
         <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
+            <x-ui.button type="submit" variant="primary">
+                {{ __('Salvar') }}
+            </x-ui.button>
 
             @if (session('status') === 'profile-updated')
                 <p

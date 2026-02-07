@@ -18,7 +18,7 @@
                 <h1 class="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-indigo-600 via-blue-500 to-indigo-600 dark:from-indigo-400 dark:via-blue-400 dark:to-indigo-400 bg-clip-text text-transparent tracking-tight">
                     SPADAER GAC-PAC
                 </h1>
-                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Sistema de Gestão de Caixas e PAC</p>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Sistema de Gestão de Documentos Analisados pelo GAC-PAC</p>
             </div>
 
             <!-- Formulário -->
@@ -89,20 +89,11 @@
                     @endif
                 </div>
 
-                <!-- Botão Entrar Premium -->
+                <!-- Botão Entrar -->
                 <div class="pt-4">
-                    <button 
-                        type="submit" 
-                        class="group relative w-full flex justify-center items-center py-4 px-6 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-semibold text-base shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 overflow-hidden"
-                    >
-                        <!-- Shine Effect -->
-                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                        
-                        <span class="relative flex items-center">
-                            {{ __('Entrar') }}
-                            <i class="fas fa-arrow-right ml-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300"></i>
-                        </span>
-                    </button>
+                    <x-ui.button type="submit" variant="primary" class="w-full py-4 text-base" icon="fas fa-sign-in-alt">
+                        {{ __('Entrar') }}
+                    </x-ui.button>
                 </div>
             </form>
         </div>

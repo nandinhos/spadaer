@@ -34,14 +34,14 @@
             @endforeach
         </div>
 
-        <div class="mt-6 flex justify-end">
-            <x-secondary-button x-on:click="$dispatch('close')">
+        <div class="mt-6 flex justify-end gap-3">
+            <x-ui.button type="button" variant="secondary" x-on:click="$dispatch('close')">
                 {{ __('Cancelar') }}
-            </x-secondary-button>
+            </x-ui.button>
 
-            <x-primary-button class="ml-3">
+            <x-ui.button type="submit" variant="primary">
                 {{ __('Salvar') }}
-            </x-primary-button>
+            </x-ui.button>
         </div>
     </form>
 </x-modal>

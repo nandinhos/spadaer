@@ -166,4 +166,14 @@ class UIStandardizationTest extends TestCase
         $response->assertSee('bg-primary');
         $response->assertSee('bg-emerald-500'); // variant="success"
     }
+
+    public function test_login_page_uses_new_button_component(): void
+    {
+        $response = $this->get(route('login'));
+        $response->assertStatus(200);
+
+        $response->assertSee('Entrar');
+        $response->assertSee('bg-primary');
+        $response->assertSee('justify-center');
+    }
 }
