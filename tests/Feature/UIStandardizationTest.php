@@ -150,4 +150,20 @@ class UIStandardizationTest extends TestCase
         $response->assertSee('bg-primary');
         $response->assertSee('justify-center');
     }
+
+    public function test_documents_index_uses_new_button_component(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('admin');
+
+        $response = $this->actingAs($user)->get(route('documents.index'));
+        $response->assertStatus(200);
+
+        $response->assertSee('Filtros Avançados');
+        $response->assertSee('Limpar Filtros');
+        $response->assertSee('Novo');
+        $response->assertSee('Exportar');
+        $response->assertSee('bg-primary');
+        $response->assertSee('bg-emerald-500'); // variant="success"
+    }
 }

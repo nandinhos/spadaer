@@ -124,19 +124,22 @@
             </div>
 
             {{-- Footer Premium --}}
+                        {{-- Footer Premium --}}
             <div class="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row-reverse gap-3">
-                <x-secondary-button x-on:click="$store.modals.closeDocumentDetails()" class="w-full sm:w-auto justify-center">
+                <x-ui.button variant="secondary" x-on:click="$store.modals.closeDocumentDetails()" class="w-full sm:w-auto">
                     Fechar
-                </x-secondary-button>
+                </x-ui.button>
 
                 @can('documents.edit')
-                    <x-primary-button 
+                    <x-ui.button 
+                        variant="primary"
                         x-show="$store.modals.selectedDocument?.id"
                         x-on:click="window.location.href='/documents/' + $store.modals.selectedDocument?.id + '/edit'"
-                        class="w-full sm:w-auto justify-center"
+                        class="w-full sm:w-auto"
+                        icon="fas fa-edit"
                     >
-                        <i class="fas fa-edit mr-2"></i>Editar
-                    </x-primary-button>
+                        Editar
+                    </x-ui.button>
                 @endcan
             </div>
         </div>

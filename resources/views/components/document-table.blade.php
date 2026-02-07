@@ -59,14 +59,14 @@
             {{-- Botões de Ação Desktop --}}
             <div class="hidden lg:flex items-center gap-2">
                 @can('documents.create')
-                    <x-primary-button onclick="window.location.href='{{ route('documents.create') }}'" class="!py-2 text-[10px]">
-                        <i class="fa-solid fa-plus mr-2"></i>Novo Documento
-                    </x-primary-button>
+                    <x-ui.button variant="primary" size="sm" icon="fas fa-plus" onclick="window.location.href='{{ route('documents.create') }}'">
+                        Novo
+                    </x-ui.button>
                 @endcan
                 @can('documents.export.excel')
-                    <x-secondary-button onclick="window.location.href='{{ route('documents.export', request()->query()) }}'" class="!py-2 text-[10px]">
-                        <i class="fa-solid fa-file-excel mr-2 text-emerald-600"></i>Exportar
-                    </x-secondary-button>
+                    <x-ui.button variant="success" size="sm" icon="fas fa-file-export" onclick="window.location.href='{{ route('documents.export', request()->query()) }}'">
+                        Exportar
+                    </x-ui.button>
                 @endcan
             </div>
         </div>
@@ -162,13 +162,11 @@
                         <td class="px-6 py-4 text-right">
                             <div class="flex items-center justify-end gap-1 lg:gap-2">
                                 @can('documents.view')
-                                    <button @click="$store.modals.openDocumentDetails({{ $document->id }})" class="p-2 rounded-xl text-primary hover:bg-primary/10 transition-colors" title="Ver Detalhes">
-                                        <i class="fa-solid fa-eye text-sm"></i>
-                                    </button>
+                                    <x-ui.button variant="ghost-primary" size="sm" icon="fas fa-eye" @click="$store.modals.openDocumentDetails({{ $document->id }})" title="Ver Detalhes" />
                                 @endcan
                                 @can('documents.edit')
-                                    <a href="{{ route('documents.edit', $document) }}" class="p-2 rounded-xl text-gray-400 hover:text-primary hover:bg-primary/10 transition-colors" title="Editar">
-                                        <i class="fa-solid fa-pen-to-square text-sm"></i>
+                                    <a href="{{ route('documents.edit', $document) }}" wire:navigate>
+                                        <x-ui.button variant="ghost-warning" size="sm" icon="fas fa-edit" title="Editar" />
                                     </a>
                                 @endcan
                             </div>

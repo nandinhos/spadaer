@@ -66,12 +66,14 @@
             </div>
 
             <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
-                <button 
+                <x-ui.button 
+                    type="button"
+                    variant="ghost"
+                    size="sm"
                     wire:click="clearFilters"
-                    class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 uppercase tracking-widest transition-colors"
                 >
                     Limpar Filtros
-                </button>
+                </x-ui.button>
             </div>
         </div>
     </div>
@@ -111,9 +113,10 @@
                         @csrf
                         <div class="relative group">
                             <input type="file" name="csv_file" id="csv_file" class="hidden" onchange="this.form.submit()">
-                            <label for="csv_file" class="cursor-pointer inline-flex items-center justify-center px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition-all duration-200 shadow-sm shadow-amber-500/20">
-                                <i class="fas fa-file-import mr-2"></i>
-                                Importar CSV
+                            <label for="csv_file" class="cursor-pointer">
+                                <x-ui.button variant="warning" size="sm" icon="fas fa-file-import" type="button" class="pointer-events-none">
+                                    Importar CSV
+                                </x-ui.button>
                             </label>
                         </div>
                     </form>
@@ -180,9 +183,7 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <button @click="$store.modals.openDocumentDetails({{ $document->id }})" class="p-2 text-primary hover:bg-primary/10 rounded-xl transition-colors">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
+                                <x-ui.button variant="ghost-primary" size="sm" icon="fas fa-eye" @click="$store.modals.openDocumentDetails({{ $document->id }})" title="Ver Detalhes" />
                             </td>
                         </tr>
                     @empty
