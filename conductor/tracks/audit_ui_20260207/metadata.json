@@ -1,0 +1,8 @@
+{
+  "track_id": "audit_ui_20260207",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-02-07T14:45:00Z",
+  "updated_at": "2026-02-07T14:45:00Z",
+  "description": "Concluir padronização de botões (aidev Sprint 5) e implementar infraestrutura de Auditoria e Segurança para documentos sigilosos."
+}
