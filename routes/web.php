@@ -90,8 +90,9 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/permissions', [\App\Http\Controllers\Admin\PermissionController::class, 'index'])->name('permissions');
-        Route::put('/users/{user}/roles', [\App\Http\Controllers\Admin\PermissionController::class, 'updateUserRoles'])->name('users.roles.update');
+        Route::get('/users', \App\Livewire\Admin\UserList::class)->name('users.index');
+        Route::get('/roles', \App\Livewire\Admin\RoleManager::class)->name('roles.index');
+        Route::get('/roles/{role}/edit', \App\Livewire\Admin\RoleEdit::class)->name('roles.edit');
         Route::get('/audit', function () {
             return view('admin.audit');
         })->name('audit');

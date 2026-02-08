@@ -22,5 +22,6 @@ class DatabaseSeeder extends Seeder
 
         // 4. Dados Transacionais
         $this->call(DocumentSeeder::class);
+        $this->call(DocumentSecrecySeeder::class);
     }
 }

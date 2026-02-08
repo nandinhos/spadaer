@@ -13,7 +13,7 @@
     x-show="cd.show"
     x-trap.noscroll="cd.show"
     x-on:keydown.escape.window="cd.show && cd.close()"
-    class="fixed inset-0 z-[60] overflow-y-auto"
+    class="fixed inset-0 z-[70] overflow-y-auto"
     aria-labelledby="modal-title"
     role="dialog"
     aria-modal="true"

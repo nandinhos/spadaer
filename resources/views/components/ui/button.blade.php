@@ -29,7 +29,7 @@
     $variantClass = $variants[$variant] ?? $variants['primary'];
 @endphp
 
-<button {{ $attributes->merge(['class' => "$baseClasses $sizeClass $variantClass"]) }}>
+<button {{ $attributes->merge(['type' => 'button', 'class' => "$baseClasses $sizeClass $variantClass"]) }}>
     @if($icon)
         <i class="{{ $icon }} {{ $slot->isEmpty() ? '' : 'mr-2' }}"></i>
     @endif

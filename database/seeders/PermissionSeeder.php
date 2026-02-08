@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Spatie\Permission\Models\Permission;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Artisan;
+use Spatie\Permission\Models\Permission;
 
 class PermissionSeeder extends Seeder
 {
@@ -32,6 +31,7 @@ class PermissionSeeder extends Seeder
         Permission::create(['name' => 'documents.export.excel', 'guard_name' => 'web']);
         Permission::create(['name' => 'documents.export.pdf', 'guard_name' => 'web']);
         Permission::create(['name' => 'documents.import', 'guard_name' => 'web']);
+        Permission::create(['name' => 'documents.view.secret', 'guard_name' => 'web']);
 
         // Permissões para gerenciamento de comissões
         Permission::create(['name' => 'commissions.view', 'guard_name' => 'web']);

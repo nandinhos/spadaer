@@ -86,10 +86,16 @@
             <p x-show="sidebarOpen" x-transition class="px-4 mb-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Configurações</p>
             <ul class="space-y-1.5">
                 <x-sidebar-item 
-                    href="{{ route('admin.permissions') }}" 
+                    href="{{ route('admin.users.index') }}" 
+                    icon="fa-users" 
+                    label="Gerenciar Usuários" 
+                    :active="request()->routeIs('admin.users.*')"
+                />
+                <x-sidebar-item 
+                    href="{{ route('admin.roles.index') }}" 
                     icon="fa-shield-halved" 
-                    label="Permissões & Segurança" 
-                    :active="request()->routeIs('admin.permissions')"
+                    label="Gestão de Papéis" 
+                    :active="request()->routeIs('admin.roles.*')"
                 />
                 <x-sidebar-item 
                     href="{{ route('admin.audit') }}" 
