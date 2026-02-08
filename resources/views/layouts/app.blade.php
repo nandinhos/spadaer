@@ -7,24 +7,6 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Laravel') }} - @yield('title', 'Sistema')</title>
 
-    <!-- Pre-boot Script: Evita o "piscar" de layout shift e tema -->
-    <script>
-        (function() {
-            // Detectar e aplicar Dark Mode instantaneamente
-            const darkMode = localStorage.getItem('darkMode') === 'true' || 
-                (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            if (darkMode) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-
-            // Detectar e aplicar estado da Sidebar para evitar saltos de largura
-            const sidebarOpen = localStorage.getItem('sidebarOpen') !== 'false'; // Default true
-            document.documentElement.classList.toggle('sidebar-collapsed', !sidebarOpen);
-        })();
-    </script>
-
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,26 +17,15 @@
         window.layout = function() {
             return {
                 sidebarOpen: localStorage.getItem('sidebarOpen') !== 'false',
-                darkMode: localStorage.getItem('darkMode') === 'true' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches),
 
                 init() {
-                    this.updateDarkModeClass();
                     this.$watch('sidebarOpen', value => {
                         localStorage.setItem('sidebarOpen', value);
                         document.documentElement.classList.toggle('sidebar-collapsed', !value);
                     });
-                    this.$watch('darkMode', value => {
-                        localStorage.setItem('darkMode', value);
-                        this.updateDarkModeClass();
-                    });
                 },
 
-                toggleSidebar() { this.sidebarOpen = !this.sidebarOpen; },
-                toggleDarkMode() { this.darkMode = !this.darkMode; },
-                updateDarkModeClass() {
-                    if (this.darkMode) { document.documentElement.classList.add('dark'); }
-                    else { document.documentElement.classList.remove('dark'); }
-                }
+                toggleSidebar() { this.sidebarOpen = !this.sidebarOpen; }
             };
         }
     </script>
@@ -75,7 +46,7 @@
 </head>
 
 <body
-    class="h-full font-['Outfit'] antialiased bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-200 transition-colors duration-200"
+    class="h-full font-['Outfit'] antialiased bg-gray-50 text-gray-800 transition-colors duration-200"
     x-data="layout()"
 >
     <div class="flex h-full overflow-hidden">
@@ -89,7 +60,7 @@
                     {{-- Mensagens Flash --}}
                     @if (session('success'))
                         <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)" 
-                             class="mb-6 p-4 rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800 flex justify-between items-center shadow-sm">
+                             class="mb-6 p-4 rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-800 flex justify-between items-center shadow-sm">
                             <span class="text-sm font-bold"><i class="fas fa-check-circle mr-2"></i>{{ session('success') }}</span>
                             <button @click="show = false"><i class="fas fa-times"></i></button>
                         </div>

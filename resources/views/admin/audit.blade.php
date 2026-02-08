@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('header-title', 'Auditoria do Sistema')
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-bold text-2xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-light dark:from-primary-light dark:to-white leading-tight">

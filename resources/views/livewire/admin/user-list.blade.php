@@ -1,3 +1,4 @@
+@section('header-title', 'Gerenciar Usuários')
 <div>
     <x-ui.card>
         <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
