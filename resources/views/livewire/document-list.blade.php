@@ -121,9 +121,10 @@
                         </div>
                     </form>
 
-                    <a href="{{ asset('files/modelo_importacao.csv') }}" download class="inline-flex items-center gap-1.5 px-2 py-1 text-gray-400 hover:text-primary transition-colors text-xs" title="Baixar Modelo CSV">
-                        <i class="fa-solid fa-file-csv"></i>
-                        <span class="text-[10px] font-bold uppercase tracking-wider">Modelo</span>
+                    <a href="{{ asset('files/modelo_importacao.csv') }}" download>
+                        <x-ui.button variant="outline" size="sm" icon="fa-solid fa-file-csv" type="button">
+                            Modelo
+                        </x-ui.button>
                     </a>
                 </div>
             </div>

@@ -77,8 +77,11 @@
                                 variant="ghost-danger"
                                 size="sm"
                                 icon="fas fa-trash"
-                                onclick="confirm('Tem certeza que deseja excluir o projeto {{ $project->name }}?') || event.stopImmediatePropagation()"
-                                wire:click="deleteProject({{ $project->id }})"
+                                @click="$store.confirmDelete.open({
+                                    title: 'Excluir Projeto',
+                                    message: 'Tem certeza que deseja excluir o projeto {{ $project->name }}?',
+                                    onConfirm: () => { $wire.deleteProject({{ $project->id }}) }
+                                })"
                                 title="Excluir"
                             />
                         </div>

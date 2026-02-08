@@ -49,13 +49,18 @@
                         <a href="{{ route('commissions.edit', $commission) }}" wire:navigate>
                             <x-ui.button variant="primary" icon="fas fa-edit">Editar</x-ui.button>
                         </a>
-                        {{-- Botão de Excluir com formulário --}}
-                        <form method="POST" action="{{ route('commissions.destroy', $commission) }}"
-                            onsubmit="return confirm('Tem certeza que deseja excluir esta comissão?');">
-                            @csrf
-                            @method('DELETE')
-                            <x-ui.button variant="danger" icon="fas fa-trash-alt" type="submit">Excluir</x-ui.button>
-                        </form>
+                        <x-ui.button 
+                            variant="danger" 
+                            icon="fas fa-trash-alt" 
+                            type="button"
+                            @click="$store.confirmDelete.open({
+                                action: '{{ route('commissions.destroy', $commission) }}',
+                                title: 'Excluir Comissão',
+                                message: 'Tem certeza que deseja excluir esta comissão ({{ $commission->name }})? Esta ação não pode ser desfeita.'
+                            })"
+                        >
+                            Excluir
+                        </x-ui.button>
                     </div>
                 </div>
             </div>

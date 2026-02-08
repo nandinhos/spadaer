@@ -22,14 +22,18 @@
                 @endcan
 
                 @can('boxes.delete')
-                    <form method="POST" action="{{ route('boxes.destroy', $box) }}"
-                        onsubmit="return confirm({{ json_encode(__('Tem certeza que deseja excluir esta caixa e TODOS os documentos contidos nela?')) }});">
-                        @csrf
-                        @method('DELETE')
-                        <x-ui.button variant="danger" icon="fas fa-trash-alt" type="submit">
-                            {{ __('Excluir Caixa') }}
-                        </x-ui.button>
-                    </form>
+                    <x-ui.button 
+                        variant="danger" 
+                        icon="fas fa-trash-alt" 
+                        type="button"
+                        @click="$store.confirmDelete.open({
+                            action: '{{ route('boxes.destroy', $box) }}',
+                            title: 'Excluir Caixa',
+                            message: 'Tem certeza que deseja excluir esta caixa ({{ $box->number }}) e TODOS os documentos contidos nela? Esta ação não pode ser desfeita.'
+                        })"
+                    >
+                        {{ __('Excluir Caixa') }}
+                    </x-ui.button>
                 @endcan
             </div>
         </div>
@@ -46,7 +50,7 @@
 
     {{-- ========================== Conteúdo Principal com Lógica Alpine.js ========================== --}}
     {{-- O escopo do Alpine.js agora envolve todo o conteúdo principal da página --}}
-    <div x-data="documentViewer()">
+    <div>
 
         <div class="py-12">
             <div class="mx-auto space-y-6 max-w-7xl sm:px-6 lg:px-8">
@@ -137,14 +141,24 @@
                             @can('documents.delete')
                                 <form x-show="selectedDocuments.length > 0" x-cloak
                                     action="{{ route('boxes.documents.batchDestroy', $box) }}" method="POST"
-                                    onsubmit="return confirm('Tem certeza que deseja excluir os documentos selecionados? Esta ação não pode ser desfeita.');"
+                                    id="batch-delete-docs-form"
                                     class="inline">
                                     @csrf
                                     @method('DELETE')
                                     <template x-for="docId in selectedDocuments" :key="docId">
                                         <input type="hidden" name="document_ids[]" :value="docId">
                                     </template>
-                                    <x-ui.button variant="danger" type="submit" x-bind:disabled="selectedDocuments.length === 0" icon="fas fa-trash-alt">
+                                    <x-ui.button 
+                                        variant="danger" 
+                                        type="button" 
+                                        x-bind:disabled="selectedDocuments.length === 0" 
+                                        icon="fas fa-trash-alt"
+                                        @click="$store.confirmDelete.open({
+                                            submitFormId: 'batch-delete-docs-form',
+                                            title: 'Excluir Documentos',
+                                            message: 'Tem certeza que deseja excluir os documentos selecionados? Esta ação não pode ser desfeita.'
+                                        })"
+                                    >
                                         Excluir (<span x-text="selectedDocuments.length"></span>)
                                     </x-ui.button>
                                 </form>
@@ -246,7 +260,7 @@
                                         <td class="px-6 py-4 ...">{{ $document->document_date ?? '--' }}</td>
                                                                                 <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
                                             @can('documents.view')
-                                                <x-ui.button variant="ghost-primary" size="sm" icon="fas fa-eye" @click="openDocumentModal({{ $document->id }})" title="Ver Detalhes" />
+                                                <x-ui.button variant="ghost-primary" size="sm" icon="fas fa-eye" @click="$store.modals.openDocumentDetails({{ $document->id }})" title="Ver Detalhes" />
                                             @endcan
 
                                             @can('documents.edit')
@@ -256,11 +270,18 @@
                                             @endcan
 
                                             @can('documents.delete')
-                                                <form method="POST" action="{{ route('documents.destroy', $document) }}" class="inline ml-2" onsubmit="return confirm('Tem certeza que deseja excluir este documento?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <x-ui.button variant="ghost-danger" size="sm" icon="fas fa-trash-alt" type="submit" title="Excluir" />
-                                                </form>
+                                                <x-ui.button 
+                                                    variant="ghost-danger" 
+                                                    size="sm" 
+                                                    icon="fas fa-trash-alt" 
+                                                    type="button" 
+                                                    title="Excluir"
+                                                    @click="$store.confirmDelete.open({
+                                                        action: '{{ route('documents.destroy', $document) }}',
+                                                        title: 'Excluir Documento',
+                                                        message: 'Tem certeza que deseja excluir o documento {{ $document->document_number }}?'
+                                                    })"
+                                                />
                                             @endcan
                                         </td>
                                     </tr>
@@ -281,56 +302,76 @@
 
         </div>
 
-        {{-- ===== INCLUSÃO DO COMPONENTE DO MODAL ===== --}}
-        <x-document-modal />
-
     </div>
 
-    {{-- Modal de Importação (código existente, sem alterações) --}}
+    {{-- Modal de Importação --}}
     @can('documents.import')
         <div x-show="$store.modals.showBoxImportModal" x-cloak
-            @keydown.escape.window="$store.modals.closeBoxImportModal()" class="fixed inset-0 z-50 ...">
-            {{-- ... (código completo do modal de importação) ... --}}
+            @keydown.escape.window="$store.modals.closeBoxImportModal()" class="fixed inset-0 z-50 overflow-y-auto"
+            aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:items-center sm:block sm:p-0">
+                <div x-show="$store.modals.showBoxImportModal" x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                    x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-75"
+                    @click="$store.modals.closeBoxImportModal()" aria-hidden="true"></div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div x-show="$store.modals.showBoxImportModal" x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    class="relative z-10 inline-block px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl dark:bg-gray-800 sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                    <div>
+                        <div class="flex items-center justify-center w-12 h-12 mx-auto bg-indigo-100 rounded-full dark:bg-indigo-900">
+                            <i class="text-indigo-600 fas fa-upload dark:text-indigo-400"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-5">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100" id="modal-title">
+                                {{ __('Importar Documentos para esta Caixa') }}
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                    {{ __('Selecione um arquivo CSV para importar documentos diretamente para a caixa ') }} <strong>{{ $box->number }}</strong>.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <form action="{{ route('boxes.documents.import', $box) }}" method="POST"
+                        enctype="multipart/form-data" class="mt-5 sm:mt-6">
+                        @csrf
+                        <div class="space-y-4">
+                            <input type="file" name="csv_file" accept=".csv" required
+                                class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400">
+                            
+                            <div class="flex items-center justify-between p-3 border border-indigo-100 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-800">
+                                <div class="flex items-center gap-2">
+                                    <i class="text-indigo-500 fas fa-info-circle"></i>
+                                    <span class="text-xs font-medium text-indigo-700 dark:text-indigo-300">Layout Sugerido</span>
+                                </div>
+                                <a href="{{ asset('files/modelo_importacao.csv') }}" download class="text-xs font-bold text-indigo-600 uppercase hover:underline dark:text-indigo-400">
+                                    Download Modelo
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                            <x-ui.button type="submit" variant="primary" class="w-full sm:col-start-2">
+                                {{ __('Importar') }}
+                            </x-ui.button>
+                            <x-ui.button type="button" variant="ghost" class="w-full mt-3 sm:mt-0 sm:col-start-1" @click="$store.modals.closeBoxImportModal()">
+                                {{ __('Cancelar') }}
+                            </x-ui.button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     @endcan
 
     {{-- ===== SCRIPT PARA CONTROLAR O MODAL DE VISUALIZAÇÃO ===== --}}
-    @push('scripts')
-        <script>
-            function documentViewer() {
-                return {
-                    showModal: false,
-                    loadingModal: false,
-                    selectedDocument: {},
-                    openDocumentModal(documentId) {
-                        if (!documentId) return;
-                        this.showModal = true;
-                        this.loadingModal = true;
-                        this.selectedDocument = {};
-                        fetch(`/documents/${documentId}/details`)
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error('Falha ao buscar os detalhes do documento.');
-                                }
-                                return response.json();
-                            })
-                            .then(data => {
-                                this.selectedDocument = data;
-                                this.loadingModal = false;
-                            })
-                            .catch(error => {
-                                console.error('Erro:', error);
-                                alert('Não foi possível carregar os detalhes do documento.');
-                                this.closeModal();
-                            });
-                    },
-                    closeModal() {
-                        this.showModal = false;
-                        this.loadingModal = false;
-                    }
-                };
-            }
-        </script>
-    @endpush
-
 </x-app-layout>

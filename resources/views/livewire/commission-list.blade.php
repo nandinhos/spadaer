@@ -111,8 +111,11 @@
                                 variant="ghost-danger"
                                 size="sm"
                                 icon="fas fa-trash"
-                                onclick="confirm('Excluir a comissão {{ $commission->name }}?') || event.stopImmediatePropagation()"
-                                wire:click="deleteCommission({{ $commission->id }})"
+                                @click="$store.confirmDelete.open({
+                                    title: 'Excluir Comissão',
+                                    message: 'Tem certeza que deseja excluir a comissão {{ $commission->name }}?',
+                                    onConfirm: () => { $wire.deleteCommission({{ $commission->id }}) }
+                                })"
                             />
                         </div>
                     </td>

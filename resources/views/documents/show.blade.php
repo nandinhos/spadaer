@@ -98,13 +98,18 @@
                     <!-- Ações -->
                                         <div class="mt-8 flex justify-between items-center border-t dark:border-gray-700 pt-6">
                         @can('documents.delete')
-                        <form action="{{ route('documents.destroy', $document) }}" method="POST" class="inline">
-                            @csrf
-                            @method('DELETE')
-                            <x-ui.button variant="danger" icon="fas fa-trash-alt" type="submit" onclick="return confirm('Tem certeza que deseja excluir este documento?')">
+                            <x-ui.button 
+                                variant="danger" 
+                                icon="fas fa-trash-alt" 
+                                type="button"
+                                @click="$store.confirmDelete.open({
+                                    action: '{{ route('documents.destroy', $document) }}',
+                                    title: 'Excluir Documento',
+                                    message: 'Tem certeza que deseja excluir este documento ({{ $document->document_number }})? Esta ação não pode ser desfeita.'
+                                })"
+                            >
                                 Excluir Documento
                             </x-ui.button>
-                        </form>
                         @endcan
 
                         <div class="space-x-4">

@@ -10,7 +10,7 @@
 
                     document.addEventListener('livewire:navigated', function() {
                         const selectAllCheckbox = document.getElementById('select-all');
-                        const checkboxes = document.querySelectorAll('input[name="selected_boxes[]"]');
+                        const checkboxes = document.querySelectorAll('.box-checkbox');
                         const toggleAllBtn = document.getElementById('toggle-all-button');
                         const deleteBtn = document.getElementById('batch-delete-button');
                         const batchDeleteForm = document.querySelector(`form[action="${batchDeleteRoute}"]`);
@@ -42,14 +42,6 @@
                                 updateDeleteButton();
                             });
                         });
-
-                        if (batchDeleteForm) {
-                            batchDeleteForm.addEventListener('submit', function(event) {
-                                const checkedCount = Array.from(checkboxes).filter(checkbox => checkbox.checked).length;
-                                const confirmationMessage = `Tem certeza que deseja processar as ${checkedCount} caixa(s) selecionadas? \n\nCaixas vazias serão excluídas permanentemente.\nCaixas com documentos terão seus documentos desassociados e as caixas NÃO serão excluídas.`;
-                                if (!confirm(confirmationMessage)) event.preventDefault();
-                            });
-                        }
 
                         updateDeleteButton();
                     }, { once: false });
@@ -157,11 +149,22 @@
         <div class="overflow-hidden bg-white rounded-lg shadow dark:bg-gray-800">
             <div class="overflow-x-auto">
                 @can('boxes.delete')
-                    <form method="POST" action="{{ route('boxes.batch-destroy') }}">
+                    <form method="POST" action="{{ route('boxes.batch-destroy') }}" id="batch-delete-form">
                         @csrf
                         @method('DELETE')
                         <div class="mb-4 p-4 flex items-center space-x-2">
-                            <x-ui.button variant="danger" type="submit" id="batch-delete-button" icon="fas fa-trash-alt" disabled>
+                            <x-ui.button 
+                                variant="danger" 
+                                type="button" 
+                                id="batch-delete-button" 
+                                icon="fas fa-trash-alt" 
+                                disabled
+                                @click="const count = document.querySelectorAll('.box-checkbox:checked').length; $store.confirmDelete.open({
+                                    submitFormId: 'batch-delete-form',
+                                    title: 'Excluir Selecionados',
+                                    message: 'Tem certeza que deseja processar as ' + count + ' caixa(s) selecionadas? \n\nCaixas vazias serão excluídas permanentemente.\nCaixas com documentos terão seus documentos desassociados e as caixas NÃO serão excluídas.'
+                                })"
+                            >
                                 Excluir Selecionados
                             </x-ui.button>
                             <x-ui.button variant="secondary" type="button" id="toggle-all-button" icon="fas fa-check-square">
@@ -295,13 +298,18 @@
                                                 </a>
                                             @endcan
                                             @can('boxes.delete')
-                                                {{-- Botão Excluir com formulário --}}
-                                                <form method="POST" action="{{ route('boxes.destroy', $box) }}" class="inline"
-                                                    onsubmit="return confirm('Tem certeza que deseja excluir esta caixa e TODOS os documentos contidos nela?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <x-ui.button variant="ghost-danger" size="sm" icon="fas fa-trash-alt" type="submit" />
-                                                </form>
+                                                <x-ui.button 
+                                                    variant="ghost-danger" 
+                                                    size="sm" 
+                                                    icon="fas fa-trash-alt" 
+                                                    type="button"
+                                                    title="Excluir"
+                                                    @click="$store.confirmDelete.open({
+                                                        action: '{{ route('boxes.destroy', $box) }}',
+                                                        title: 'Excluir Caixa',
+                                                        message: 'Tem certeza que deseja excluir a caixa {{ $box->number }} e TODOS os documentos contidos nela? Esta ação não pode ser desfeita.'
+                                                    })"
+                                                />
                                             @endcan
                                         </td>
                                     </tr>

@@ -6,10 +6,10 @@
             <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                 {{ __('Editar Caixa') }}: {{ $box->number }}
             </h2>
-            {{-- Botão Voltar para Lista no Header --}}
-            <a href="{{ route('boxes.index') }}" wire:navigate>
+            {{-- Botão Voltar para Detalhes da Caixa --}}
+            <a href="{{ route('boxes.show', $box) }}" wire:navigate>
                 <x-ui.button variant="secondary" icon="fas fa-arrow-left">
-                    {{ __('Voltar para Lista') }}
+                    {{ __('Voltar para Detalhes') }}
                 </x-ui.button>
             </a>
             {{-- REMOVIDO: Botão para abrir Modal de Importação (Ele estará na view 'show') --}}
@@ -112,7 +112,7 @@
                         <div
                             class="flex items-center justify-end gap-4 pt-6 mt-8 border-t border-gray-200 dark:border-gray-700">
                             {{-- Botão Cancelar --}}
-                            <a href="{{ request()->input('redirect_to', route('boxes.index')) }}" wire:navigate>
+                            <a href="{{ route('boxes.show', $box) }}" wire:navigate>
                                 <x-ui.button type="button" variant="ghost">
                                     {{ __('Cancelar') }}
                                 </x-ui.button>

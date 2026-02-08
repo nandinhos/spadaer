@@ -89,7 +89,13 @@
                     href="{{ route('admin.permissions') }}" 
                     icon="fa-shield-halved" 
                     label="Permissões & Segurança" 
-                    :active="request()->routeIs('admin.*')"
+                    :active="request()->routeIs('admin.permissions')"
+                />
+                <x-sidebar-item 
+                    href="{{ route('admin.audit') }}" 
+                    icon="fa-clock-rotate-left" 
+                    label="Logs de Auditoria" 
+                    :active="request()->routeIs('admin.audit')"
                 />
             </ul>
         </div>
