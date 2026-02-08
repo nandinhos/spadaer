@@ -22,9 +22,10 @@ O usuario dira um dos seguintes:
 ### O que fazer ao ativar
 
 1. Leia o arquivo `.aidev/agents/orchestrator.md`
-2. Siga as diretrizes do orquestrador
-3. Aplique as regras em `.aidev/rules/`
-4. Use TDD obrigatorio (RED -> GREEN -> REFACTOR)
+2. Leia o arquivo `.aidev/AGENT_PROTOCOLS.md` e siga o Protocolo Gatekeeper rigorosamente.
+3. Siga as diretrizes do orquestrador
+4. Aplique as regras em `.aidev/rules/`
+5. Use TDD obrigatorio (RED -> GREEN -> REFACTOR)
 
 ### Agentes Disponiveis (9)
 
