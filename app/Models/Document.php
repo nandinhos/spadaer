@@ -2,15 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon; // Importar Carbon
-use Illuminate\Support\Facades\Log; // Importar Log
+use Illuminate\Database\Eloquent\Relations\BelongsTo; // Importar Carbon
+use Illuminate\Support\Carbon; // Importar Log
+use Illuminate\Support\Facades\Log;
 
 class Document extends Model
 {
-    use HasFactory;
+    use Auditable, HasFactory;
 
     protected $fillable = [
         'box_id',

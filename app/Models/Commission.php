@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Commission extends Model
 {
-    use HasFactory;
+    use Auditable, HasFactory;
 
     /**
      * Os atributos que são atribuíveis em massa.

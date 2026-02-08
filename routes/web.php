@@ -92,6 +92,9 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/permissions', [\App\Http\Controllers\Admin\PermissionController::class, 'index'])->name('permissions');
         Route::put('/users/{user}/roles', [\App\Http\Controllers\Admin\PermissionController::class, 'updateUserRoles'])->name('users.roles.update');
+        Route::get('/audit', function () {
+            return view('admin.audit');
+        })->name('audit');
     });
 
 });
@@ -101,4 +104,4 @@ Route::middleware(['auth'])->group(function () {
 | Rotas de Autenticação (Laravel Breeze)
 |--------------------------------------------------------------------------
 */
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
