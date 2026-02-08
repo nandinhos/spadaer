@@ -131,13 +131,15 @@ class DocumentImportController extends Controller
     {
         // 1. Validar o arquivo de upload (específico para este formulário)
         $request->validate([
-            'documents_csv' => 'required|file|mimes:csv,txt|max:5120', // Nome do campo de upload
+            'csv_file' => 'required|file|mimes:csv,txt|max:5120', // Nome do campo de upload
         ], [
-            'documents_csv.required' => 'Nenhum arquivo CSV foi selecionado.',
-            // ... outras mensagens ...
+            'csv_file.required' => 'Nenhum arquivo CSV foi selecionado.',
+            'csv_file.file' => 'O item enviado não é um arquivo válido.',
+            'csv_file.mimes' => 'O arquivo deve ser do tipo CSV ou TXT.',
+            'csv_file.max' => 'O arquivo CSV não pode ser maior que 5MB.',
         ]);
 
-        $file = $request->file('documents_csv');
+        $file = $request->file('csv_file');
         $userId = Auth::id();
 
         Log::info("Iniciando importação de documentos para a Caixa ID {$box->id} do arquivo: ".$file->getClientOriginalName());

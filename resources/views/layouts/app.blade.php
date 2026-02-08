@@ -104,6 +104,7 @@
 
     {{-- Modais Globais --}}
     <x-document-modal />
+    <x-ui.confirmation-modal />
 
     @livewireScriptConfig
     @stack('scripts')
