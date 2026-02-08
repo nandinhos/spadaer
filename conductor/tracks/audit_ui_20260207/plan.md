@@ -6,7 +6,7 @@
 - [x] Task: Validar e converter botões em Formulários conforme aidev 5.3 (a5ac9e6)
 - [x] Task: Validar e converter botões em Componentes Reutilizáveis conforme aidev 5.4 (d9fb596)
 - [x] Task: Validar e converter botões em Auth, Profile e Admin conforme aidev 5.5 (4b51d00)
-- [ ] Task: Conductor - User Manual Verification 'Conclusão da Padronização UI' (Protocol in workflow.md)
+- [~] Task: Conductor - User Manual Verification 'Conclusão da Padronização UI' (Protocol in workflow.md)
 
 ## Fase 2: Infraestrutura de Auditoria
 - [ ] Task: Definir estratégia de Auditoria e configurar migrações/pacote
