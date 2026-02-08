@@ -184,7 +184,7 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <x-ui.button variant="ghost-primary" size="sm" icon="fas fa-eye" @click="$store.modals.openDocumentDetails({{ $document->id }})" title="Ver Detalhes" />
+                                <x-ui.button variant="ghost-primary" size="sm" icon="fas fa-eye" @click.prevent="$store.modals.openDocumentDetails({{ $document->id }})" title="Ver Detalhes" />
                             </td>
                         </tr>
                     @empty

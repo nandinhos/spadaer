@@ -10,13 +10,12 @@ use App\Models\Box; // Usar para store
 use App\Models\Document; // Usar para update
 use App\Models\Project;
 // Outros
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate; // Importar a classe de exportação
-use Illuminate\Support\Facades\Log; // Importar facade do Excel
-use Illuminate\View\View;
 use App\Services\DocumentService;
+use Illuminate\Http\RedirectResponse;
+// Importar a classe de exportação
+use Illuminate\Http\Request; // Importar facade do Excel
+use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
 class DocumentController extends Controller
 {
@@ -51,7 +50,7 @@ class DocumentController extends Controller
             ->select('document_date')
             ->distinct()
             ->pluck('document_date')
-            ->map(fn($d) => preg_match('/\/(\d{4})$/', $d, $m) ? (int)$m[1] : null)
+            ->map(fn ($d) => preg_match('/\/(\d{4})$/', $d, $m) ? (int) $m[1] : null)
             ->filter()->unique()->sortDesc()->values();
 
         $stats = array_merge([
@@ -68,12 +67,14 @@ class DocumentController extends Controller
             'availableYears' => $availableYears,
             'requestParams' => $params,
             'stats' => $stats,
-            'hasActiveFilters' => $request->filled(['search', 'filter_box_number', 'filter_project_id', 'filter_year'])
+            'hasActiveFilters' => $request->filled(['search', 'filter_box_number', 'filter_project_id', 'filter_year']),
         ]);
     }
 
     public function create(): View
     {
+        $this->authorize('create', Document::class);
+
         // Busca caixas (ID => Número) ordenadas
         $boxes = Box::orderBy('number')->pluck('number', 'id');
         // Busca projetos (ID => Nome) ordenados
@@ -105,9 +106,14 @@ class DocumentController extends Controller
      */
     public function show(Document $document)
     {
+        $this->authorize('view', $document);
+
         try {
             // Carrega relacionamentos necessários
             $document->load(['box:id,number', 'project:id,name']);
+
+            // Registrar log de visualização
+            $document->logView();
 
             if (request()->ajax() || request()->wantsJson()) {
                 return response()->json($document);
@@ -130,6 +136,8 @@ class DocumentController extends Controller
      */
     public function edit(Document $document): View
     {
+        $this->authorize('update', $document);
+
         $boxes = Box::orderBy('number')->pluck('number', 'id');
         $projects = Project::orderBy('name')->pluck('name', 'id');
 
@@ -158,8 +166,8 @@ class DocumentController extends Controller
      */
     public function destroy(Document $document): RedirectResponse
     {
-        // Adicionar lógica de autorização (Policy)
-        // $this->authorize('delete', $document);
+        $this->authorize('delete', $document);
+
         try {
             $document->delete();
 
@@ -179,24 +187,9 @@ class DocumentController extends Controller
      */
     public function getJsonDetails(Document $document)
     {
-        // Verificação de permissão: O usuário pode visualizar este documento?
-        // Isso usa o sistema de Gate/Policy que configuramos.
-        // Se você tem uma Policy 'DocumentPolicy@view', ela será usada.
-        // Se não, ele tentará o Gate 'documents.view'.
-        // Se a permissão for apenas genérica ('documents.view') e não por instância,
-        // você pode só confiar que o acesso à página principal já foi verificado.
-        // Para segurança adicional, especialmente se a URL puder ser adivinhada:
-        if (! Gate::allows('documents.view', $document) && ! Gate::allows('view', $document)) {
-            // A segunda verificação ('view', $document) é para o caso de você ter uma Policy.
-            // Se você só tem 'documents.view' como permissão genérica, talvez só o Gate::allows('documents.view') baste
-            // ou confie na proteção da página principal.
-            // Mas para uma API, é bom ser explícito.
-            // Se você não tem policies por instância, e 'documents.view' é global,
-            // pode ser suficiente que o middleware 'auth' já protegeu a rota.
-            // No entanto, se 'documents.view' for para a lista, e ver um específico requer mais, adicione a lógica.
-            // Por simplicidade, vamos assumir que se ele pode ver a lista, pode ver os detalhes por enquanto.
-            // Considere adicionar `$this->authorize('view', $document);` se tiver uma policy.
-        }
+        $this->authorize('view', $document);
+
+        $document->logView();
 
         // Carregue os relacionamentos que seu modal precisa para exibir
         // O componente modal que você forneceu tenta acessar:
@@ -205,13 +198,6 @@ class DocumentController extends Controller
         $document->load(['box', 'project']);
 
         // Retorna o documento (com os relacionamentos carregados) como JSON
-        // Você pode retornar o objeto do documento diretamente ou aninhá-lo
         return response()->json($document);
-        // Ou, se o seu JavaScript espera { document: {...} }:
-        // return response()->json(['document' => $document]);
-        // Pelo seu script anterior, parece que você espera { document: {...} }
-        // fetch(...).then(data => { this.selectedDocument = data.document; })
-        // então, vamos usar:
-        // return response()->json(['document' => $document]);
     }
 }

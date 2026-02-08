@@ -67,10 +67,29 @@ class Document extends Model
         }
     }
 
-    // Você pode adicionar outros accessors aqui se precisar formatar
-    // ou calcular outros atributos "virtuais". Ex:
-    // public function getFullLocationAttribute(): string {
-    //     return "Caixa: " . ($this->box?->number ?? '?') . " / Item: " . ($this->item_number ?? '?');
-    // }
+    /**
+     * Verifica se o documento é sigiloso.
+     */
+    public function isSecret(): bool
+    {
+        $publicLevels = [
+            'OSTENSIVO',
+            'PÚBLICO',
+            'UNCLASSIFIED',
+            'SEM CLASSIFICAÇÃO',
+            'EXPOSIÇÃO PÚBLICA',
+        ];
 
+        $level = mb_strtoupper($this->confidentiality ?? '');
+
+        return ! empty($level) && ! in_array($level, $publicLevels);
+    }
+
+    /**
+     * Registra log de visualização para o documento.
+     */
+    public function logView(): void
+    {
+        $this->audit('viewed');
+    }
 }

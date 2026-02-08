@@ -3,6 +3,11 @@
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">
                 {{ __('Visualizar Documento') }}
+                @if($document->isSecret())
+                    <span class="ml-2 text-amber-500" title="Documento Sigiloso (Acesso Auditado)">
+                        <i class="fa-solid fa-lock text-sm"></i>
+                    </span>
+                @endif
             </h2>
             <div class="space-x-4">
                 @can('documents.edit')
@@ -68,15 +73,20 @@
                         </div>
 
                         <!-- Sigilo e Versão -->
-                        <div class="col-span-1">
-                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Sigilo (Texto)</h3>
-                            <p class="mt-1 text-lg font-semibold">
-                                {{-- Exibe o valor como string. A coloração pode ser ajustada aqui se necessário --}}
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                            <p class="mt-1">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider border shadow-sm
+                                    {{ match(mb_strtoupper($document->confidentiality ?? '')) {
+                                        'PÚBLICO', 'PUBLICO', 'OSTENSIVO', 'UNCLASSIFIED' => 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800',
+                                        'RESTRITO', 'RESERVADO' => 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800',
+                                        'CONFIDENCIAL', 'SECRETO', 'ULTRASSECRETO', 'SECRET', 'TOP SECRET' => 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800',
+                                        default => 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
+                                    } }}">
+                                    @if($document->isSecret())
+                                        <i class="fa-solid fa-shield-halved mr-1 text-[10px]"></i>
+                                    @endif
                                     {{ $document->confidentiality ?? 'N/A' }}
                                 </span>
                             </p>
-                        </div>
 
                         <div class="col-span-1">
                             <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Versão</h3>

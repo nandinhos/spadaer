@@ -11,7 +11,7 @@
     x-show="m.showDocumentDetails"
     x-trap.noscroll="m.showDocumentDetails"
     x-on:keydown.escape.window="m.showDocumentDetails && m.closeDocumentDetails()"
-    class="fixed inset-0 z-50 overflow-y-auto"
+    class="fixed inset-0 z-[60] overflow-y-auto"
     aria-labelledby="modal-title"
     role="dialog"
     aria-modal="true"
@@ -44,7 +44,7 @@
             x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            class="inline-block w-full overflow-hidden text-left align-bottom transition-all transform bg-white rounded-xl shadow-2xl dark:bg-gray-800 sm:my-8 sm:align-middle sm:max-w-2xl"
+            class="inline-block w-full overflow-hidden text-left align-bottom transition-all transform bg-white rounded-xl shadow-2xl dark:bg-gray-800 sm:my-8 sm:align-middle sm:max-w-2xl relative z-10"
         >
             {{-- Header Premium --}}
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">

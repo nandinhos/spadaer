@@ -124,7 +124,10 @@
                         {{-- 3. Documento (Título / Data) --}}
                         <td class="px-6 py-4">
                             <div class="flex flex-col">
-                                <p class="text-sm font-medium text-gray-900 dark:text-gray-100 leading-snug truncate max-w-sm lg:max-w-md" title="{{ $document->title }}">
+                                <p class="text-sm font-medium text-gray-900 dark:text-gray-100 leading-snug truncate max-w-sm lg:max-w-md flex items-center gap-1.5" title="{{ $document->title }}">
+                                    @if($document->isSecret())
+                                        <i class="fa-solid fa-lock text-amber-500 text-[10px]" title="Documento Sigiloso"></i>
+                                    @endif
                                     {{ $document->title }}
                                 </p>
                                 <div class="flex items-center gap-2 mt-1">
@@ -147,13 +150,16 @@
 
                         {{-- 5. Sigilo --}}
                         <td class="px-6 py-4 text-center text-xs">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border
-                                {{ match(strtolower($document->confidentiality ?? '')) {
-                                    'público', 'publico' => 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800',
-                                    'restrito' => 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800',
-                                    'confidencial' => 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800',
-                                    default => 'bg-gray-50 text-gray-600 border-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border shadow-sm
+                                {{ match(mb_strtoupper($document->confidentiality ?? '')) {
+                                    'PÚBLICO', 'PUBLICO', 'OSTENSIVO', 'UNCLASSIFIED' => 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800',
+                                    'RESTRITO', 'RESERVADO' => 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800',
+                                    'CONFIDENCIAL', 'SECRETO', 'ULTRASSECRETO', 'SECRET', 'TOP SECRET' => 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800',
+                                    default => 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
                                 } }}">
+                                @if($document->isSecret())
+                                    <i class="fa-solid fa-shield-halved mr-1 text-[8px]"></i>
+                                @endif
                                 {{ $document->confidentiality ?? '---' }}
                             </span>
                         </td>
@@ -162,7 +168,7 @@
                         <td class="px-6 py-4 text-right">
                             <div class="flex items-center justify-end gap-1 lg:gap-2">
                                 @can('documents.view')
-                                    <x-ui.button variant="ghost-primary" size="sm" icon="fas fa-eye" @click="$store.modals.openDocumentDetails({{ $document->id }})" title="Ver Detalhes" />
+                                    <x-ui.button variant="ghost-primary" size="sm" icon="fas fa-eye" @click.prevent="$store.modals.openDocumentDetails({{ $document->id }})" title="Ver Detalhes" />
                                 @endcan
                                 @can('documents.edit')
                                     <a href="{{ route('documents.edit', $document) }}" wire:navigate>

@@ -29,7 +29,12 @@ function registerStores(Alpine) {
                 this.selectedDocument = { id: null, box: {}, project: {} };
 
                 try {
-                    const response = await fetch(`/documents/${documentId}`);
+                    const response = await fetch(`/documents/${documentId}/details`, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
                     if (!response.ok) throw new Error('Falha na requisicao');
                     this.selectedDocument = await response.json();
                 } catch (error) {

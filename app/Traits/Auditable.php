@@ -56,6 +56,9 @@ trait Auditable
             unset($newValues['created_at'], $newValues['updated_at']);
         } elseif ($event === 'deleted') {
             $oldValues = $this->getAttributes();
+        } elseif ($event === 'viewed') {
+            // Para visualização, não há alteração de valores
+            $newValues = ['viewed' => true];
         }
 
         AuditLog::create([
