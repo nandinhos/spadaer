@@ -22,18 +22,22 @@
                 @endcan
 
                 @can('boxes.delete')
-                    <x-ui.button 
-                        variant="danger" 
-                        icon="fas fa-trash-alt" 
-                        type="button"
-                        @click="$store.confirmDelete.open({
-                            action: '{{ route('boxes.destroy', $box) }}',
-                            title: 'Excluir Caixa',
-                            message: 'Tem certeza que deseja excluir esta caixa ({{ $box->number }}) e TODOS os documentos contidos nela? Esta ação não pode ser desfeita.'
-                        })"
-                    >
-                        {{ __('Excluir Caixa') }}
-                    </x-ui.button>
+                    <form action="{{ route('boxes.destroy', $box) }}" method="POST" id="delete-box-form" class="inline">
+                        @csrf
+                        @method('DELETE')
+                        <x-ui.button
+                            variant="danger"
+                            icon="fas fa-trash-alt"
+                            type="button"
+                            @click="$store.confirmDelete.open({
+                                submitFormId: 'delete-box-form',
+                                title: 'Excluir Caixa',
+                                message: 'Tem certeza que deseja excluir esta caixa ({{ $box->number }}) e TODOS os documentos contidos nela? Esta ação não pode ser desfeita.'
+                            })"
+                        >
+                            {{ __('Excluir Caixa') }}
+                        </x-ui.button>
+                    </form>
                 @endcan
             </div>
         </div>

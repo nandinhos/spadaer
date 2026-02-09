@@ -80,6 +80,9 @@ function registerStores(Alpine) {
                 this.show = false;
             },
             handleConfirm() {
+                // Sincronizar CSRF token (importante para wire:navigate no Livewire 3/4)
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
                 if (this.onConfirm && typeof this.onConfirm === 'function') {
                     this.onConfirm();
                     this.close();
@@ -89,6 +92,10 @@ function registerStores(Alpine) {
                 if (this.submitFormId) {
                     const form = document.getElementById(this.submitFormId);
                     if (form) {
+                        // Atualizar token do form específico se existir
+                        const tokenInput = form.querySelector('input[name="_token"]');
+                        if (tokenInput && csrfToken) tokenInput.value = csrfToken;
+
                         form.submit();
                         this.close();
                         return;
@@ -100,6 +107,11 @@ function registerStores(Alpine) {
                     const form = document.getElementById('confirm-delete-form');
                     if (form) {
                         form.action = this.action;
+
+                        // Atualizar token do form do modal
+                        const tokenInput = form.querySelector('input[name="_token"]');
+                        if (tokenInput && csrfToken) tokenInput.value = csrfToken;
+
                         // Garantir que o _method esta correto
                         const methodInput = form.querySelector('input[name="_method"]');
                         if (methodInput) {
