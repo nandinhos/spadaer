@@ -36,22 +36,32 @@ class DocumentController extends Controller
         $params = $request->all();
         $query = $this->documentService->listDocuments($params);
 
-        // 2. Paginar Resultados
+        // 2. Paginar Resultados com Eager Loading
         $perPage = $request->input('per_page', 15);
-        $documents = (clone $query)->paginate($perPage)->withQueryString();
+        $documents = (clone $query)
+            ->with(['box', 'project']) // Eager loading para evitar N+1
+            ->paginate($perPage)
+            ->withQueryString();
 
         // 3. Obter Estatísticas via Service
         $statsData = $this->documentService->getStatistics($query);
 
         // 4. Preparar Dados Auxiliares para a View
         $availableProjects = \App\Models\Project::orderBy('name')->pluck('name', 'id');
+
+        // Otimização: Pegar apenas os últimos 4 dígitos das datas registradas
         $availableYears = Document::query()
             ->whereNotNull('document_date')
-            ->select('document_date')
-            ->distinct()
-            ->pluck('document_date')
-            ->map(fn ($d) => preg_match('/\/(\d{4})$/', $d, $m) ? (int) $m[1] : null)
-            ->filter()->unique()->sortDesc()->values();
+            ->selectRaw("DISTINCT 
+                CASE 
+                    WHEN document_date REGEXP '^[0-9]{4}' THEN SUBSTRING(document_date, 1, 4)
+                    WHEN document_date REGEXP '/[0-9]{4}$' THEN RIGHT(document_date, 4)
+                    ELSE NULL 
+                END as year")
+            ->pluck('year')
+            ->filter()
+            ->sortDesc()
+            ->values();
 
         $stats = array_merge([
             'totalDocuments' => Document::count(),
