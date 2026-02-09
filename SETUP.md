@@ -78,17 +78,28 @@ DB_PASSWORD=sua_senha
 
 ### 3. Instalação de Dependências
 
-#### 3.1 PHP (Composer)
+Para ambientes onde o PHP/Composer não está instalado no host (como o atual), utilize o **Bootstrap via Docker**:
+
+#### 3.1 PHP (Composer via Docker)
+
+Execute este comando para instalar as dependências do Laravel e do Sail sem precisar de PHP no host:
 
 ```bash
-composer install
+docker run --rm \
+    -v $(pwd):/var/www/html \
+    -w /var/www/html \
+    --user "$(id -u):$(id -g)" \
+    composer:latest composer install --ignore-platform-reqs
 ```
 
-#### 3.2 JavaScript/Node (NPM)
+#### 3.2 JavaScript/Node (NPM via Sail)
+
+Após o passo anterior, o Sail estará disponível no diretório `vendor`. Suba os containers e use-o para instalar as dependências de frontend:
 
 ```bash
-npm install
-npm run build
+./vendor/bin/sail up -d
+./vendor/bin/sail npm install
+./vendor/bin/sail npm run build
 ```
 
 ---
@@ -160,21 +171,30 @@ Para desenvolvimento, **não execute** os comandos acima (dificulta debug).
 ```bash
 php artisan serve
 ```
-Acesse: http://localhost:8000
+Acesse: http://localhost:8902
 
-#### Opção B: Laravel Sail (Docker)
+#### Opção B: Laravel Sail (Docker) - RECOMENDADO
 
+Se você não tem PHP instalado localmente, siga estes passos exatos:
+
+1. **Bootstrap inicial**:
 ```bash
-# Iniciar containers
-./vendor/bin/sail up -d
+docker run --rm -v $(pwd):/var/www/html -w /var/www/html --user "$(id -u):$(id -g)" composer:latest composer install --ignore-platform-reqs
+```
 
-# Executar comandos dentro do container
-./vendor/bin/sail composer install
+2. **Iniciar containers**:
+```bash
+./vendor/bin/sail up -d
+```
+
+3. **Configuração final**:
+```bash
+./vendor/bin/sail artisan key:generate
 ./vendor/bin/sail npm install
 ./vendor/bin/sail npm run build
 ./vendor/bin/sail artisan migrate --seed
 ```
-Acesse: http://localhost
+Acesse: http://localhost:8902
 
 #### Opção C: Ambiente Customizado
 
@@ -209,7 +229,7 @@ MAIL_ENCRYPTION=null
 
 Após completar os passos acima, verifique:
 
-1. **Homepage**: http://localhost:8000 → Deve carregar sem erros
+1. **Homepage**: http://localhost:8902 → Deve carregar sem erros
 2. **Login**: Tente logar com o usuário admin criado
 3. **Listagem de Caixas**: `/boxes` → Deve mostrar a tabela com filtros funcionando
 4. **Deleção**: Tente deletar uma caixa (deve funcionar via modal)
