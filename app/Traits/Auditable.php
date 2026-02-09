@@ -74,6 +74,23 @@ trait Auditable
     }
 
     /**
+     * Registra um log de auditoria manual (útil para pivôs ou eventos customizados).
+     */
+    public function auditManual(string $event, array $oldValues = [], array $newValues = []): void
+    {
+        AuditLog::create([
+            'user_id' => Auth::id(),
+            'event' => $event,
+            'auditable_type' => get_class($this),
+            'auditable_id' => $this->getKey(),
+            'old_values' => $oldValues,
+            'new_values' => $newValues,
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+    }
+
+    /**
      * Relacionamento polimórfico com os logs de auditoria.
      */
     public function auditLogs()

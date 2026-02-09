@@ -31,7 +31,13 @@ class RoleEdit extends Component
         if (! in_array($this->role->name, ['admin', 'user'])) {
             $this->role->update(['name' => $this->roleName]);
         }
+
+        $oldPermissions = $this->role->permissions->pluck('name')->toArray();
         $this->role->syncPermissions($this->rolePermissions);
+
+        if ($oldPermissions !== $this->rolePermissions) {
+            $this->role->auditManual('role_permissions_synced', ['permissions' => $oldPermissions], ['permissions' => $this->rolePermissions]);
+        }
 
         session()->flash('success', 'Papel e permissões atualizados com sucesso.');
 

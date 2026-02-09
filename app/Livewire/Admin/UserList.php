@@ -139,9 +139,20 @@ class UserList extends Component
                 $data['password'] = Hash::make($this->password);
             }
 
+            $oldRoles = $user->getRoleNames()->toArray();
+            $oldPermissions = $user->getDirectPermissions()->pluck('name')->toArray();
+
             $user->update($data);
             $user->syncRoles($this->selectedRoles);
             $user->syncPermissions($this->selectedPermissions);
+
+            // Auditoria manual para pivots (que não disparam eventos Eloquent)
+            if ($oldRoles !== $this->selectedRoles) {
+                $user->auditManual('roles_synced', ['roles' => $oldRoles], ['roles' => $this->selectedRoles]);
+            }
+            if ($oldPermissions !== $this->selectedPermissions) {
+                $user->auditManual('permissions_synced', ['permissions' => $oldPermissions], ['permissions' => $this->selectedPermissions]);
+            }
 
             session()->flash('success', 'Usuário atualizado com sucesso.');
         } else {
@@ -156,6 +167,12 @@ class UserList extends Component
 
             $user->assignRole($this->selectedRoles);
             $user->syncPermissions($this->selectedPermissions);
+
+            // Audit manual de atribuição inicial
+            $user->auditManual('roles_assigned', [], ['roles' => $this->selectedRoles]);
+            if (! empty($this->selectedPermissions)) {
+                $user->auditManual('permissions_assigned', [], ['permissions' => $this->selectedPermissions]);
+            }
 
             session()->flash('success', 'Usuário criado com sucesso.');
         }

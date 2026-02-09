@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CommissionMember extends Model
 {
-    use HasFactory;
+    use \App\Traits\Auditable, HasFactory;
 
     protected $fillable = [
         'user_id',

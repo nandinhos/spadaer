@@ -66,6 +66,14 @@
                         </div>
                     @endif
 
+                    @if (session('error'))
+                        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 8000)" 
+                             class="mb-6 p-4 rounded-xl border border-rose-100 bg-rose-50 text-rose-800 flex justify-between items-center shadow-sm">
+                            <span class="text-sm font-bold"><i class="fas fa-exclamation-circle mr-2"></i>{{ session('error') }}</span>
+                            <button @click="show = false"><i class="fas fa-times"></i></button>
+                        </div>
+                    @endif
+
                     {{-- Conteúdo --}}
                     {{ $slot }}
                 </div>

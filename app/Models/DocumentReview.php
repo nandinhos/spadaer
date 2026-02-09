@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class DocumentReview extends Model
 {
-    use HasFactory;
+    use \App\Traits\Auditable, HasFactory;
 
     /**
      * Os atributos que são atribuíveis em massa.
@@ -18,7 +18,7 @@ class DocumentReview extends Model
         'document_id',
         'user_id',
         'review_date',
-        'observations'
+        'observations',
     ];
 
     /**

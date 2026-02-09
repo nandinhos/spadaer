@@ -7,7 +7,7 @@
             
             <div class="flex items-center gap-2">
                 <select wire:model.live="event" class="text-sm border-none bg-gray-50 dark:bg-gray-800/50 rounded-xl focus:ring-2 focus:ring-primary/20 dark:text-gray-300">
-                    <option value="">Todos os Eventos</option>
+                    <option value="">Principais Movimentações</option>
                     <option value="created">Criação</option>
                     <option value="updated">Edição</option>
                     <option value="deleted">Exclusão</option>
@@ -73,22 +73,28 @@
                         #{{ $log->auditable_id }}
                     </td>
                     <td class="px-6 py-4">
-                        @if($log->event === 'updated')
+                        @if($log->event === 'updated' || str_ends_with($log->event, '_synced') || str_ends_with($log->event, '_assigned'))
                             <div class="space-y-1">
                                 @foreach($log->new_values as $key => $value)
                                     @continue($key === 'updated_at')
                                     <div class="text-[10px]">
                                         <span class="font-bold text-gray-500">{{ $key }}:</span>
-                                        <span class="text-rose-500 line-through mr-1">{{ is_array($log->old_values[$key] ?? '') ? json_encode($log->old_values[$key]) : $log->old_values[$key] ?? '' }}</span>
-                                        <i class="fas fa-arrow-right mx-1 text-gray-300"></i>
+                                        @if(isset($log->old_values[$key]))
+                                            <span class="text-rose-500 line-through mr-1">{{ is_array($log->old_values[$key]) ? json_encode($log->old_values[$key]) : $log->old_values[$key] }}</span>
+                                            <i class="fas fa-arrow-right mx-1 text-gray-300"></i>
+                                        @endif
                                         <span class="text-emerald-500">{{ is_array($value) ? json_encode($value) : $value }}</span>
                                     </div>
                                 @endforeach
                             </div>
                         @elseif($log->event === 'created')
                              <span class="text-[10px] text-gray-400">Novo registro criado.</span>
+                        @elseif($log->event === 'viewed')
+                             <span class="text-[10px] text-blue-400 font-medium italic">Somente visualização.</span>
+                        @elseif($log->event === 'deleted')
+                             <span class="text-[10px] text-rose-400">Registro removido definitivamente.</span>
                         @else
-                             <span class="text-[10px] text-gray-400">Registro removido.</span>
+                             <span class="text-[10px] text-gray-400">Evento registrado: {{ $log->event }}</span>
                         @endif
                     </td>
                 </tr>

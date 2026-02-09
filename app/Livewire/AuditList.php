@@ -24,6 +24,7 @@ class AuditList extends Component
     public function render()
     {
         $query = AuditLog::with('user')
+            ->where('event', '!=', 'viewed')
             ->when($this->search, function ($q) {
                 $q->where('auditable_type', 'like', '%'.$this->search.'%')
                     ->orWhere('auditable_id', 'like', '%'.$this->search.'%')
