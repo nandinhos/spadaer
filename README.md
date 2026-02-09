@@ -25,6 +25,199 @@ O SPADAER é uma plataforma corporativa "Premium" de alta performance projetada 
 
 ---
 
+## 🏗️ Organização Hierárquica do Acervo
+
+O SPADAER organiza o acervo documental em uma estrutura hierárquica de quatro níveis:
+
+```
+Projeto (Project)
+└── Comissão (Commission)
+    └── Caixa (Box)
+        └── Documento (Document)
+```
+
+| Nível | Descrição | Exemplo |
+|---|---|---|
+| **Projeto** | Agrupamento administrativo de alto nível. Possui nome, código único e descrição. | `PRJ-2024 — Inventário Anual` |
+| **Comissão** | Grupo de trabalho constituído por portaria, com presidente, membros e secretário. Responsável pela conferência do acervo. | `Comissão Permanente de Avaliação` |
+| **Caixa** | Unidade física de armazenamento. Possui numeração sequencial, localização física e conferente designado. | `CX001 — Prateleira A, Bloco 2` |
+| **Documento** | Registro documental individual com metadados completos: número, título, data, sigilo, versão e indicação de cópia. | `OF 123/2024 — Confidencial` |
+
+---
+
+## 📄 Gestão de Documentos
+
+### Metadados do Documento
+
+Cada documento registrado no sistema possui os seguintes atributos:
+
+| Atributo | Descrição |
+|---|---|
+| **Número do Documento** | Identificador único (ex: `OF 123/2024`) |
+| **Título** | Descrição do conteúdo |
+| **Número do Item** | Sequencial dentro da caixa |
+| **Data** | Data do documento (formato `MM/AAAA`) |
+| **Nível de Sigilo** | Classificação de acesso (Ostensivo, Restrito, Confidencial, Secreto) |
+| **Código** | Código de classificação documental |
+| **Descritor** | Descritor temático para categorização |
+| **Versão** | Controle de versionamento |
+| **Cópia** | Indicação se o registro é original ou cópia |
+
+### Criação Manual
+
+Documentos podem ser criados individualmente via formulário, com validação de campos obrigatórios, unicidade composta (número + cópia) e verificação de item único por caixa.
+
+### Importação em Lote (CSV)
+
+O sistema realiza importação massiva de documentos com um pipeline robusto de validação:
+
+1. **Upload**: Aceita arquivos CSV/TXT (máx. 5 MB)
+2. **Mapeamento**: Leitura e mapeamento automático de colunas
+3. **Validação linha por linha**: Campos obrigatórios, tipos, normalização de datas (`MM/AAAA`), verificação de sigilo válido, unicidade composta
+4. **Relatório de erros**: Se houver erros, retorna lista detalhada (linha, campo, mensagem, valores encontrados) **sem inserir nenhum registro**
+5. **Inserção transacional**: Se todos os dados forem válidos, insere em transação atômica (tudo ou nada)
+
+### Exportação
+
+- **Excel (.xlsx)**: Exportação de listagens com filtros preservados via `Maatwebsite/Excel`
+- **PDF**: Geração de relatórios formatados via `Barryvdh/DomPDF`
+
+---
+
+## 📦 Sistema de Caixas e Armazenagem
+
+As caixas representam as **unidades físicas de armazenamento** do acervo.
+
+### Funcionalidades
+
+| Funcionalidade | Descrição |
+|---|---|
+| **Numeração Sequencial** | Criação automática com incremento (ex: `CX001`, `CX002`, ..., `CX200`) |
+| **Criação em Lote** | Até 200 caixas de uma vez com numeração sequencial automática |
+| **Localização Física** | Campo descritivo para posição no arquivo (ex: `Prateleira A, Bloco 2`) |
+| **Conferente** | Membro de comissão designado como responsável pela conferência |
+| **Data de Conferência** | Registro de quando a caixa foi conferida |
+| **Importação por Caixa** | Importação de documentos diretamente vinculados a uma caixa específica |
+| **Filtros Avançados** | Busca por número, localização, projeto, conferente e status (com documentos / vazias) |
+| **Exclusão Inteligente** | Caixas vazias são excluídas; caixas com documentos têm seus docs desassociados (não excluídos) |
+
+---
+
+## 👥 Comissões e Membros
+
+O módulo de comissões gerencia os **grupos de trabalho** responsáveis pela conferência e validação do acervo.
+
+### Estrutura da Comissão
+
+| Campo | Descrição |
+|---|---|
+| **Nome** | Identificação da comissão |
+| **Descrição** | Objetivo e escopo de atuação |
+| **Status** | Ativo ou Inativo |
+| **Número da Portaria** | Ato normativo de constituição |
+| **Data da Portaria** | Data de publicação |
+| **Arquivo da Portaria** | Documento PDF/DOC anexado |
+
+### Papéis dos Membros
+
+| Papel | Responsabilidade |
+|---|---|
+| **Presidente** | Coordena os trabalhos da comissão. Pode criar e editar documentos. |
+| **Membro** | Participa das atividades de conferência. Pode visualizar e criar documentos. |
+| **Secretário** | Suporte administrativo à comissão. |
+
+### Vínculo Operacional
+
+- Membros de comissão podem ser designados como **conferentes de caixas**, vinculando a comissão diretamente à atividade de verificação física do acervo.
+- A gestão de membros (adição/remoção) calcula automaticamente o *diff* entre a composição atual e a desejada.
+
+---
+
+## 🔐 Níveis de Sigilo
+
+O SPADAER implementa um sistema de classificação de sigilo para documentos:
+
+| Nível | Acesso |
+|---|---|
+| **Ostensivo / Público** | Livre para qualquer usuário com permissão `documents.view` |
+| **Restrito** | Requer permissão especial `documents.view.secret` |
+| **Confidencial** | Requer permissão especial `documents.view.secret` |
+| **Secreto** | Requer permissão especial `documents.view.secret` |
+
+### Fluxo de Verificação
+
+```
+Usuário acessa documento
+        │
+        ▼
+   Tem permissão documents.view? ── NÃO ──► BLOQUEADO
+        │
+       SIM
+        ▼
+   Documento é sigiloso? ── NÃO ──► ACESSO LIBERADO
+        │
+       SIM
+        ▼
+   Tem permissão documents.view.secret? ── NÃO ──► BLOQUEADO
+        │
+       SIM ──► ACESSO LIBERADO
+```
+
+Por padrão, apenas o papel **Administrador** possui a permissão `documents.view.secret`.
+
+---
+
+## 🔍 Rastreio e Auditoria
+
+### Auditoria Automatizada
+
+O sistema registra automaticamente **todas as operações** nos modelos principais através do trait `Auditable`:
+
+| Evento | Dados Capturados |
+|---|---|
+| **Criação** | Todos os atributos do novo registro |
+| **Edição** | Valores anteriores e novos (apenas campos alterados) |
+| **Exclusão** | Todos os atributos do registro excluído |
+| **Visualização** | Registro de acesso ao documento |
+
+Cada log de auditoria inclui: **usuário responsável**, **endereço IP**, **user-agent do navegador** e **timestamp**.
+
+### Modelos Auditados
+
+- Documentos (`Document`)
+- Caixas (`Box`)
+- Comissões (`Commission`)
+- Projetos (`Project`)
+
+### Revisão de Documentos
+
+Além da auditoria automática, o sistema mantém um registro específico de **revisões por documento** (`DocumentReview`), permitindo rastrear quem revisou cada documento e quando, com espaço para observações.
+
+### Painel de Auditoria
+
+Interface administrativa dedicada (`/admin/audit`) para consulta de trilhas de auditoria com filtros por modelo, usuário e tipo de evento.
+
+---
+
+## 🛂 Controle de Acesso (RBAC)
+
+O controle de acesso é baseado em papéis (Role-Based Access Control) com 4 níveis de autorização: Middleware, Gates, Policies e verificações em componentes.
+
+### Papéis do Sistema
+
+| Papel | Capacidades Principais |
+|---|---|
+| **Administrador** | Acesso total: gestão de usuários, documentos, caixas, comissões, projetos, sigilo e auditoria |
+| **Presidente de Comissão** | Criar/editar documentos, editar comissões, exportar (Excel/PDF) |
+| **Membro de Comissão** | Visualizar e criar documentos, exportar (Excel/PDF) |
+| **Usuário** | Visualizar documentos e comissões, gerenciar caixas |
+
+### Permissões Granulares
+
+O sistema define **20 permissões** organizadas em 5 módulos: Usuários, Documentos, Comissões, Caixas e Projetos. As permissões podem ser atribuídas por papel ou diretamente a usuários individuais através do painel administrativo.
+
+---
+
 ## 🛠️ Stack Tecnológica
 
 - **Core**: [Laravel 12](https://laravel.com) (PHP 8.4+)
