@@ -100,6 +100,14 @@ Este projeto usa AI Dev Superpowers para governança e qualidade.
 
 ---
 
+## 📅 SPRINT 7: Segurança e Sigilo (Fase 3)
+**Objetivo:** Implementar camada de segurança avançada e controle de sigilo de dados.
+**Status:** ⏸️ Pausado
+
+> **Motivo da pausa:** Sprint adiado para outro momento devido à complexidade envolvida e à necessidade de alterações no core do sistema. Será retomado quando houver janela adequada para mudanças estruturais.
+
+---
+
 ## 📊 RESUMO DE PRIORIDADES
 
 | Sprint | Funcionalidade | Prioridade | Status |
@@ -107,10 +115,10 @@ Este projeto usa AI Dev Superpowers para governança e qualidade.
 | 5 | Conclusão Padronização UI | 🔴 CRÍTICA | ✅ Concluído |
 | 4 | Melhoria Performance Consultas | 🟢 MÉDIA | 🟡 Pendente |
 | 6 | Infraestrutura de Auditoria | 🔴 CRÍTICA | ✅ Concluído |
-| 7 | Segurança e Sigilo (Fase 3) | 🟡 ALTA | 🔵 Planejado |
+| 7 | Segurança e Sigilo (Fase 3) | 🟡 ALTA | ⏸️ Pausado |
 
 ---
 
 **Versão:** 1.3 (v3.7)
 **Status:** Ativo
-**Última atualização:** 2026-02-07
+**Última atualização:** 2026-02-09
