@@ -120,6 +120,8 @@
                                                     </span>
                                                     @if(str_contains($permission->name, 'delete'))
                                                         <i class="fas fa-trash-alt text-[10px] text-rose-300 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                                    @elseif(str_contains($permission->name, 'edit'))
+                                                        <i class="fas fa-edit text-[10px] text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity"></i>
                                                     @endif
                                                 </div>
                                                 <span class="text-[10px] text-gray-400 font-medium uppercase tracking-tighter opacity-50">{{ $permission->name }}</span>
