@@ -8,7 +8,7 @@
         </h3>
         {{-- Link para Baixar Modelo --}}
         <a href="{{ asset('files/modelo_importacao.csv') }}" {{-- Certifique-se que este arquivo existe na pasta /public/files --}}
-            class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200"
+            class="text-sm font-medium text-primary dark:text-primary-light hover:text-primary-800 dark:hover:text-primary-200"
             download>
             <i class="mr-1 fas fa-download"></i> Baixar modelo CSV
         </a>
@@ -24,9 +24,9 @@
                     class="block w-full text-sm text-gray-500 border border-gray-300 rounded-lg cursor-pointer dark:text-gray-400 focus:outline-none dark:border-gray-600 dark:placeholder-gray-400
                               file:mr-4 file:py-2 file:px-4 file:rounded-l-md file:border-0
                               file:text-sm file:font-semibold
-                              file:bg-indigo-50 file:text-indigo-700
+                              file:bg-primary-50 file:text-primary-dark
                               dark:file:bg-gray-700 dark:file:text-gray-300
-                              hover:file:bg-indigo-100 dark:hover:file:bg-gray-600"
+                              hover:file:bg-primary-100 dark:hover:file:bg-gray-600"
                     required>
                 <x-input-error :messages="$errors->get('csv_file')" class="mt-2" />
             </div>

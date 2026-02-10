@@ -74,7 +74,7 @@
                         <div>
                             <x-input-label for="members" :value="__('Membros da Comissão')" />
                             <select id="members" name="members[]" multiple
-                                class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600"
+                                class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-primary dark:focus:border-primary focus:ring-primary dark:focus:ring-primary"
                                 required>
                                 {{-- Garante que $users existe antes de iterar --}}
                                 @isset($users)

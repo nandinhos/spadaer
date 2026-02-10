@@ -22,12 +22,12 @@
     </head>
     <body class="font-['Outfit'] text-gray-900 min-h-screen overflow-hidden">
         <!-- Background Premium Animado -->
-        <div class="fixed inset-0 bg-gradient-to-br from-indigo-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-950 dark:to-blue-950">
+        <div class="fixed inset-0 bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-950 dark:to-blue-950">
             <!-- Gradientes Animados -->
             <div class="absolute inset-0 overflow-hidden">
-                <div class="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-indigo-200/40 via-blue-200/30 to-sky-200/40 dark:from-indigo-900/30 dark:via-blue-900/20 dark:to-sky-900/20 rounded-full blur-3xl animate-blob"></div>
-                <div class="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-blue-200/40 via-indigo-200/30 to-cyan-200/40 dark:from-blue-900/30 dark:via-indigo-900/20 dark:to-cyan-900/20 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
-                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-gradient-to-r from-blue-100/20 via-indigo-100/20 to-sky-100/20 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-sky-900/20 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+                <div class="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-primary-light/40 via-blue-200/30 to-sky-200/40 dark:from-primary-dark/30 dark:via-blue-900/20 dark:to-sky-900/20 rounded-full blur-3xl animate-blob"></div>
+                <div class="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-blue-200/40 via-primary-light/30 to-cyan-200/40 dark:from-blue-900/30 dark:via-primary-dark/20 dark:to-cyan-900/20 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-gradient-to-r from-blue-100/20 via-primary-light/20 to-sky-100/20 dark:from-blue-900/20 dark:via-primary-dark/20 dark:to-sky-900/20 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
             </div>
             
             <!-- Grid Pattern Sutil -->

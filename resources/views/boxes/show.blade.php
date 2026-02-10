@@ -240,7 +240,7 @@
                                 <tr>
                                     <th scope="col" class="w-12 px-6 py-3">
                                         <input id="select-all-checkbox" type="checkbox" @click="toggleAll()"
-                                            :checked="allSelected" class="text-indigo-600 border-gray-300 rounded ...">
+                                            :checked="allSelected" class="text-primary border-gray-300 rounded ...">
                                     </th>
                                     <th scope="col" class="px-6 py-3 text-left ...">{{ __('Item') }}</th>
                                     <th scope="col" class="px-6 py-3 text-left ...">{{ __('Número Doc.') }}</th>
@@ -255,7 +255,7 @@
                                         <td class="px-6 py-4">
                                             <input type="checkbox" :value="{{ $document->id }}"
                                                 x-model="selectedDocuments"
-                                                class="text-indigo-600 border-gray-300 rounded ...">
+                                                class="text-primary border-gray-300 rounded ...">
                                         </td>
                                         <td class="px-6 py-4 ...">{{ $document->item_number }}</td>
                                         <td class="px-6 py-4 ...">{{ $document->document_number ?? '--' }}</td>
@@ -331,8 +331,8 @@
                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                     class="relative z-10 inline-block px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl dark:bg-gray-800 sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
                     <div>
-                        <div class="flex items-center justify-center w-12 h-12 mx-auto bg-indigo-100 rounded-full dark:bg-indigo-900">
-                            <i class="text-indigo-600 fas fa-upload dark:text-indigo-400"></i>
+                        <div class="flex items-center justify-center w-12 h-12 mx-auto bg-primary-100 rounded-full dark:bg-primary-900">
+                            <i class="text-primary fas fa-upload dark:text-primary-light"></i>
                         </div>
                         <div class="mt-3 text-center sm:mt-5">
                             <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100" id="modal-title">
@@ -352,12 +352,12 @@
                             <input type="file" name="csv_file" accept=".csv" required
                                 class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400">
                             
-                            <div class="flex items-center justify-between p-3 border border-indigo-100 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-800">
+                            <div class="flex items-center justify-between p-3 border border-primary-100 rounded-lg bg-primary-50 dark:bg-primary-900/20 dark:border-primary-800">
                                 <div class="flex items-center gap-2">
-                                    <i class="text-indigo-500 fas fa-info-circle"></i>
-                                    <span class="text-xs font-medium text-indigo-700 dark:text-indigo-300">Layout Sugerido</span>
+                                    <i class="text-primary fas fa-info-circle"></i>
+                                    <span class="text-xs font-medium text-primary-dark dark:text-primary-300">Layout Sugerido</span>
                                 </div>
-                                <a href="{{ asset('files/modelo_importacao.csv') }}" download class="text-xs font-bold text-indigo-600 uppercase hover:underline dark:text-indigo-400">
+                                <a href="{{ asset('files/modelo_importacao.csv') }}" download class="text-xs font-bold text-primary uppercase hover:underline dark:text-primary-light">
                                     Download Modelo
                                 </a>
                             </div>

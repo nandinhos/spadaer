@@ -2,10 +2,10 @@
 @import "@fortawesome/fontawesome-free/css/all.min.css";
 
 @theme {
-    /* Cores Primárias Premium */
-    --color-primary: #6366f1;
-    --color-primary-dark: #4f46e5;
-    --color-primary-light: #818cf8;
+    /* Cores Primárias Premium (FAB Blue) */
+    --color-primary: #005c9e;
+    --color-primary-dark: #00487d;
+    --color-primary-light: #338dcc;
 
     /* Cores de Acento */
     --color-accent: #f43f5e;
@@ -135,10 +135,10 @@ body {
 /* Pulse Glow */
 @keyframes pulse-glow {
     0%, 100% {
-        box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+        box-shadow: 0 0 20px rgba(0, 92, 158, 0.3);
     }
     50% {
-        box-shadow: 0 0 40px rgba(99, 102, 241, 0.5);
+        box-shadow: 0 0 40px rgba(0, 92, 158, 0.5);
     }
 }
 
@@ -176,7 +176,7 @@ body {
 /* Focus ring premium */
 .focus-ring:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 0 0 3px rgba(0, 92, 158, 0.3);
 }
 
 /* Card hover lift */

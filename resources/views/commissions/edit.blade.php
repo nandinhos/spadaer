@@ -62,7 +62,7 @@
                         <div>
                             <x-input-label for="members" :value="__('Membros')" />
                             <select id="members" name="members[]" multiple
-                                class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600"
+                                class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-primary dark:focus:border-primary focus:ring-primary dark:focus:ring-primary"
                                 required>
                                 @foreach ($users as $user)
                                     <option value="{{ $user->id }}" {{-- Verifica se o ID do usuário atual está na coleção de user_ids dos membros da comissão --}} {{-- Usamos old() para priorizar dados submetidos anteriormente em caso de erro de validação --}}

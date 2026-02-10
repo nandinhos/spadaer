@@ -32,7 +32,7 @@
                                 <dt class="text-gray-500 dark:text-gray-400">Arquivo</dt>
                                 <dd>
                                     <a href="{{ Storage::url($commission->ordinance_file) }}" target="_blank"
-                                        class="text-indigo-600 dark:text-indigo-400 hover:underline">
+                                        class="text-primary dark:text-primary-light hover:underline">
                                         Visualizar PDF
                                     </a>
                                 </dd>

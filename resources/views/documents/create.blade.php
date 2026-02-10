@@ -46,7 +46,7 @@
                             <div>
                                 <x-input-label for="box_id" :value="__('Caixa')" />
                                 <select id="box_id" name="box_id" required
-                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-primary focus:ring-primary">
                                     <option value="" disabled @selected(old('box_id') === null)> {{-- Default é desabilitado --}}
                                         {{ __('Selecione uma Caixa') }}
                                     </option>
@@ -76,7 +76,7 @@
                             <div>
                                 <x-input-label for="project_id" :value="__('Projeto (Opcional)')" />
                                 <select id="project_id" name="project_id"
-                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-primary focus:ring-primary">
                                     <option value="" @selected(old('project_id') == '')>{{ __('-- Nenhum --') }}
                                     </option> {{-- Default é '-- Nenhum --' --}}
                                     {{-- $projects deve ser passado pelo DocumentController@create --}}
@@ -136,7 +136,7 @@
                             <div>
                                 <x-input-label for="confidentiality" :value="__('Nível de Sigilo')" />
                                 <select id="confidentiality" name="confidentiality" required
-                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-primary focus:ring-primary">
                                     <option value="" disabled @selected(old('confidentiality') === null || old('confidentiality') === '')>
                                         {{ __('Selecione...') }}</option>
                                     @foreach (['Público', 'Restrito', 'Confidencial'] as $level)

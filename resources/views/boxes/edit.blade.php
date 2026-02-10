@@ -61,7 +61,7 @@
                         <div>
                             <x-input-label for="project_id" :value="__('Projeto Associado (Opcional)')" />
                             <select id="project_id" name="project_id"
-                                class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600">
+                                class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-primary dark:focus:border-primary focus:ring-primary dark:focus:ring-primary">
                                 {{-- Seleciona '-- Nenhum --' se o valor antigo/atual for vazio/nulo --}}
                                 <option value="" @selected(old('project_id', $box->project_id) == '')>{{ __('-- Nenhum --') }}</option>
                                 @isset($projects)
@@ -80,7 +80,7 @@
                         <div>
                             <x-input-label for="commission_member_id" :value="__('Conferente (Opcional)')" />
                             <select id="commission_member_id" name="commission_member_id"
-                                class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600">
+                                class="block w-full mt-1 border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-primary dark:focus:border-primary focus:ring-primary dark:focus:ring-primary">
                                 {{-- Seleciona '-- Nenhum --' se o valor antigo/atual for vazio/nulo --}}
                                 <option value="" @selected(old('commission_member_id', $box->commission_member_id) == '')>{{ __('-- Nenhum --') }}</option>
                                 @isset($activeMembers)
