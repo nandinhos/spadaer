@@ -6,6 +6,95 @@
         :totalDocuments="$stats['totalDocuments'] ?? 0" 
     />
 
+    {{-- Alertas de Importação --}}
+    @if (session()->has('import_error_message') || session()->has('error') || session()->has('success') || session()->has('warning'))
+        <div class="space-y-4">
+            @if (session('success'))
+                <div class="bg-emerald-50 border-l-4 border-emerald-400 p-4 rounded-r-xl shadow-sm">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-check-circle text-emerald-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-emerald-700">{{ session('success') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-xl shadow-sm">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-circle-xmark text-red-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-red-700">{{ session('error') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            @if (session('warning'))
+                <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-xl shadow-sm">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-amber-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-amber-700">{{ session('warning') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            @if (session('import_error_message'))
+                <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-xl shadow-sm">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-circle-xmark text-red-400 mt-0.5"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-red-700">
+                                {!! session('import_error_message') !!}
+                            </p>
+                            @if (session()->has('import_errors'))
+                                <div class="mt-4 overflow-hidden border border-red-200 rounded-lg">
+                                    <table class="min-w-full divide-y divide-red-200">
+                                        <thead class="bg-red-100/50">
+                                            <tr>
+                                                <th class="px-4 py-2 text-left text-[10px] font-black text-red-700 uppercase">Linha/Doc</th>
+                                                <th class="px-4 py-2 text-left text-[10px] font-black text-red-700 uppercase">Campos com Erro</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white/50 divide-y divide-red-100">
+                                            @foreach (session('import_errors') as $error)
+                                                <tr>
+                                                    <td class="px-4 py-2 text-xs font-bold text-red-900 border-r border-red-100">
+                                                        {{ $error['identifier'] ?? ('Linha '.$error['row']) }}
+                                                    </td>
+                                                    <td class="px-4 py-2 text-xs text-red-700">
+                                                        <ul class="list-disc list-inside">
+                                                            @foreach ($error['errors'] as $field => $messages)
+                                                                @foreach ($messages as $msg)
+                                                                    <li><strong>{{ str_replace('_', ' ', $field) }}:</strong> {{ $msg }}</li>
+                                                                @endforeach
+                                                            @endforeach
+                                                        </ul>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endif
+        </div>
+    @endif
+
     {{-- Filtros Reativos --}}
     <div x-data="{ open: @entangle('hasActiveFilters') }" class="mb-8 overflow-hidden bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm transition-all duration-300">
         <button 

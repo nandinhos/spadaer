@@ -14,8 +14,9 @@ use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
 
-class DocumentsBoxImport implements SkipsOnFailure, ToCollection, WithHeadingRow, WithValidation
+class DocumentsBoxImport implements SkipsOnFailure, ToCollection, WithHeadingRow, WithValidation, WithCustomCsvSettings
 {
     use Importable, SkipsFailures;
 
@@ -220,8 +221,8 @@ class DocumentsBoxImport implements SkipsOnFailure, ToCollection, WithHeadingRow
         }
         $dateString = trim($dateString);
 
-        // Regex para validar o formato MM/YYYY (ex: 01/2025)
-        if (preg_match('/^(\d{2})\/(\d{4})$/', $dateString, $matches)) {
+        // Regex para validar o formato M/YYYY ou MM/YYYY (ex: 1/2025 ou 01/2025)
+        if (preg_match('/^(\d{1,2})\/(\d{4})$/', $dateString, $matches)) {
             $month = (int) $matches[1];
             $year = (int) $matches[2];
 
@@ -303,5 +304,20 @@ class DocumentsBoxImport implements SkipsOnFailure, ToCollection, WithHeadingRow
         ksort($this->collectedErrors);
 
         return array_values($this->collectedErrors);
+    }
+
+    /**
+     * Define as configurações personalizadas para leitura de CSV.
+     */
+    public function getCsvSettings(): array
+    {
+        return [
+            'delimiter' => $this->detectDelimiter(),
+        ];
+    }
+
+    private function detectDelimiter(): string
+    {
+        return ',';
     }
 }

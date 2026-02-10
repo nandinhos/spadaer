@@ -10,12 +10,12 @@
         class="flex items-center justify-between h-20 px-4 border-b border-gray-100 transition-all duration-300"
         :class="sidebarOpen ? '' : 'flex-col justify-center h-auto py-4 gap-4'"
     >
-        <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center overflow-hidden group">
-            <div class="flex items-center justify-center min-w-[48px] h-12 rounded-xl bg-primary/10 text-primary shadow-inner group-hover:bg-primary group-hover:text-white transition-all shrink-0">
+        <div class="flex items-center overflow-hidden group">
+            <div class="flex items-center justify-center min-w-[48px] h-12 rounded-xl bg-primary/10 text-primary shadow-inner transition-all shrink-0">
                 <i class="fas fa-box-archive text-xl"></i>
             </div>
-            <div 
-                class="ml-3 transition-all duration-300 transform"
+            <a href="{{ route('dashboard') }}" wire:navigate 
+                class="ml-3 transition-all duration-300 transform hover:translate-x-1"
                 x-show="sidebarOpen"
                 x-transition:enter="delay-100 duration-300"
                 x-transition:enter-start="opacity-0 -translate-x-2"
@@ -25,15 +25,15 @@
                     SPADAER
                 </h2>
                 <span class="text-[10px] font-bold text-primary tracking-widest uppercase opacity-70">GAC-PAC</span>
-            </div>
-        </a>
+            </a>
+        </div>
         
         <button
             @click="toggleSidebar()"
             class="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-primary/5 transition-all duration-200 focus:outline-none shrink-0"
             title="Alternar menu (Ctrl+B)"
         >
-            <i class="fas" :class="sidebarOpen ? 'fa-indent' : 'fa-outdent'"></i>
+            <i class="fas" :class="sidebarOpen ? 'fa-outdent' : 'fa-indent'"></i>
         </button>
     </div>
 

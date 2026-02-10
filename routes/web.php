@@ -43,18 +43,18 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('documents')->name('documents.')->group(function () {
         // 1. Rotas Estáticas / Específicas (Devem vir ANTES dos wildcards)
         Route::get('/', [DocumentController::class, 'index'])->name('index');
-        Route::get('/create', [DocumentController::class, 'create'])->name('create')->middleware('role:admin,presidente_comissao');
-        Route::post('/', [DocumentController::class, 'store'])->name('store')->middleware('role:admin,presidente_comissao');
-        Route::post('/import', [DocumentImportController::class, 'import'])->name('import')->middleware('role:admin,presidente_comissao');
-        Route::get('/export', [DocumentExportController::class, 'exportExcel'])->name('export')->middleware('role:admin,presidente_comissao');
-        Route::get('/export/pdf', [DocumentExportController::class, 'exportPdf'])->name('export.pdf')->middleware('role:admin,presidente_comissao');
+        Route::get('/create', [DocumentController::class, 'create'])->name('create')->middleware('role:admin,commission_president');
+        Route::post('/', [DocumentController::class, 'store'])->name('store')->middleware('role:admin,commission_president');
+        Route::post('/import', [DocumentImportController::class, 'import'])->name('import')->middleware('role:admin,commission_president');
+        Route::get('/export', [DocumentExportController::class, 'exportExcel'])->name('export')->middleware('role:admin,commission_president');
+        Route::get('/export/pdf', [DocumentExportController::class, 'exportPdf'])->name('export.pdf')->middleware('role:admin,commission_president');
 
         // 2. Rotas com Wildcards / Parâmetros
         Route::get('/{document}', [DocumentController::class, 'show'])->name('show');
         Route::get('/{document}/details', [DocumentController::class, 'getJsonDetails'])->name('getJsonDetails');
-        Route::get('/{document}/edit', [DocumentController::class, 'edit'])->name('edit')->middleware('role:admin,presidente_comissao');
-        Route::put('/{document}', [DocumentController::class, 'update'])->name('update')->middleware('role:admin,presidente_comissao');
-        Route::delete('/{document}', [DocumentController::class, 'destroy'])->name('destroy')->middleware('role:admin,presidente_comissao');
+        Route::get('/{document}/edit', [DocumentController::class, 'edit'])->name('edit')->middleware('role:admin,commission_president');
+        Route::put('/{document}', [DocumentController::class, 'update'])->name('update')->middleware('role:admin,commission_president');
+        Route::delete('/{document}', [DocumentController::class, 'destroy'])->name('destroy')->middleware('role:admin,commission_president');
     });
 
     /*
