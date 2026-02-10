@@ -79,17 +79,51 @@
     </div>
 
     {{-- Tabela Reativa --}}
-    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+    <div 
+        x-data="{
+            selected: @entangle('selectedDocuments').live,
+            allIds: {{ json_encode($documents->pluck('id')->toArray()) }},
+            get isAllSelected() {
+                return this.selected.length > 0 && this.selected.length === this.allIds.length;
+            },
+            toggleAll() {
+                this.selected = this.isAllSelected ? [] : [...this.allIds];
+            }
+        }"
+        class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden"
+    >
         <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex flex-wrap items-center gap-3">
-                <h2 class="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight mr-2">
-                    Documentos
+                <h2 class="text-2xl font-black text-gray-900 dark:text-white tracking-tight mr-2">
+                    Listagem de <span class="text-primary">Documentos</span>
                 </h2>
-                <a href="{{ route('documents.create') }}" wire:navigate>
-                    <x-ui.button size="sm" icon="fas fa-plus" variant="primary">
-                        Novo
-                    </x-ui.button>
-                </a>
+                
+                @can('documents.create')
+                    <a href="{{ route('documents.create') }}" wire:navigate>
+                        <x-ui.button size="sm" icon="fas fa-plus" variant="primary">
+                            Novo
+                        </x-ui.button>
+                    </a>
+                @endcan
+
+                {{-- Ações em Massa --}}
+                <div x-show="selected.length > 0" x-cloak class="flex items-center gap-2 ml-2 pl-4 border-l border-gray-100 dark:border-gray-800 transition-all">
+                    @can('documents.delete')
+                        <x-ui.button 
+                            size="sm" 
+                            variant="danger" 
+                            icon="fas fa-trash"
+                            @click="$store.confirmDelete.open({
+                                title: 'Excluir Selecionados',
+                                message: 'Tem certeza que deseja excluir os ' + selected.length + ' documentos selecionados?',
+                                requiresObservation: true,
+                                onConfirm: (obs) => { $wire.batchDelete(obs) }
+                            })"
+                        >
+                            Excluir (<span x-text="selected.length"></span>)
+                        </x-ui.button>
+                    @endcan
+                </div>
                 
                 {{-- Ações de Lote / Ferramentas --}}
                 <div class="flex items-center gap-2 ml-2 pl-4 border-l border-gray-100 dark:border-gray-800">
@@ -145,6 +179,11 @@
             <table class="w-full text-left border-collapse min-w-[800px] lg:min-w-full">
                 <thead>
                     <tr class="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
+                        @can('documents.delete')
+                            <th class="w-12 px-6 py-4">
+                                <input type="checkbox" @click="toggleAll()" :checked="isAllSelected" class="rounded border-gray-300">
+                            </th>
+                        @endcan
                         <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer" wire:click="sortBy('boxes.number')">
                             Localização <i class="fa-solid {{ $sort_by === 'boxes.number' ? ($sort_dir === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort opacity-20' }} ml-1"></i>
                         </th>
@@ -161,6 +200,11 @@
                 <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
                     @forelse($documents as $document)
                         <tr wire:key="{{ $document->id }}" class="group hover:bg-primary/[0.02] dark:hover:bg-primary/[0.05] transition-colors">
+                            @can('documents.delete')
+                                <td class="px-6 py-4">
+                                    <input type="checkbox" value="{{ $document->id }}" x-model="selected" class="rounded border-gray-300">
+                                </td>
+                            @endcan
                             <td class="px-6 py-4 text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-tighter">
                                 {{ $document->box->number ?? '---' }} <span class="ml-2 text-[10px] text-gray-400 font-normal">Item: {{ $document->item_number }}</span>
                             </td>
@@ -184,7 +228,30 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <x-ui.button variant="ghost-primary" size="sm" icon="fas fa-eye" @click.prevent="$store.modals.openDocumentDetails({{ $document->id }})" title="Ver Detalhes" />
+                                <div class="flex justify-end gap-2">
+                                    <x-ui.button variant="ghost-primary" size="sm" icon="fas fa-eye" @click.prevent="$store.modals.openDocumentDetails({{ $document->id }})" title="Visualizar" />
+                                    
+                                    @can('documents.edit')
+                                        <a href="{{ route('documents.edit', $document) }}" wire:navigate>
+                                            <x-ui.button variant="ghost-warning" size="sm" icon="fas fa-edit" title="Editar" />
+                                        </a>
+                                    @endcan
+
+                                    @can('documents.delete')
+                                        <x-ui.button 
+                                            variant="ghost-danger" 
+                                            size="sm" 
+                                            icon="fas fa-trash" 
+                                            @click.prevent="$store.confirmDelete.open({
+                                                title: 'Excluir Documento',
+                                                message: 'Tem certeza que deseja excluir o documento {{ $document->document_number }}?',
+                                                requiresObservation: true,
+                                                onConfirm: (obs) => { $wire.deleteDocument({{ $document->id }}, obs) }
+                                            })" 
+                                            title="Excluir" 
+                                        />
+                                    @endcan
+                                </div>
                             </td>
                         </tr>
                     @empty

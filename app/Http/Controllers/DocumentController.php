@@ -101,7 +101,9 @@ class DocumentController extends Controller
     {
         $validated = $request->validated();
         try {
-            Document::create($validated);
+            $document = Document::create($validated);
+
+            $document->auditManual('document_created', [], $document->toArray());
 
             return redirect()->route('documents.index')->with('success', 'Documento criado com sucesso.');
         } catch (\Throwable $e) {
@@ -161,7 +163,13 @@ class DocumentController extends Controller
     {
         $validated = $request->validated();
         try {
+            $oldValues = $document->getRawOriginal();
             $document->update($validated);
+            $newValues = $document->getChanges();
+
+            if (!empty($newValues)) {
+                $document->auditManual('document_updated', $oldValues, $newValues);
+            }
 
             return redirect()->route('documents.index')->with('success', 'Documento atualizado com sucesso.');
         } catch (\Throwable $e) {
@@ -179,6 +187,7 @@ class DocumentController extends Controller
         $this->authorize('delete', $document);
 
         try {
+            $document->auditManual('document_deleted', $document->toArray(), []);
             $document->delete();
 
             return redirect()->route('documents.index')->with('success', 'Documento excluído com sucesso.');
