@@ -113,7 +113,7 @@ class BoxList extends Component
     }
 
     // Deleção em Massa
-    public function batchDelete()
+    public function batchDelete($observation = null)
     {
         $this->authorize('boxes.delete');
 
@@ -135,7 +135,16 @@ class BoxList extends Component
                 if ($box->documents()->count() > 0) {
                     $box->documents()->update(['box_id' => null]);
                     $orphanedCount++;
+
+                    $box->auditManual('box_orphaned_bulk', [], [
+                        'box' => $box->number,
+                        'reason' => $observation
+                    ]);
                 } else {
+                    $box->auditManual('box_deleted_bulk', [], [
+                        'box' => $box->number,
+                        'reason' => $observation
+                    ]);
                     $box->delete();
                     $deletedCount++;
                 }

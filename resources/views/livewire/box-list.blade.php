@@ -89,7 +89,7 @@
     <!-- Tabela com Alpine.js para seleção -->
     <div x-data="{
         selected: @entangle('selectedBoxes').live,
-        allIds: {{ json_encode($boxes->pluck('id')->toArray()) }},
+        allIds: {{ json_encode($boxes->pluck('id')->map(fn($id) => (string)$id)->toArray()) }},
         get isAllSelected() {
             return this.selected.length > 0 && this.selected.length === this.allIds.length;
         },
@@ -110,7 +110,7 @@
                         @click="$store.confirmDelete.open({
                             title: 'Excluir Selecionados',
                             message: 'Tem certeza que deseja processar ' + selected.length + ' caixa(s)?',
-                            onConfirm: () => { $wire.batchDelete() }
+                            onConfirm: (obs) => { $wire.batchDelete(obs) }
                         })"
                     >
                         Excluir (<span x-text="selected.length"></span>)

@@ -71,9 +71,9 @@ class UpdateDocumentRequest extends FormRequest
                     ->ignore($documentId), // << IGNORA O DOCUMENTO ATUAL
             ],
             'title' => ['required', 'string', 'max:65535'],
-            'document_date' => [ // Validar a string MES/ANO
+            'document_date' => [ // Validar a string MM/ANO (após prepareForValidation)
                 'required', 'string',
-                'regex:/^([a-zA-Z]{3})\/?(\d{4})$/i', // Valida formato MES/ANO
+                'regex:/^\d{2}\/\d{4}$/', // Garante formato MM/AAAA (ex: 01/2024)
             ],
             'confidentiality' => ['nullable', 'string', 'max:255', Rule::in(['OSTENSIVO', 'PÚBLICO', 'RESTRITO', 'CONFIDENCIAL', 'Ostensivo', 'Público', 'Restrito', 'Confidencial', 'ostensivo', 'público', 'restrito', 'confidencial', 'Restricted', 'restricted', 'confidential', 'Confidential', 'Unclassified', 'unclassified', 'Secreto', 'secreto', 'Secret', 'secret'])],
             'code' => [
@@ -96,21 +96,17 @@ class UpdateDocumentRequest extends FormRequest
         if ($this->has('document_date')) {
             $dateString = $this->input('document_date');
             $normalizedDate = null;
-            // Tenta normalizar para XXX/YYYY
-            if ($dateString && preg_match('/^([a-zA-Z]{3})[\/\s]?(\d{4})$/', $dateString, $matches)) {
-                $monthAbbr = strtoupper($matches[1]);
+            // Tenta normalizar para MM/YYYY
+            if ($dateString && preg_match('/^(\d{2})[\/\s]?(\d{4})$/', $dateString, $matches)) {
+                $month = $matches[1];
                 $year = $matches[2];
-                $validMonths = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
-                if (in_array($monthAbbr, $validMonths)) {
-                    $normalizedDate = $monthAbbr.'/'.$year;
+                // Basic validation for month range (1-12)
+                if ((int) $month >= 1 && (int) $month <= 12) {
+                    $normalizedDate = sprintf('%02d/%s', (int) $month, $year);
                 }
             }
-            // Se normalizado ou não, sobrescreve o valor original para validação
-            // A regra regex vai pegar se $normalizedDate for null aqui (formato inválido)
-            // Ou podemos apenas passar a string original para a regex validar.
-            // Vamos passar a original e deixar a regex fazer o trabalho:
-            // $this->merge(['document_date' => $normalizedDate]);
-            // Se a validação de data não usar regex, faça a normalização aqui.
+            // Sobrescreve para validação
+            $this->merge(['document_date' => $normalizedDate]);
         }
 
         // Garante que is_copy vazio seja null (importante para unique rule)
