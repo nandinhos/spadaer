@@ -3,8 +3,8 @@
 namespace App\Livewire\Admin;
 
 use Livewire\Component;
+use App\Models\Role;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 
 class RoleManager extends Component
 {

@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 class UserList extends Component
 {

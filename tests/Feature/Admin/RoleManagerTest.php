@@ -6,7 +6,7 @@ use App\Livewire\Admin\RoleManager;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 use Tests\TestCase;
 
 class RoleManagerTest extends TestCase
