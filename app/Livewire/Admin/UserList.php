@@ -13,7 +13,6 @@ class UserList extends Component
 {
     use WithPagination;
 
-    #[Url(history: true)]
     public $search = '';
 
     #[Url(history: true)]

@@ -24,6 +24,7 @@
                     type="text" 
                     wire:model.live.debounce.300ms="search"
                     placeholder="Buscar por nome, email, posto ou nome completo..." 
+                    autocomplete="off"
                     class="block w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 dark:text-white transition-all duration-200"
                 >
             </div>
