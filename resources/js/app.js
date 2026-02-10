@@ -64,6 +64,9 @@ function registerStores(Alpine) {
             onConfirm: null,
             confirmText: 'Excluir',
             cancelText: 'Cancelar',
+            requiresObservation: false,
+            observation: '',
+            observationError: false,
 
             open(config) {
                 this.show = true;
@@ -75,16 +78,26 @@ function registerStores(Alpine) {
                 this.onConfirm = config.onConfirm || null;
                 this.confirmText = config.confirmText || 'Excluir';
                 this.cancelText = config.cancelText || 'Cancelar';
+                this.requiresObservation = config.requiresObservation || false;
+                this.observation = '';
+                this.observationError = false;
             },
             close() {
                 this.show = false;
+                this.observation = '';
+                this.observationError = false;
             },
             handleConfirm() {
                 // Sincronizar CSRF token (importante para wire:navigate no Livewire 3/4)
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
+                if (this.requiresObservation && !this.observation.trim()) {
+                    this.observationError = true;
+                    return;
+                }
+
                 if (this.onConfirm && typeof this.onConfirm === 'function') {
-                    this.onConfirm();
+                    this.onConfirm(this.observation);
                     this.close();
                     return;
                 }

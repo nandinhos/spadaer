@@ -52,6 +52,22 @@
                         <p class="mt-2 text-sm text-gray-500 dark:text-gray-400" x-text="cd?.message"></p>
                     </div>
                 </div>
+
+                <div x-show="cd?.requiresObservation" class="mt-4 px-1">
+                    <label class="block text-[10px] font-black uppercase text-gray-400 mb-1.5 ml-1">
+                        Motivo da Exclusão <span class="text-red-500">*</span>
+                    </label>
+                    <textarea 
+                        x-model="cd.observation"
+                        class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 focus:ring-primary focus:border-primary text-sm p-3 min-h-[100px]"
+                        :class="cd.observationError ? 'border-red-500 ring-1 ring-red-500' : ''"
+                        placeholder="Descreva o motivo desta exclusão..."
+                        @input="cd.observationError = false"
+                    ></textarea>
+                    <p x-show="cd.observationError" class="mt-1 text-xs text-red-500 font-bold ml-1">
+                        O motivo é obrigatório para prosseguir.
+                    </p>
+                </div>
             </div>
 
             <div class="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row-reverse gap-3">

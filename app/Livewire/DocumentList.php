@@ -33,8 +33,11 @@ class DocumentList extends Component
     public $sort_dir = 'desc';
 
     public $per_page = 15;
-
+ 
     public $hasActiveFilters = false;
+
+    // Seleção em massa
+    public $selectedDocuments = [];
 
     public function updatedSearch()
     {
@@ -55,6 +58,59 @@ class DocumentList extends Component
     {
         $this->reset(['search', 'filter_project_id', 'filter_box_number', 'filter_year']);
         $this->resetPage();
+    }
+
+    // Deleção Individual com Observação
+    public function deleteDocument($id, $observation = null)
+    {
+        $this->authorize('documents.delete');
+
+        $document = Document::findOrFail($id);
+
+        try {
+            $document->auditManual('document_deleted', [], [
+                'document' => $document->document_number,
+                'title' => $document->title,
+                'reason' => $observation
+            ]);
+
+            $document->delete();
+
+            session()->flash('success', "Documento {$document->document_number} excluído com sucesso.");
+        } catch (\Exception $e) {
+            session()->flash('error', 'Erro ao excluir documento: ' . $e->getMessage());
+        }
+    }
+
+    // Deleção em Massa com Observação
+    public function batchDelete($observation = null)
+    {
+        $this->authorize('documents.delete');
+
+        if (empty($this->selectedDocuments)) {
+            return;
+        }
+
+        $count = count($this->selectedDocuments);
+
+        try {
+            foreach ($this->selectedDocuments as $id) {
+                $document = Document::find($id);
+                if ($document) {
+                    $document->auditManual('document_bulk_deleted', [], [
+                        'document' => $document->document_number,
+                        'reason' => $observation,
+                        'batch' => true
+                    ]);
+                    $document->delete();
+                }
+            }
+
+            session()->flash('success', "{$count} documento(s) excluído(s) com sucesso.");
+            $this->selectedDocuments = [];
+        } catch (\Exception $e) {
+            session()->flash('error', 'Erro ao excluir documentos em massa: ' . $e->getMessage());
+        }
     }
 
     public function render(DocumentService $service)
