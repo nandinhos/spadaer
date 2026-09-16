@@ -233,7 +233,8 @@ O sistema define **20 permissões** organizadas em 5 módulos: Usuários, Docume
 
 ## 🚀 Instalação e Setup
 
-O projeto utiliza o **Laravel Sail** para garantir um ambiente padronizado.
+O projeto utiliza o **Laravel Sail** para garantir um ambiente padronizado. Para um guia de instalação detalhado com passo a passo completo e configurações específicas, consulte o **[Guia de Setup Oficial (docs/SETUP.md)](docs/SETUP.md)**.
+
 
 1. **Clone o repositório**:
    ```bash

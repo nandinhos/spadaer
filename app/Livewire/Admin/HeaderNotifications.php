@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Admin;
 
-use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class HeaderNotifications extends Component
 {
@@ -28,7 +28,7 @@ class HeaderNotifications extends Component
     public function render()
     {
         return view('livewire.admin.header-notifications', [
-            'notifications' => $this->notifications
+            'notifications' => $this->notifications,
         ]);
     }
 }
