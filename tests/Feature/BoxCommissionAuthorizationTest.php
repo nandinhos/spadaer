@@ -86,6 +86,46 @@ class BoxCommissionAuthorizationTest extends TestCase
         $this->assertDatabaseHas('boxes', ['id' => $box->id]);
     }
 
+    public function test_fresh_user_cannot_delete_commission_via_livewire(): void
+    {
+        $user = User::factory()->create();
+        $commission = Commission::factory()->create();
+
+        \Livewire\Livewire::actingAs($user)
+            ->test(\App\Livewire\CommissionList::class)
+            ->call('deleteCommission', $commission->id)
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('commissions', ['id' => $commission->id]);
+    }
+
+    public function test_fresh_user_cannot_delete_project_via_livewire(): void
+    {
+        $user = User::factory()->create();
+        $project = \App\Models\Project::factory()->create();
+
+        \Livewire\Livewire::actingAs($user)
+            ->test(\App\Livewire\ProjectList::class)
+            ->call('deleteProject', $project->id)
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('projects', ['id' => $project->id]);
+    }
+
+    public function test_box_search_matches_physical_location(): void
+    {
+        // Caminho real da busca: componente Livewire (a view ignora a query do controller).
+        $user = User::factory()->create();
+        Box::factory()->create(['number' => 'CX-0001', 'physical_location' => 'Galpao Norte Prateleira 7']);
+        Box::factory()->create(['number' => 'CX-0002', 'physical_location' => 'Galpao Sul']);
+
+        \Livewire\Livewire::actingAs($user)
+            ->test(\App\Livewire\BoxList::class)
+            ->set('search', 'Prateleira 7')
+            ->assertSee('CX-0001')
+            ->assertDontSee('CX-0002');
+    }
+
     public function test_batch_destroy_documents_rejects_ids_from_another_box(): void
     {
         $user = User::factory()->create();

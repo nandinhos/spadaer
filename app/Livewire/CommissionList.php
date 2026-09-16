@@ -48,6 +48,9 @@ class CommissionList extends Component
 
     public function deleteCommission($id)
     {
+        // Ação Livewire não passa pelo middleware da rota: autoriza aqui.
+        $this->authorize('commissions.delete');
+
         $commission = Commission::findOrFail($id);
         $commission->delete();
 

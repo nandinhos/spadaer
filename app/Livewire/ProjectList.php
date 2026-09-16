@@ -40,6 +40,10 @@ class ProjectList extends Component
 
     public function deleteProject($id)
     {
+        // Ação Livewire não passa pelo middleware da rota: espelha role:admin do resource.
+        // (Não há permissões projects.* na matriz; não usar authorize() aqui.)
+        abort_unless(auth()->user()->hasRole('admin'), 403);
+
         $project = Project::findOrFail($id);
         $project->delete();
 

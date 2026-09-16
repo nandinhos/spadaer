@@ -67,15 +67,11 @@ class BoxController extends Controller
 
         // 4. Aplicar Busca Textual
         if ($search) {
-            // Usar where para aplicar a busca em múltiplas colunas
-            // Certifique-se de que o search é seguro (não contém caracteres perigosos)
-            // Aqui usamos where para cada coluna, mas poderia ser um orWhere se necessário
-            // O uso de where() com closure permite combinar condições de forma mais flexível
-            // Usamos where() para evitar problemas de SQL Injection
+            // Busca em múltiplas colunas (valores via binding; coluna/direção com allowlist acima).
             $query->where(function ($q) use ($search) {
                 $searchWild = "%{$search}%";
                 $q->where('boxes.number', 'like', $searchWild)
-                    ->orWhere('boxes.physical_location', 'like', 'like', $searchWild)
+                    ->orWhere('boxes.physical_location', 'like', $searchWild)
                     ->orWhere('projects.name', 'like', $searchWild) // Busca no nome do projeto (join já existe)
                     ->orWhere('checker_users.name', 'like', $searchWild); // Busca no nome do conferente (join já existe)
             });
