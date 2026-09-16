@@ -85,6 +85,12 @@ class DocumentImportController extends Controller
 
                     DB::commit(); // Confirma a transação se TUDO deu certo
                     Log::info('Importação concluída. Total de documentos criados: '.$importedCount);
+                    app(\App\Services\NotificationService::class)->send(
+                        auth()->user(),
+                        'Importação concluída',
+                        $importedCount.' documento(s) importado(s) com sucesso.',
+                        'fa-file-import'
+                    );
 
                     return redirect()->route('documents.index')
                         ->with('success', $importedCount.' documentos importados com sucesso.');

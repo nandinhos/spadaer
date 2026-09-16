@@ -149,6 +149,12 @@ class UserList extends Component
             // Auditoria manual para pivots (que não disparam eventos Eloquent)
             if ($oldRoles !== $this->selectedRoles) {
                 $user->auditManual('roles_synced', ['roles' => $oldRoles], ['roles' => $this->selectedRoles]);
+                app(\App\Services\NotificationService::class)->send(
+                    $user,
+                    'Seus papéis foram atualizados',
+                    'Suas permissões de acesso foram alteradas por um administrador.',
+                    'fa-user-shield'
+                );
             }
             if ($oldPermissions !== $this->selectedPermissions) {
                 $user->auditManual('permissions_synced', ['permissions' => $oldPermissions], ['permissions' => $this->selectedPermissions]);
@@ -170,6 +176,12 @@ class UserList extends Component
 
             // Audit manual de atribuição inicial
             $user->auditManual('roles_assigned', [], ['roles' => $this->selectedRoles]);
+            app(\App\Services\NotificationService::class)->send(
+                $user,
+                'Bem-vindo ao SPADAER',
+                'Sua conta foi criada. Acesse com seu e-mail cadastrado.',
+                'fa-user-plus'
+            );
             if (! empty($this->selectedPermissions)) {
                 $user->auditManual('permissions_assigned', [], ['permissions' => $this->selectedPermissions]);
             }

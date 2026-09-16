@@ -387,6 +387,13 @@ class BoxController extends Controller
                 } // Nenhuma caixa selecionada
             }
 
+            app(\App\Services\NotificationService::class)->send(
+                auth()->user(),
+                'Caixas processadas em lote',
+                implode(' ', $message),
+                'fa-boxes-stacked'
+            );
+
             return redirect()->route('boxes.index')
                 ->with($status, implode(' ', $message)); // Concatena as mensagens
 

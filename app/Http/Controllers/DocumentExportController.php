@@ -31,6 +31,13 @@ class DocumentExportController extends Controller
 
         // Tenta gerar e baixar o arquivo Excel
         try {
+            app(\App\Services\NotificationService::class)->send(
+                auth()->user(),
+                'Exportação concluída',
+                'Arquivo '.$filename.' gerado com sucesso.',
+                'fa-file-export'
+            );
+
             // Retorna a resposta de download diretamente
             return Excel::download($export, $filename);
 
