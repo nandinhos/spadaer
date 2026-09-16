@@ -179,16 +179,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="6" class="px-6 py-20 text-center">
-                            <div class="flex flex-col items-center gap-3">
-                                <div class="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-300 dark:text-gray-600">
-                                    <i class="fa-solid fa-folder-open text-3xl"></i>
-                                </div>
-                                <p class="text-sm font-bold text-gray-400 uppercase tracking-widest">Nenhum documento disponível</p>
-                            </div>
-                        </td>
-                    </tr>
+                    <x-ui.empty-state icon="fa-folder-open" :colspan="6">Nenhum documento disponível.</x-ui.empty-state>
                 @endforelse
             </tbody>
         </table>

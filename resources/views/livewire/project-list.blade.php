@@ -88,14 +88,7 @@
                     </td>
                 </tr>
             @empty
-                <tr>
-                    <td colspan="4" class="px-6 py-12 text-center">
-                        <div class="flex flex-col items-center">
-                            <i class="fas fa-folder-open text-4xl text-gray-200 dark:text-gray-700 mb-4"></i>
-                            <p class="text-gray-500 dark:text-gray-400 font-medium">Nenhum projeto encontrado.</p>
-                        </div>
-                    </td>
-                </tr>
+                <x-ui.empty-state icon="fa-folder-open" :colspan="4">Nenhum projeto encontrado.</x-ui.empty-state>
             @endforelse
         </x-ui.table>
 
