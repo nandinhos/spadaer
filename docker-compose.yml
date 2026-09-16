@@ -9,7 +9,9 @@ services:
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:
-            - '${APP_PORT:-8902}:8000'
+            # Porta do nginx DENTRO do container varia por ambiente/imagem
+            # (aqui: 80; ver SAIL_CONTAINER_PORT no .env). Default preserva o remoto.
+            - '${APP_PORT:-8902}:${SAIL_CONTAINER_PORT:-8000}'
             - '${VITE_PORT:-5902}:${VITE_PORT:-5173}'
         environment:
             WWWUSER: '${WWWUSER}'
