@@ -1,7 +1,7 @@
 @section('header-title', 'Gestão de Papéis')
 <div>
     <x-ui.card>
-        <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-3 mb-5">
             <div>
                 <h2 class="text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center">
                     Gestão de <span class="text-primary ml-2 italic text-2xl">Papéis e Permissões</span>
@@ -28,15 +28,15 @@
             </div>
         @endif
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             @foreach($roles as $role)
-                <div class="bg-white dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50 p-6 flex flex-col h-full group hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 transition-all duration-300 relative overflow-hidden">
+                <div class="bg-white dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50 p-4 flex flex-col h-full group hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 transition-all duration-300 relative overflow-hidden">
                     <!-- Decorador -->
                     <div class="absolute top-0 right-0 w-24 h-24 bg-primary/5 -mr-12 -mt-12 rounded-full group-hover:bg-primary/20 transition-all"></div>
                     
-                    <div class="flex items-center justify-between mb-5 relative">
-                        <div class="p-3 rounded-xl bg-primary/10 text-primary group-hover:scale-110 transition-transform duration-300">
-                            <i class="fas fa-shield-alt"></i>
+                    <div class="flex items-center justify-between mb-3 relative">
+                        <div class="p-2 rounded-xl bg-primary/10 text-primary group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-shield-alt text-sm"></i>
                         </div>
                         <div class="flex gap-1">
                             <a href="{{ route('admin.roles.edit', $role->id) }}" wire:navigate class="p-2 text-gray-400 hover:text-amber-500 transition-colors" title="Editar Permissões">
@@ -58,7 +58,7 @@
                         </div>
                     </div>
 
-                    <h4 class="text-lg font-black text-gray-900 dark:text-white mb-2 uppercase tracking-tight flex items-center">
+                    <h4 class="text-base font-black text-gray-900 dark:text-white mb-1 uppercase tracking-tight flex items-center">
                         {{ match($role->name) {
                             'admin' => 'Administrador',
                             'commission_president' => 'Presidente de Comissão',
@@ -67,9 +67,9 @@
                         } }}
                     </h4>
                     
-                    <div class="flex-grow space-y-2 mt-4 max-h-56 overflow-y-auto pr-2 mb-6 custom-scrollbar">
-                        @forelse($role->permissions->take(6) as $permission)
-                            <div class="flex items-center px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-900/50 border border-transparent hover:border-gray-100 dark:hover:border-gray-700/50 transition-all">
+                    <div class="flex-grow space-y-1.5 mt-2 max-h-72 overflow-y-auto pr-2 mb-3 custom-scrollbar">
+                        @forelse($role->permissions->take(8) as $permission)
+                            <div class="flex items-center px-2.5 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-900/50 border border-transparent hover:border-gray-100 dark:hover:border-gray-700/50 transition-all">
                                 <div class="w-1.5 h-1.5 rounded-full bg-{{ explode('.', $permission->name)[0] === 'documents' ? 'blue' : (explode('.', $permission->name)[0] === 'commissions' ? 'emerald' : 'amber') }}-500 mr-3"></div>
                                 <span class="text-[11px] font-bold text-gray-600 dark:text-gray-400">{{ $permission->name }}</span>
                             </div>
@@ -79,16 +79,16 @@
                                 <span class="text-[10px] font-bold uppercase tracking-widest opacity-50">Sem permissões</span>
                             </div>
                         @endforelse
-                        @if($role->permissions->count() > 6)
+                        @if($role->permissions->count() > 8)
                             <div class="text-center pt-2">
                                 <a href="{{ route('admin.roles.edit', $role->id) }}" wire:navigate class="text-[10px] font-black uppercase text-primary hover:underline">
-                                    + {{ $role->permissions->count() - 6 }} permissões...
+                                    + {{ $role->permissions->count() - 8 }} permissões...
                                 </a>
                             </div>
                         @endif
                     </div>
                     
-                    <div class="pt-4 border-t border-gray-100 dark:border-gray-700 mt-auto flex items-center justify-between">
+                    <div class="pt-3 border-t border-gray-100 dark:border-gray-700 mt-auto flex items-center justify-between">
                         <div class="text-[10px] text-gray-400 uppercase font-black tracking-widest">Ativas</div>
                         <div class="h-6 px-3 flex items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-black group-hover:bg-primary group-hover:text-white transition-all">
                             {{ $role->permissions->count() }}
