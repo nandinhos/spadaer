@@ -1,5 +1,5 @@
 <header class="bg-primary p-4 shadow-md shrink-0 z-30">
-    <div class="flex items-center justify-between max-w-7xl mx-auto w-full">
+    <div class="flex items-center justify-between mx-auto w-full max-w-[1600px] px-4 md:px-8">
          {{-- Título --}}
         <div>
             <h1 class="text-lg font-black text-white uppercase tracking-tighter">
