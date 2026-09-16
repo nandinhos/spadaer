@@ -35,6 +35,12 @@ class DocumentSecrecySeeder extends Seeder
             'ULTRASSECRETO' => 'Protocolos de resposta a incidentes críticos.',
         ];
 
+        if (Document::where('title', 'Protocolos de resposta a incidentes críticos.')->exists()) {
+            $this->command->info('DocumentSecrecySeeder já executado: nada a fazer.');
+
+            return;
+        }
+
         foreach ($secrecyLevels as $level => $title) {
             Document::create([
                 'box_id' => $box->id,

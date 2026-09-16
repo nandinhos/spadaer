@@ -269,6 +269,15 @@ class DocumentSeeder extends Seeder
             $count++;
         }
 
+        // Idempotência: pula números já existentes (segunda execução não duplica nem quebra).
+        $existingNumbers = Document::whereIn('document_number', array_column($insertData, 'document_number'))
+            ->pluck('document_number')
+            ->all();
+        $insertData = array_values(array_filter(
+            $insertData,
+            static fn (array $doc): bool => ! in_array($doc['document_number'], $existingNumbers, true)
+        ));
+
         // Inserir os dados em lotes (chunks) para melhor performance se houver muitos dados
         foreach (array_chunk($insertData, 200) as $chunk) {
             Document::insert($chunk); // Usa insert para performance (não dispara eventos de model)

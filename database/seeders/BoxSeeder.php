@@ -119,7 +119,7 @@ class BoxSeeder extends Seeder
             // Se project_id for null no array $boxesData, ele simplesmente será inserido como null.
             // A verificação é mais útil se você *não* quisesse criar a caixa se o projeto não existisse.
             // if (isset($boxData['project_id']) || $boxData['project_id'] === null) {
-            Box::create($boxData);
+            Box::firstOrCreate(['number' => $boxData['number']], $boxData);
             // } else {
             // Pode logar um aviso se um projeto esperado não foi encontrado
             // Log::warning("Project not found for box data: " . json_encode($boxData));

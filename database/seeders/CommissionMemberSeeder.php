@@ -12,12 +12,10 @@ class CommissionMemberSeeder extends Seeder
     {
         $adminUser = User::where('email', 'admin@example.com')->first();
         if ($adminUser) {
-            CommissionMember::create([
-                'user_id' => $adminUser->id,
-                'role' => 'Presidente',
-                'start_date' => now()->subYear(),
-                'is_active' => true,
-            ]);
+            CommissionMember::firstOrCreate(
+                ['user_id' => $adminUser->id, 'role' => 'Presidente'],
+                ['start_date' => now()->subYear(), 'is_active' => true]
+            );
         }
         // Criar outros membros se houver mais usuários...
     }
