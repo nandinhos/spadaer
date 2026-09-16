@@ -22,10 +22,13 @@ class GlobalAuditTest extends TestCase
     {
         parent::setUp();
 
+        // Papéis/permissões semeados: actions do UserList autorizam via Gates (users.*).
+        $this->seed(\Database\Seeders\PermissionSeeder::class);
+        $this->seed(\Database\Seeders\RoleSeeder::class);
+
         // Setup admin user with permissions
         $this->admin = User::factory()->create();
-        $role = Role::create(['name' => 'admin']);
-        $this->admin->assignRole($role);
+        $this->admin->assignRole('admin');
     }
 
     /** @test */
@@ -41,9 +44,7 @@ class GlobalAuditTest extends TestCase
             'selectedRoles' => ['user'],
         ];
 
-        // Ensure role exists
-        Role::create(['name' => 'user']);
-
+        // Papel 'user' já existe via RoleSeeder (setUp).
         Livewire::actingAs($this->admin)
             ->test(UserList::class)
             ->set('name', $userData['name'])

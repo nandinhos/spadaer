@@ -116,6 +116,9 @@ class UserList extends Component
 
     public function saveUser()
     {
+        // Ação Livewire não passa pelo middleware da rota: autoriza aqui.
+        $this->authorize($this->isEditMode ? 'users.edit' : 'users.create');
+
         $rules = $this->rules;
 
         if ($this->isEditMode) {
@@ -195,6 +198,9 @@ class UserList extends Component
 
     public function deleteUser($id)
     {
+        // Ação Livewire não passa pelo middleware da rota: autoriza aqui.
+        $this->authorize('users.delete');
+
         if ($id === auth()->id()) {
             session()->flash('error', 'Você não pode excluir a si mesmo.');
 

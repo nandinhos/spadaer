@@ -151,4 +151,27 @@ class UserManagementTest extends TestCase
 
         $this->assertDatabaseMissing('users', ['id' => $user->id]);
     }
+
+    public function test_user_without_permission_cannot_save_or_delete_via_livewire()
+    {
+        $plain = User::factory()->create();
+        $victim = User::factory()->create();
+
+        Livewire::actingAs($plain)
+            ->test(UserList::class)
+            ->set('name', 'Invasor')
+            ->set('email', 'invasor@example.com')
+            ->set('password', 'password123')
+            ->call('saveUser')
+            ->assertForbidden();
+
+        $this->assertDatabaseMissing('users', ['email' => 'invasor@example.com']);
+
+        Livewire::actingAs($plain)
+            ->test(UserList::class)
+            ->call('deleteUser', $victim->id)
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('users', ['id' => $victim->id]);
+    }
 }
