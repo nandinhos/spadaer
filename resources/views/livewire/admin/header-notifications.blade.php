@@ -59,7 +59,7 @@
 
         @if($notifications->count() > 0)
             <div class="p-3 bg-gray-50/50 text-center border-t border-gray-50">
-                <a href="#" class="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-primary transition-colors">Ver histórico completo</a>
+                <a href="{{ route('notifications.index') }}" class="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-primary transition-colors">Ver histórico completo</a>
             </div>
         @endif
     </div>
