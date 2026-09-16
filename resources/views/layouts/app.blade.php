@@ -56,7 +56,7 @@
             <x-header />
             
             <main class="flex-grow overflow-y-auto p-4 md:p-8 custom-scrollbar">
-                <div class="container mx-auto max-w-7xl">
+                <div class="container mx-auto max-w-[1600px]">
                     {{-- Mensagens Flash --}}
                     @if (session('success'))
                         <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)" 
