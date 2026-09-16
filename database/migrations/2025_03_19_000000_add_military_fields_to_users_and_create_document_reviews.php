@@ -34,7 +34,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('document_reviews');
-        
+
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn(['full_name', 'order_number']);
         });

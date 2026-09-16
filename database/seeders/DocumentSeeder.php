@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Document;
 use App\Models\Box;
+use App\Models\Document;
 use App\Models\Project;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log; // Para logging opcional
 
@@ -30,12 +30,12 @@ class DocumentSeeder extends Seeder
 
         // 2. Buscar os Projetos pelos seus códigos para obter os IDs
         $projectAdarter = Project::where('code', 'A-DARTER')->first();
-        $projectMar1    = Project::where('code', 'MAR-1')->first();
-        $projectFx39    = Project::where('code', 'FX-39')->first();
-        $projectE99m    = Project::where('code', 'E-99M')->first();
-        $projectF5br    = Project::where('code', 'F5-BR')->first();
-        $projectKc390   = Project::where('code', 'KC-390')->first();
-        $projectHxbr    = Project::where('code', 'HX-BR')->first();
+        $projectMar1 = Project::where('code', 'MAR-1')->first();
+        $projectFx39 = Project::where('code', 'FX-39')->first();
+        $projectE99m = Project::where('code', 'E-99M')->first();
+        $projectF5br = Project::where('code', 'F5-BR')->first();
+        $projectKc390 = Project::where('code', 'KC-390')->first();
+        $projectHxbr = Project::where('code', 'HX-BR')->first();
         // Adicione outros projetos se necessário
 
         // 3. Definir os dados dos Documentos a serem criados, usando os IDs encontrados
@@ -95,7 +95,6 @@ class DocumentSeeder extends Seeder
                 'version' => '1.0',
                 'is_copy' => true,
             ],
-
 
             // --- Documentos Projeto FX-39 (Caixa FX001) ---
             [
@@ -246,21 +245,21 @@ class DocumentSeeder extends Seeder
         foreach ($documentsData as $doc) {
             // Validação Mínima: Garante que a caixa associada existe no banco
             if (empty($doc['box_id'])) {
-                Log::warning("DocumentSeeder: Caixa não encontrada para o documento (pulando): " . ($doc['document_number'] ?? json_encode($doc)));
+                Log::warning('DocumentSeeder: Caixa não encontrada para o documento (pulando): '.($doc['document_number'] ?? json_encode($doc)));
+
                 continue; // Pula este documento se a caixa não foi encontrada
             }
             // Validação Mínima: Garante que o projeto associado existe (se não for nulo)
             if (isset($doc['project_id']) && $doc['project_id'] !== null && Project::find($doc['project_id']) === null) {
-                Log::warning("DocumentSeeder: Projeto ID {$doc['project_id']} não encontrado para o documento (definindo como null): " . ($doc['document_number'] ?? json_encode($doc)));
+                Log::warning("DocumentSeeder: Projeto ID {$doc['project_id']} não encontrado para o documento (definindo como null): ".($doc['document_number'] ?? json_encode($doc)));
                 $doc['project_id'] = null; // Define como null se o projeto não existe
             }
-
 
             // Converte data e adiciona timestamps
             try {
                 $doc['document_date'] = Carbon::parse($doc['document_date']);
             } catch (\Exception $e) {
-                Log::error("DocumentSeeder: Data inválida para o documento (definindo como null): " . ($doc['document_number'] ?? json_encode($doc)) . " Data: " . $doc['document_date']);
+                Log::error('DocumentSeeder: Data inválida para o documento (definindo como null): '.($doc['document_number'] ?? json_encode($doc)).' Data: '.$doc['document_date']);
                 $doc['document_date'] = null; // Define como null se a data for inválida
             }
             $doc['created_at'] = now();

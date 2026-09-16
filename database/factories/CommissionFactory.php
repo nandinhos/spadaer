@@ -17,10 +17,10 @@ class CommissionFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->company() . ' Commission',
+            'name' => $this->faker->company().' Commission',
             'description' => $this->faker->paragraph(),
             'status' => 'active',
-            'ordinance_number' => 'ORD-' . $this->faker->numberBetween(1000, 9999),
+            'ordinance_number' => 'ORD-'.$this->faker->numberBetween(1000, 9999),
             'ordinance_date' => $this->faker->date(),
         ];
     }

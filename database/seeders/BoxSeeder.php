@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Box;
-use App\Models\Project;
 use App\Models\CommissionMember;
-use App\Models\User; // Necessário para encontrar o membro da comissão via usuário
+use App\Models\Project;
+use App\Models\User;
+use Illuminate\Database\Seeder; // Necessário para encontrar o membro da comissão via usuário
 
 class BoxSeeder extends Seeder
 {
@@ -18,14 +18,14 @@ class BoxSeeder extends Seeder
         // 1. Buscar os Projetos pelos códigos para obter seus IDs
         //    Usamos first() assumindo que os códigos são únicos e os projetos existem (o ProjectSeeder rodou antes)
         $projectAdarter = Project::where('code', 'A-DARTER')->first();
-        $projectMar1    = Project::where('code', 'MAR-1')->first();
-        $projectFx39    = Project::where('code', 'FX-39')->first();
-        $projectE99m    = Project::where('code', 'E-99M')->first();
-        $projectF5br    = Project::where('code', 'F5-BR')->first();
-        $projectAmx     = Project::where('code', 'AM-X')->first();
-        $projectKc390   = Project::where('code', 'KC-390')->first();
-        $projectKcx     = Project::where('code', 'KC-X')->first(); // Adicionei caso precise
-        $projectHxbr    = Project::where('code', 'HX-BR')->first(); // Adicionei caso precise
+        $projectMar1 = Project::where('code', 'MAR-1')->first();
+        $projectFx39 = Project::where('code', 'FX-39')->first();
+        $projectE99m = Project::where('code', 'E-99M')->first();
+        $projectF5br = Project::where('code', 'F5-BR')->first();
+        $projectAmx = Project::where('code', 'AM-X')->first();
+        $projectKc390 = Project::where('code', 'KC-390')->first();
+        $projectKcx = Project::where('code', 'KC-X')->first(); // Adicionei caso precise
+        $projectHxbr = Project::where('code', 'HX-BR')->first(); // Adicionei caso precise
         // ... continue buscando outros projetos se for associá-los a caixas específicas
 
         // 2. Buscar um Membro da Comissão exemplo para usar como conferente

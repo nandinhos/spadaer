@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RoleSeeder extends Seeder
 {
@@ -20,7 +20,7 @@ class RoleSeeder extends Seeder
         $adminRole = Role::create([
             'name' => 'admin',
             'guard_name' => 'web',
-            'display_name' => 'Administrador'
+            'display_name' => 'Administrador',
         ]);
         // Atribuir todas as permissões ao administrador
         $adminRole->givePermissionTo(Permission::all());
@@ -29,7 +29,7 @@ class RoleSeeder extends Seeder
         $userRole = Role::create([
             'name' => 'user',
             'guard_name' => 'web',
-            'display_name' => 'Usuário'
+            'display_name' => 'Usuário',
         ]);
         // Atribuir permissões básicas ao usuário padrão
         $userRole->givePermissionTo([
@@ -38,14 +38,14 @@ class RoleSeeder extends Seeder
             'boxes.view',
             'boxes.create',
             'boxes.edit',
-            'boxes.delete'
+            'boxes.delete',
         ]);
 
         // Criar papel de Presidente de Comissão
         $presidentRole = Role::create([
             'name' => 'commission_president',
             'guard_name' => 'web',
-            'display_name' => 'Presidente de Comissão'
+            'display_name' => 'Presidente de Comissão',
         ]);
         // Atribuir permissões ao presidente de comissão
         $presidentRole->givePermissionTo([
@@ -55,14 +55,14 @@ class RoleSeeder extends Seeder
             'documents.export.excel',
             'documents.export.pdf',
             'commissions.view',
-            'commissions.edit'
+            'commissions.edit',
         ]);
 
         // Criar papel de Membro de Comissão
         $memberRole = Role::create([
             'name' => 'commission_member',
             'guard_name' => 'web',
-            'display_name' => 'Membro de Comissão'
+            'display_name' => 'Membro de Comissão',
         ]);
         // Atribuir permissões ao membro de comissão
         $memberRole->givePermissionTo([
@@ -70,7 +70,7 @@ class RoleSeeder extends Seeder
             'documents.create',
             'documents.export.excel',
             'documents.export.pdf',
-            'commissions.view'
+            'commissions.view',
         ]);
     }
 }
