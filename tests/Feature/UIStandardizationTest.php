@@ -17,9 +17,9 @@ class UIStandardizationTest extends TestCase
     {
         parent::setUp();
         app()->setLocale('pt_BR');
-        
+
         $this->seed(\Database\Seeders\PermissionSeeder::class);
-        
+
         // Add missing projects.view permission if it's not in the seeder
         if (Permission::where('name', 'projects.view')->doesntExist()) {
             Permission::create(['name' => 'projects.view', 'guard_name' => 'web']);
@@ -55,12 +55,13 @@ class UIStandardizationTest extends TestCase
         $response = $this->actingAs($user)->get(route('boxes.index'));
         $response->assertStatus(200);
 
-        // In boxes.index, we replaced <x-primary-button> which had 'tracking-widest' 
+        // In boxes.index, we replaced <x-primary-button> which had 'tracking-widest'
         // with <x-ui.button> which has 'justify-center'.
         // Since 'tracking-widest' is in the sidebar, we can't assertDontSee it globally.
         // Instead, we check for a specific combination that should exist now.
         $response->assertSee('Gerenciamento de Caixas');
-        $response->assertSee('Filtrar');
+        // boxes.index usa busca + botão "Limpar" (sem botão "Filtrar" desde a padronização dos filtros)
+        $response->assertSee('Limpar');
         $response->assertSee('justify-center');
         $response->assertSee('bg-primary');
     }
@@ -69,7 +70,7 @@ class UIStandardizationTest extends TestCase
     {
         $user = User::factory()->create();
         $user->assignRole('admin');
-        
+
         $project = Project::factory()->create();
 
         $response = $this->actingAs($user)->get(route('projects.show', $project));
@@ -77,7 +78,7 @@ class UIStandardizationTest extends TestCase
 
         // Check that the old manual classes are gone
         $response->assertDontSee('bg-blue-500 hover:bg-blue-700');
-        
+
         // Check that the new buttons are there
         $response->assertSee('Editar');
         $response->assertSee('Voltar');
@@ -89,7 +90,7 @@ class UIStandardizationTest extends TestCase
     {
         $user = User::factory()->create();
         $user->assignRole('admin');
-        
+
         $box = \App\Models\Box::factory()->create();
 
         $response = $this->actingAs($user)->get(route('boxes.show', $box));
@@ -107,7 +108,7 @@ class UIStandardizationTest extends TestCase
     {
         $user = User::factory()->create();
         $user->assignRole('admin');
-        
+
         $commission = \App\Models\Commission::factory()->create();
 
         $response = $this->actingAs($user)->get(route('commissions.show', $commission));
@@ -123,7 +124,7 @@ class UIStandardizationTest extends TestCase
     {
         $user = User::factory()->create();
         $user->assignRole('admin');
-        
+
         $document = \App\Models\Document::factory()->create();
 
         $response = $this->actingAs($user)->get(route('documents.show', $document));

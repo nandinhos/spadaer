@@ -12,6 +12,9 @@ class ProfileTest extends TestCase
 
     public function test_profile_page_is_displayed(): void
     {
+        // O sidebar verifica gates de permissão; semeia como nos demais testes Feature
+        $this->seed(\Database\Seeders\PermissionSeeder::class);
+
         $user = User::factory()->create();
 
         $response = $this
