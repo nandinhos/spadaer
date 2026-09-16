@@ -42,7 +42,8 @@ Route::middleware(['auth'])->group(function () {
     */
     Route::prefix('documents')->name('documents.')->group(function () {
         // 1. Rotas Estáticas / Específicas (Devem vir ANTES dos wildcards)
-        Route::get('/', [DocumentController::class, 'index'])->name('index');
+        // Leitura exige documents.view (toda a matriz de papéis a possui; recém-registrados, não).
+        Route::get('/', [DocumentController::class, 'index'])->name('index')->middleware('permission:documents.view');
         Route::get('/create', [DocumentController::class, 'create'])->name('create')->middleware('role:admin,commission_president');
         Route::post('/', [DocumentController::class, 'store'])->name('store')->middleware('role:admin,commission_president');
         Route::post('/import', [DocumentImportController::class, 'import'])->name('import')->middleware('role:admin,commission_president');
@@ -50,8 +51,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/export/pdf', [DocumentExportController::class, 'exportPdf'])->name('export.pdf')->middleware('role:admin,commission_president');
 
         // 2. Rotas com Wildcards / Parâmetros
-        Route::get('/{document}', [DocumentController::class, 'show'])->name('show');
-        Route::get('/{document}/details', [DocumentController::class, 'getJsonDetails'])->name('getJsonDetails');
+        Route::get('/{document}', [DocumentController::class, 'show'])->name('show')->middleware('permission:documents.view');
+        Route::get('/{document}/details', [DocumentController::class, 'getJsonDetails'])->name('getJsonDetails')->middleware('permission:documents.view');
         Route::get('/{document}/edit', [DocumentController::class, 'edit'])->name('edit')->middleware('role:admin,commission_president');
         Route::put('/{document}', [DocumentController::class, 'update'])->name('update')->middleware('role:admin,commission_president');
         Route::delete('/{document}', [DocumentController::class, 'destroy'])->name('destroy')->middleware('role:admin,commission_president');
@@ -64,15 +65,23 @@ Route::middleware(['auth'])->group(function () {
     */
     Route::prefix('boxes')->name('boxes.')->group(function () {
         // Rotas estáticas primeiro
-        Route::delete('/batch-destroy', [BoxController::class, 'batchDestroy'])->name('batch-destroy');
-        Route::post('/batch-assign-checker', [BoxController::class, 'batchAssignChecker'])->name('batchAssignChecker');
+        Route::delete('/batch-destroy', [BoxController::class, 'batchDestroy'])->name('batch-destroy')->middleware('permission:boxes.delete');
+        Route::post('/batch-assign-checker', [BoxController::class, 'batchAssignChecker'])->name('batchAssignChecker')->middleware('permission:boxes.edit');
 
         // Rotas com wildcard de caixa
-        Route::post('/{box}/documents/import', [DocumentImportController::class, 'importForBox'])->name('documents.import');
-        Route::delete('/{box}/documents/batch-destroy', [BoxController::class, 'batchDestroyDocuments'])->name('documents.batchDestroy');
+        Route::post('/{box}/documents/import', [DocumentImportController::class, 'importForBox'])->name('documents.import')->middleware('permission:documents.import');
+        Route::delete('/{box}/documents/batch-destroy', [BoxController::class, 'batchDestroyDocuments'])->name('documents.batchDestroy')->middleware('permission:documents.delete');
     });
-    Route::resource('boxes', BoxController::class);
-    Route::resource('commissions', CommissionController::class);
+    // Leitura (index/show) segue o precedente de documents.*: só auth.
+    // Escrita exige a permissão da matriz (database/seeders/RoleSeeder.php).
+    Route::resource('boxes', BoxController::class)->only(['create', 'store'])->middleware('permission:boxes.create');
+    Route::resource('boxes', BoxController::class)->only(['edit', 'update'])->middleware('permission:boxes.edit');
+    Route::resource('boxes', BoxController::class)->only(['index', 'show']);
+    Route::resource('boxes', BoxController::class)->only(['destroy'])->middleware('permission:boxes.delete');
+    Route::resource('commissions', CommissionController::class)->only(['create', 'store'])->middleware('permission:commissions.create');
+    Route::resource('commissions', CommissionController::class)->only(['edit', 'update'])->middleware('permission:commissions.edit');
+    Route::resource('commissions', CommissionController::class)->only(['index', 'show']);
+    Route::resource('commissions', CommissionController::class)->only(['destroy'])->middleware('permission:commissions.delete');
     Route::resource('projects', ProjectController::class)->middleware('role:admin');
 
     /*
