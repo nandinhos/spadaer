@@ -18,6 +18,13 @@ yarn-error.log
 /auth.json
 /.fleet
 /.idea
+# Rascunhos de tooling/orquestração (planejamento local, não versionar)
+.devorq/
+.devorq-auto/
+.opencode/
+SPEC.md
+prd.json
+progress.txt
 /.nova
 /.vscode
 /.zed
