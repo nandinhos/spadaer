@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Support\SortHelper;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 
 class ProjectController extends Controller
 {
@@ -15,7 +16,7 @@ class ProjectController extends Controller
 
         // Aplicar busca se houver termo
         if ($search = $request->input('search')) {
-            $searchWild = '%' . $search . '%';
+            $searchWild = '%'.$search.'%';
             $query->where(function ($q) use ($searchWild) {
                 $q->where('name', 'like', $searchWild)
                     ->orWhere('code', 'like', $searchWild)
@@ -23,9 +24,14 @@ class ProjectController extends Controller
             });
         }
 
-        // Ordenação
-        $sortBy = $request->input('sort_by', 'name');
-        $sortDir = $request->input('sort_dir', 'asc');
+        // Ordenação (allowlist: coluna/direção vão crus para o SQL)
+        [$sortBy, $sortDir] = SortHelper::sanitize(
+            $request->input('sort_by'),
+            $request->input('sort_dir'),
+            ['id', 'name', 'code', 'description'],
+            'name',
+            'asc',
+        );
         $query->orderBy($sortBy, $sortDir);
 
         $projects = $query->paginate(10)->withQueryString();
@@ -44,9 +50,9 @@ class ProjectController extends Controller
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:50|unique:projects',
             'description' => 'nullable|string',
-            //'status' => 'required|string|in:ativo,concluído,suspenso',
-            //'start_date' => 'nullable|date',
-            //'end_date' => 'nullable|date|after_or_equal:start_date'
+            // 'status' => 'required|string|in:ativo,concluído,suspenso',
+            // 'start_date' => 'nullable|date',
+            // 'end_date' => 'nullable|date|after_or_equal:start_date'
         ]);
 
         Project::create($validated);
@@ -58,6 +64,7 @@ class ProjectController extends Controller
     public function show(Project $project): View
     {
         $project->load(['documents', 'boxes']);
+
         return view('projects.show', compact('project'));
     }
 
@@ -70,11 +77,11 @@ class ProjectController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:50|unique:projects,code,' . $project->id,
+            'code' => 'required|string|max:50|unique:projects,code,'.$project->id,
             'description' => 'nullable|string',
-            //'status' => 'required|string|in:ativo,concluído,suspenso',
-            //'start_date' => 'nullable|date',
-            //'end_date' => 'nullable|date|after_or_equal:start_date'
+            // 'status' => 'required|string|in:ativo,concluído,suspenso',
+            // 'start_date' => 'nullable|date',
+            // 'end_date' => 'nullable|date|after_or_equal:start_date'
         ]);
 
         $project->update($validated);

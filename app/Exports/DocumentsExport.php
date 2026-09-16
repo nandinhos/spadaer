@@ -60,6 +60,8 @@ class DocumentsExport implements FromQuery,        // Mapeia cada modelo para um
 
         // 3. Construir a Query Base com Joins e Eager Loading
         $query = Document::query()
+            // Exportação respeita o mesmo sigilo da listagem
+            ->whereVisibleTo(auth()->user())
             // Carrega os relacionamentos para usar no map(), selecionando só o necessário
             ->with(['box:id,number', 'project:id,name'])
             // Joins são necessários para FILTRAR e ORDENAR por colunas relacionadas

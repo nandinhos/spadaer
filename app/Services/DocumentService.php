@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Document;
+use App\Support\SortHelper;
 use Illuminate\Database\Eloquent\Builder;
 
 class DocumentService
@@ -16,10 +17,17 @@ class DocumentService
         $filterProjectId = $params['filter_project_id'] ?? null;
         $filterBoxNumber = $params['filter_box_number'] ?? null;
         $filterYear = $params['filter_year'] ?? null;
-        $sortBy = $params['sort_by'] ?? 'documents.id';
-        $sortDir = $params['sort_dir'] ?? 'desc';
+        // Allowlist sincronizada com DocumentsExport::$validSortColumns.
+        [$sortBy, $sortDir] = SortHelper::sanitize(
+            $params['sort_by'] ?? null,
+            $params['sort_dir'] ?? null,
+            ['documents.id', 'documents.item_number', 'documents.code', 'documents.descriptor', 'documents.document_number', 'documents.title', 'documents.document_date', 'documents.confidentiality', 'documents.version', 'documents.is_copy', 'boxes.number', 'projects.name'],
+            'documents.id',
+            'desc',
+        );
 
         $query = Document::query()
+            ->whereVisibleTo(auth()->user())
             ->select([
                 'documents.*',
                 'boxes.number as box_number',
@@ -79,7 +87,7 @@ class DocumentService
     {
         // Otimização: Evitar clonagem excessiva e usar agregação direta
         $statsQuery = (clone $query)->reorder();
-        
+
         // Limpa as colunas selecionadas anteriormente (documents.*, etc) para evitar erro de 'only_full_group_by'
         $statsQuery->getQuery()->columns = [];
 

@@ -37,7 +37,7 @@ class BoxController extends Controller
         $filterStatus = $request->input('filter_status'); // Filtro de status
         $sortBy = $request->input('sort_by', 'boxes.number');
         $sortDir = $request->input('sort_dir', 'asc');
-        $perPage = $request->input('per_page', 15);
+        $perPage = min(max((int) $request->input('per_page', 15), 1), 100);
 
         // 2. Validar Ordenação
         $validSortColumns = [
@@ -334,7 +334,14 @@ class BoxController extends Controller
                 if ($box->documents()->count() > 0) {
                     // Se houver documentos, desassociar (setar box_id para NULL)
                     // Certifique-se que a coluna box_id na tabela documents aceita NULL
+                    // O update em massa NÃO dispara eventos updated: registra trilha manual.
+                    $disassociatedIds = $box->documents()->pluck('documents.id')->all();
                     $box->documents()->update(['box_id' => null]);
+                    $box->auditManual(
+                        'documents_disassociated',
+                        ['box_id' => $box->id],
+                        ['document_ids' => $disassociatedIds, 'count' => count($disassociatedIds)]
+                    );
                     $orphanedCount++; // Incrementa contador de órfãos
                     // A caixa NÃO é excluída neste caso, conforme regra de negócio
                 } else {
@@ -415,22 +422,30 @@ class BoxController extends Controller
 
         $documentIds = $request->input('document_ids');
 
-        // Opcional: Verificação de permissão mais granular
-        // foreach ($documentIds as $docId) {
-        //     $document = Document::find($docId);
-        //     // Verifique se o documento pertence à caixa $box
-        //     if (!$document || $document->box_id !== $box->id) {
-        //         return back()->with('error', 'Um ou mais documentos selecionados não pertencem a esta caixa.');
-        //     }
-        //     // Verifique se o usuário tem permissão para excluir $document (usando Gates/Policies)
-        //     // $this->authorize('delete', $document);
-        // }
-
         try {
-            // Exclui os documentos que pertencem a esta caixa E estão na lista de IDs
-            $deletedCount = Document::where('box_id', $box->id)
+            $documents = Document::where('box_id', $box->id)
                 ->whereIn('id', $documentIds)
-                ->delete();
+                ->get();
+
+            // Verificação por item (fail-closed): todos os IDs devem pertencer a esta caixa.
+            if ($documents->count() !== count($documentIds)) {
+                return redirect()->route('boxes.show', $box)
+                    ->with('error', 'Um ou mais documentos selecionados não pertencem a esta caixa.');
+            }
+
+            // Autorização por item via DocumentPolicy registrada em AuthServiceProvider.
+            // O middleware da rota (permission:documents.delete) é a primeira barreira; isto é a segunda.
+            foreach ($documents as $document) {
+                $this->authorize('delete', $document);
+            }
+
+            // Exclui por modelo (não em massa) para disparar os eventos deleted
+            // e gerar um audit_log por documento.
+            $deletedCount = 0;
+            foreach ($documents as $document) {
+                $document->delete();
+                $deletedCount++;
+            }
 
             if ($deletedCount > 0) {
                 return redirect()->route('boxes.show', $box)
@@ -440,7 +455,7 @@ class BoxController extends Controller
                     ->with('warning', 'Nenhum documento correspondente foi encontrado para exclusão.');
             }
         } catch (\Exception $e) {
-            // Log::error('Erro ao excluir documentos em massa: ' . $e->getMessage()); // Opcional: Logar o erro
+            Log::error('Erro ao excluir documentos em massa: '.$e->getMessage());
             return redirect()->route('boxes.show', $box)
                 ->with('error', 'Ocorreu um erro ao tentar excluir os documentos.');
         }

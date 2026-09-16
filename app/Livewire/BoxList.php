@@ -3,9 +3,11 @@
 namespace App\Livewire;
 
 use App\Models\Box;
-use App\Models\Project;
 use App\Models\CommissionMember;
+use App\Models\Project;
+use App\Support\SortHelper;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -25,8 +27,11 @@ class BoxList extends Component
     public $sort_dir = 'asc';
 
     public $per_page = 15;
+
     public $filter_status = '';
+
     public $project_id = '';
+
     public $commission_member_id = '';
 
     // Seleção em massa (via Alpine.js)
@@ -34,7 +39,9 @@ class BoxList extends Component
 
     // Dados auxiliares
     public $statusOptions = [];
+
     public $projects = [];
+
     public $activeMembers = [];
 
     public function mount()
@@ -108,7 +115,8 @@ class BoxList extends Component
             }
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'Erro ao excluir caixa: ' . $e->getMessage());
+            Log::error('Erro ao excluir caixa: '.$e->getMessage());
+            session()->flash('error', 'Erro ao excluir caixa: '.$e->getMessage());
         }
     }
 
@@ -130,7 +138,9 @@ class BoxList extends Component
             foreach ($this->selectedBoxes as $boxId) {
                 $box = Box::find($boxId);
 
-                if (! $box) continue;
+                if (! $box) {
+                    continue;
+                }
 
                 if ($box->documents()->count() > 0) {
                     $box->documents()->update(['box_id' => null]);
@@ -164,24 +174,30 @@ class BoxList extends Component
             $this->selectedBoxes = []; // Limpar seleção
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'Erro ao processar deleção em massa: ' . $e->getMessage());
+            session()->flash('error', 'Erro ao processar deleção em massa: '.$e->getMessage());
         }
     }
 
     public function render()
     {
+        // Props Livewire vêm do frontend: sanitiza antes de interpolar no SQL.
+        [$this->sort_by, $this->sort_dir] = SortHelper::sanitize(
+            $this->sort_by, $this->sort_dir, ['boxes.number'], 'boxes.number', 'asc',
+        );
+        $this->per_page = min(max((int) $this->per_page, 1), 100);
+
         $boxes = Box::query()
             ->with(['project', 'commissionMember.user', 'documents'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('boxes.number', 'like', '%'.$this->search.'%')
-                      ->orWhere('physical_location', 'like', '%'.$this->search.'%')
-                      ->orWhereHas('project', function ($pq) {
-                          $pq->where('name', 'like', '%'.$this->search.'%');
-                      })
-                      ->orWhereHas('commissionMember.user', function ($cq) {
-                          $cq->where('name', 'like', '%'.$this->search.'%');
-                      });
+                        ->orWhere('physical_location', 'like', '%'.$this->search.'%')
+                        ->orWhereHas('project', function ($pq) {
+                            $pq->where('name', 'like', '%'.$this->search.'%');
+                        })
+                        ->orWhereHas('commissionMember.user', function ($cq) {
+                            $cq->where('name', 'like', '%'.$this->search.'%');
+                        });
                 });
             })
             ->when($this->filter_status === 'empty', function ($query) {

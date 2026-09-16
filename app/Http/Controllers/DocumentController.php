@@ -36,8 +36,8 @@ class DocumentController extends Controller
         $params = $request->all();
         $query = $this->documentService->listDocuments($params);
 
-        // 2. Paginar Resultados com Eager Loading
-        $perPage = $request->input('per_page', 15);
+        // 2. Paginar Resultados com Eager Loading (limite anti-abuso)
+        $perPage = min(max((int) $request->input('per_page', 15), 1), 100);
         $documents = (clone $query)
             ->with(['box', 'project']) // Eager loading para evitar N+1
             ->paginate($perPage)

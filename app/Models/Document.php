@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Builder;
+use Spatie\Permission\Exceptions\PermissionDoesNotExist;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo; // Importar Carbon
@@ -68,21 +70,63 @@ class Document extends Model
     }
 
     /**
-     * Verifica se o documento é sigiloso.
+     * Níveis de confidencialidade considerados públicos (fonte única usada
+     * por isSecret() e pelo escopo de visibilidade da listagem).
+     *
+     * @return array<int,string>
      */
-    public function isSecret(): bool
+    public static function publicConfidentialityLevels(): array
     {
-        $publicLevels = [
+        return [
             'OSTENSIVO',
             'PÚBLICO',
             'UNCLASSIFIED',
             'SEM CLASSIFICAÇÃO',
             'EXPOSIÇÃO PÚBLICA',
         ];
+    }
 
+    /**
+     * Verifica se o documento é sigiloso.
+     */
+    public function isSecret(): bool
+    {
         $level = mb_strtoupper($this->confidentiality ?? '');
 
-        return ! empty($level) && ! in_array($level, $publicLevels);
+        return ! empty($level) && ! in_array($level, static::publicConfidentialityLevels());
+    }
+
+    /**
+     * Restringe a query a documentos visíveis ao usuário: quem tem
+     * documents.view.secret vê tudo; os demais, só níveis públicos
+     * (espelha exatamente a semântica de isSecret()).
+     */
+    public function scopeWhereVisibleTo(Builder $query, mixed $user): Builder
+    {
+        // Spatie lança PermissionDoesNotExist se a permissão não foi semeada:
+        // banco sem seed = visão restrita (fail-closed), nunca exceção.
+        try {
+            $canSeeSecret = $user
+                && method_exists($user, 'hasPermissionTo')
+                && $user->hasPermissionTo('documents.view.secret');
+        } catch (PermissionDoesNotExist) {
+            $canSeeSecret = false;
+        }
+
+        if ($canSeeSecret) {
+            return $query;
+        }
+
+        $levels = implode(',', array_map(
+            fn (string $level): string => "'".str_replace("'", "''", $level)."'",
+            static::publicConfidentialityLevels()
+        ));
+
+        return $query->where(function (Builder $q) use ($levels): void {
+            $q->whereNull('confidentiality')
+                ->orWhere('confidentiality', '')
+                ->orWhereRaw("UPPER(confidentiality) IN ({$levels})");
+        });
     }
 
     /**

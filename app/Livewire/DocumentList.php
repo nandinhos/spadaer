@@ -6,6 +6,7 @@ use App\Models\Box;
 use App\Models\Document;
 use App\Models\Project;
 use App\Services\DocumentService;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -78,6 +79,7 @@ class DocumentList extends Component
 
             session()->flash('success', "Documento {$document->document_number} excluído com sucesso.");
         } catch (\Exception $e) {
+            Log::error('Erro ao excluir documento: '.$e->getMessage());
             session()->flash('error', 'Erro ao excluir documento: ' . $e->getMessage());
         }
     }
@@ -109,12 +111,16 @@ class DocumentList extends Component
             session()->flash('success', "{$count} documento(s) excluído(s) com sucesso.");
             $this->selectedDocuments = [];
         } catch (\Exception $e) {
+            Log::error('Erro ao excluir documentos em massa: '.$e->getMessage());
             session()->flash('error', 'Erro ao excluir documentos em massa: ' . $e->getMessage());
         }
     }
 
     public function render(DocumentService $service)
     {
+        // per_page vem do frontend: limita para evitar paginação abusiva.
+        $this->per_page = min(max((int) $this->per_page, 1), 100);
+
         $params = [
             'search' => $this->search,
             'filter_project_id' => $this->filter_project_id,
@@ -148,13 +154,14 @@ class DocumentList extends Component
                 ->distinct()
                 ->pluck('document_date')
                 ->map(function ($d) {
-                    $dStr = (string)$d;
+                    $dStr = (string) $d;
                     if (preg_match('/^(\d{4})/', $dStr, $m)) {
-                        return (int)$m[1];
+                        return (int) $m[1];
                     }
                     if (preg_match('/\/(\d{4})$/', $dStr, $m)) {
-                        return (int)$m[1];
+                        return (int) $m[1];
                     }
+
                     return null;
                 })
                 ->filter()->unique()->sortDesc()->values(),

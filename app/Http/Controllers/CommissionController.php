@@ -9,10 +9,10 @@ use App\Models\CommissionMember;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log; // <--- ADICIONE ESTA LINHA
+use Illuminate\Support\Facades\Auth; // <--- ADICIONE ESTA LINHA
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\Auth;
 
 class CommissionController extends Controller
 {
@@ -21,14 +21,11 @@ class CommissionController extends Controller
      */
     public function index()
     {
-        
-        //dd(Auth::user()->roles);
-        
+
         $commissions = Commission::orderBy('id')->paginate(10);
 
         return view('commissions.index', compact('commissions'));
 
-        
     }
 
     /**

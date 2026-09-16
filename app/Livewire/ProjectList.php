@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Project;
+use App\Support\SortHelper;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -47,6 +48,12 @@ class ProjectList extends Component
 
     public function render()
     {
+        // Props Livewire vêm do frontend: sanitiza antes de interpolar no SQL.
+        [$this->sort_by, $this->sort_dir] = SortHelper::sanitize(
+            $this->sort_by, $this->sort_dir, ['code', 'name'], 'code', 'asc',
+        );
+        $this->per_page = min(max((int) $this->per_page, 1), 100);
+
         $projects = Project::query()
             ->when($this->search, function ($query) {
                 $query->where('name', 'like', '%'.$this->search.'%')

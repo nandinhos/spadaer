@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Commission;
+use App\Support\SortHelper;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -55,6 +56,12 @@ class CommissionList extends Component
 
     public function render()
     {
+        // Props Livewire vêm do frontend: sanitiza antes de interpolar no SQL.
+        [$this->sort_by, $this->sort_dir] = SortHelper::sanitize(
+            $this->sort_by, $this->sort_dir, ['name', 'ordinance_number', 'ordinance_date'], 'ordinance_date', 'desc',
+        );
+        $this->per_page = min(max((int) $this->per_page, 1), 100);
+
         $commissions = Commission::query()
             ->withCount('members')
             ->when($this->search, function ($query) {

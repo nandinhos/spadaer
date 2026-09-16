@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\User;
+use App\Support\SortHelper;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -196,6 +197,12 @@ class UserList extends Component
 
     public function render()
     {
+        // Props Livewire vêm do frontend: sanitiza antes de interpolar no SQL.
+        [$this->sort_by, $this->sort_dir] = SortHelper::sanitize(
+            $this->sort_by, $this->sort_dir, ['name', 'rank'], 'name', 'asc',
+        );
+        $this->per_page = min(max((int) $this->per_page, 1), 100);
+
         $users = User::query()
             ->with(['roles', 'permissions'])
             ->when($this->search, function ($query) {
