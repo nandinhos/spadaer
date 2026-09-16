@@ -45,5 +45,11 @@ class PermissionSeeder extends Seeder
         Permission::create(['name' => 'boxes.edit', 'guard_name' => 'web']);
         Permission::create(['name' => 'boxes.delete', 'guard_name' => 'web']);
 
+        // Permissões para gerenciamento de projetos (rotas restritas a admin; matriz pronta p/ uso futuro)
+        Permission::create(['name' => 'projects.view', 'guard_name' => 'web']);
+        Permission::create(['name' => 'projects.create', 'guard_name' => 'web']);
+        Permission::create(['name' => 'projects.edit', 'guard_name' => 'web']);
+        Permission::create(['name' => 'projects.delete', 'guard_name' => 'web']);
+
     }
 }

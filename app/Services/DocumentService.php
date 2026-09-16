@@ -28,6 +28,7 @@ class DocumentService
 
         $query = Document::query()
             ->whereVisibleTo(auth()->user())
+            ->with(['box:id,number'])
             ->select([
                 'documents.*',
                 'boxes.number as box_number',
