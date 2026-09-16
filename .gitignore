@@ -18,6 +18,10 @@ yarn-error.log
 /auth.json
 /.fleet
 /.idea
+# Artefatos e segredos do Playwright (storageState tem cookies de sessão)
+test-results/
+tests/e2e/.auth/
+tests/e2e/fixtures/
 # Rascunhos de tooling/orquestração (planejamento local, não versionar)
 .devorq/
 .devorq-auto/
