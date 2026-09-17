@@ -6,10 +6,10 @@ use App\Livewire\Admin\UserList;
 use App\Models\AuditLog;
 use App\Models\Commission;
 use App\Models\CommissionMember;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-use App\Models\Role;
 use Tests\TestCase;
 
 class GlobalAuditTest extends TestCase

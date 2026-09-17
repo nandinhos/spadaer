@@ -4,8 +4,8 @@ namespace Tests\Feature\Admin;
 
 use App\Livewire\BoxList;
 use App\Models\Box;
-use App\Models\User;
 use App\Models\Document;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -50,9 +50,9 @@ class BoxDeletionTest extends TestCase
             ->assertHasNoErrors();
 
         // Caixa não deve ser deletada no fluxo atual do BoxList se tem documentos (ela apenas orfã)
-        // Na verdade, no BoxList.php:99 ele orfana e mantem a caixa? 
+        // Na verdade, no BoxList.php:99 ele orfana e mantem a caixa?
         // Vamos checar a logica: se documents > 0, update box_id null e flash warning.
-        
+
         $this->assertDatabaseHas('boxes', ['id' => $box->id]);
         $this->assertNull($doc->fresh()->box_id);
     }
@@ -63,7 +63,7 @@ class BoxDeletionTest extends TestCase
         $admin->assignRole('admin');
 
         $boxes = Box::factory()->count(2)->create();
-        $ids = $boxes->pluck('id')->map(fn($id) => (string)$id)->toArray();
+        $ids = $boxes->pluck('id')->map(fn ($id) => (string) $id)->toArray();
 
         Livewire::actingAs($admin)
             ->test(BoxList::class)

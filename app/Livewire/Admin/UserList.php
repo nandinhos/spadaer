@@ -2,13 +2,13 @@
 
 namespace App\Livewire\Admin;
 
+use App\Models\Role;
 use App\Models\User;
 use App\Support\SortHelper;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Role;
 
 class UserList extends Component
 {

@@ -12,11 +12,11 @@ use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\ToCollection;
+use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
-use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
 
-class DocumentsBoxImport implements SkipsOnFailure, ToCollection, WithHeadingRow, WithValidation, WithCustomCsvSettings
+class DocumentsBoxImport implements SkipsOnFailure, ToCollection, WithCustomCsvSettings, WithHeadingRow, WithValidation
 {
     use Importable, SkipsFailures;
 

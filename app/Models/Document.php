@@ -4,12 +4,12 @@ namespace App\Models;
 
 use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Builder;
-use Spatie\Permission\Exceptions\PermissionDoesNotExist;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo; // Importar Carbon
-use Illuminate\Support\Carbon; // Importar Log
-use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon; // Importar Carbon
+use Illuminate\Support\Facades\Log; // Importar Log
+use Spatie\Permission\Exceptions\PermissionDoesNotExist;
 
 class Document extends Model
 {

@@ -3,10 +3,10 @@
 namespace Tests\Feature\Admin;
 
 use App\Livewire\Admin\RoleEdit;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-use App\Models\Role;
 use Tests\TestCase;
 
 class RoleEditTest extends TestCase

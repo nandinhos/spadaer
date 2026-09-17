@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 

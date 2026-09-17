@@ -3,10 +3,10 @@
 namespace Tests\Feature\Admin;
 
 use App\Livewire\Admin\RoleManager;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-use App\Models\Role;
 use Tests\TestCase;
 
 class RoleManagerTest extends TestCase

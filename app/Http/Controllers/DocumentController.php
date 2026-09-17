@@ -167,7 +167,7 @@ class DocumentController extends Controller
             $document->update($validated);
             $newValues = $document->getChanges();
 
-            if (!empty($newValues)) {
+            if (! empty($newValues)) {
                 $document->auditManual('document_updated', $oldValues, $newValues);
             }
 

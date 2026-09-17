@@ -34,7 +34,7 @@ class DocumentList extends Component
     public $sort_dir = 'desc';
 
     public $per_page = 15;
- 
+
     public $hasActiveFilters = false;
 
     // Seleção em massa
@@ -72,7 +72,7 @@ class DocumentList extends Component
             $document->auditManual('document_deleted', [], [
                 'document' => $document->document_number,
                 'title' => $document->title,
-                'reason' => $observation
+                'reason' => $observation,
             ]);
 
             $document->delete();
@@ -80,7 +80,7 @@ class DocumentList extends Component
             session()->flash('success', "Documento {$document->document_number} excluído com sucesso.");
         } catch (\Exception $e) {
             Log::error('Erro ao excluir documento: '.$e->getMessage());
-            session()->flash('error', 'Erro ao excluir documento: ' . $e->getMessage());
+            session()->flash('error', 'Erro ao excluir documento: '.$e->getMessage());
         }
     }
 
@@ -102,7 +102,7 @@ class DocumentList extends Component
                     $document->auditManual('document_bulk_deleted', [], [
                         'document' => $document->document_number,
                         'reason' => $observation,
-                        'batch' => true
+                        'batch' => true,
                     ]);
                     $document->delete();
                 }
@@ -112,7 +112,7 @@ class DocumentList extends Component
             $this->selectedDocuments = [];
         } catch (\Exception $e) {
             Log::error('Erro ao excluir documentos em massa: '.$e->getMessage());
-            session()->flash('error', 'Erro ao excluir documentos em massa: ' . $e->getMessage());
+            session()->flash('error', 'Erro ao excluir documentos em massa: '.$e->getMessage());
         }
     }
 

@@ -148,12 +148,12 @@ class BoxList extends Component
 
                     $box->auditManual('box_orphaned_bulk', [], [
                         'box' => $box->number,
-                        'reason' => $observation
+                        'reason' => $observation,
                     ]);
                 } else {
                     $box->auditManual('box_deleted_bulk', [], [
                         'box' => $box->number,
-                        'reason' => $observation
+                        'reason' => $observation,
                     ]);
                     $box->delete();
                     $deletedCount++;

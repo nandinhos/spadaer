@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Admin;
 
-use Livewire\Component;
 use App\Models\Role;
+use Livewire\Component;
 use Spatie\Permission\Models\Permission;
 
 class RoleEdit extends Component

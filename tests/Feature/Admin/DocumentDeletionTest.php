@@ -3,9 +3,9 @@
 namespace Tests\Feature\Admin;
 
 use App\Livewire\DocumentList;
+use App\Models\AuditLog;
 use App\Models\Document;
 use App\Models\User;
-use App\Models\AuditLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -28,7 +28,7 @@ class DocumentDeletionTest extends TestCase
 
         $document = Document::factory()->create([
             'document_number' => 'DOC-123',
-            'title' => 'Test Document'
+            'title' => 'Test Document',
         ]);
 
         Livewire::actingAs($admin)
@@ -37,14 +37,14 @@ class DocumentDeletionTest extends TestCase
             ->assertSet('selectedDocuments', []);
 
         $this->assertDatabaseMissing('documents', ['id' => $document->id]);
-        
+
         // Verificar se o log de auditoria foi criado
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'document_deleted',
             'auditable_type' => Document::class,
             'auditable_id' => $document->id,
         ]);
-        
+
         $log = AuditLog::where('event', 'document_deleted')->first();
         $this->assertEquals('Deleção de teste', $log->new_values['reason']);
     }
@@ -55,7 +55,7 @@ class DocumentDeletionTest extends TestCase
         $admin->assignRole('admin');
 
         $docs = Document::factory()->count(3)->create();
-        $ids = $docs->pluck('id')->map(fn($id) => (string)$id)->toArray();
+        $ids = $docs->pluck('id')->map(fn ($id) => (string) $id)->toArray();
 
         Livewire::actingAs($admin)
             ->test(DocumentList::class)

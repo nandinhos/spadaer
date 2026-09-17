@@ -13,11 +13,11 @@ use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\ToCollection;
+use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
-use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
 
-class DocumentsImport implements SkipsOnFailure, ToCollection, WithHeadingRow, WithValidation, WithCustomCsvSettings
+class DocumentsImport implements SkipsOnFailure, ToCollection, WithCustomCsvSettings, WithHeadingRow, WithValidation
 {
     use Importable, SkipsFailures;
 
@@ -54,7 +54,7 @@ class DocumentsImport implements SkipsOnFailure, ToCollection, WithHeadingRow, W
     {
         $rowCount = $rows->count();
         Log::info("Processando coleção de importação: {$rowCount} linhas encontradas.");
-        
+
         $rowNumber = 1; // Linha do cabeçalho
 
         foreach ($rows as $row) {
@@ -330,19 +330,19 @@ class DocumentsImport implements SkipsOnFailure, ToCollection, WithHeadingRow, W
      */
     private function detectDelimiter(): string
     {
-        // Como o ToCollection recebe os dados já parseados, o delimiter 
-        // já deve ter sido usado. Mas o WithCustomCsvSettings é usado 
+        // Como o ToCollection recebe os dados já parseados, o delimiter
+        // já deve ter sido usado. Mas o WithCustomCsvSettings é usado
         // pelo Maatwebsite para configurar o Reader ANTES de ler.
         // Infelizmente não temos acesso fácil ao arquivo aqui sem mudar o fluxo.
         // No entanto, o Maatwebsite Excel 3.1 costuma lidar bem se deixarmos o padrão
         // ou se o usuário configurar globalmente.
-        // Dado que o objetivo é "funcional", e a maioria usa ',' ou ';', 
-        // vou tentar uma abordagem de "tentativa e erro" se eu pudesse, 
-        // mas aqui vou apenas garantir que a data e o papel estão certos, 
+        // Dado que o objetivo é "funcional", e a maioria usa ',' ou ';',
+        // vou tentar uma abordagem de "tentativa e erro" se eu pudesse,
+        // mas aqui vou apenas garantir que a data e o papel estão certos,
         // que são as causas mais prováveis do erro 403 e validação.
-        
-        // Vou remover o WithCustomCsvSettings por enquanto para não complicar 
+
+        // Vou remover o WithCustomCsvSettings por enquanto para não complicar
         // se não for estritamente necessário, ou deixar ';' se o projeto for BR.
-        return ','; 
+        return ',';
     }
 }
