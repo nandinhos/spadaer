@@ -1,31 +1,38 @@
+{{-- resources/views/profile/edit.blade.php --}}
 <x-app-layout>
-@section('title', 'Configurações') {{-- Define o título da página --}}
-@section('header-title', 'Editar configurações de Usuário') {{-- Define o título do header --}}
+    @section('title', 'Configurações de Perfil')
+    @section('header-title', 'Perfil de Usuário')
+
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Perfil') }}
-        </h2>
+        <div class="flex items-center gap-3">
+            <div class="p-2.5 rounded-xl bg-primary/10 text-primary dark:text-primary-light">
+                <i class="fas fa-id-card-clip text-lg"></i>
+            </div>
+            <div>
+                <h2 class="font-bold text-xl text-gray-900 dark:text-white leading-tight">
+                    {{ __('Configurações de Perfil') }}
+                </h2>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Gerencie suas informações cadastrais e credenciais de acesso ao SPADAER.</p>
+            </div>
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg text-gray-800 dark:text-gray-200">
-                <div class="max-w-4xl">
-                    @include('profile.partials.update-profile-information-form')
-                </div>
-            </div>
+    <div class="py-8">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            {{-- Dados Pessoais / E-mail --}}
+            <x-ui.card>
+                @include('profile.partials.update-profile-information-form')
+            </x-ui.card>
 
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg text-gray-800 dark:text-gray-200">
-                <div class="max-w-4xl">
-                    @include('profile.partials.update-password-form')
-                </div>
-            </div>
+            {{-- Segurança & Senha --}}
+            <x-ui.card>
+                @include('profile.partials.update-password-form')
+            </x-ui.card>
 
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg text-gray-800 dark:text-gray-200">
-                <div class="max-w-4xl">
-                    @include('profile.partials.delete-user-form')
-                </div>
-            </div>
+            {{-- Área de Risco / Exclusão --}}
+            <x-ui.card class="border-rose-200/60 dark:border-rose-900/40">
+                @include('profile.partials.delete-user-form')
+            </x-ui.card>
         </div>
     </div>
 </x-app-layout>

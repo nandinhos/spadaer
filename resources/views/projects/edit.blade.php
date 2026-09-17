@@ -1,58 +1,79 @@
+{{-- resources/views/projects/edit.blade.php --}}
 <x-app-layout>
-    <div class="py-12">
+    @section('title', 'Editar Projeto')
+    @section('header-title', 'Editar Projeto')
+
+    <x-slot name="header">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+                <h2 class="text-xl font-bold leading-tight text-gray-900 dark:text-white flex items-center gap-2">
+                    <i class="fas fa-pen-to-square text-primary dark:text-primary-light"></i>
+                    <span>{{ __('Editar Projeto') }}: <span class="text-primary dark:text-primary-light">{{ $project->name }}</span></span>
+                </h2>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Atualize a denominação, sigla e descrição deste projeto institucional.</p>
+            </div>
+            <a href="{{ route('projects.show', $project) }}" wire:navigate>
+                <x-ui.button variant="secondary" icon="fas fa-arrow-left">
+                    {{ __('Voltar') }}
+                </x-ui.button>
+            </a>
+        </div>
+    </x-slot>
+
+    <div class="py-8">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-semibold">Editar Projeto</h2>
-                        <a href="{{ route('projects.index') }}" wire:navigate>
-                            <x-ui.button variant="secondary" icon="fas fa-arrow-left">
-                                Voltar
-                            </x-ui.button>
-                        </a>
-                    </div>
+            <x-ui.card>
+                <x-ui.form-errors />
 
-                    <form action="{{ route('projects.update', $project) }}" method="POST" class="space-y-6">
-                        @csrf
-                        @method('PUT')
+                <form action="{{ route('projects.update', $project) }}" method="POST" class="space-y-6">
+                    @csrf
+                    @method('PUT')
 
-                        {{-- Grid apenas para Nome e Código --}}
+                    <x-ui.form-section 
+                        title="Dados do Projeto" 
+                        description="Atualize as informações cadastrais do projeto."
+                        icon="fas fa-circle-info">
+                        
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Nome do Projeto -->
                             <div>
-                                <x-input-label for="name" value="Nome do Projeto" />
-                                <x-text-input id="name" name="name" type="text" class="mt-1 block w-full"
-                                    value="{{ old('name', $project->name) }}" required autofocus />
-                                <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                                <x-input-label for="name" :value="__('Nome do Projeto')" :required="true" />
+                                <x-text-input id="name" name="name" type="text" class="block w-full"
+                                    :value="old('name', $project->name)" required autofocus placeholder="Ex: Modernização do Sistema de Armamento" />
+                                <x-input-error :messages="$errors->get('name')" />
                             </div>
 
                             <!-- Código do Projeto -->
                             <div>
-                                <x-input-label for="code" value="Código" />
-                                <x-text-input id="code" name="code" type="text" class="mt-1 block w-full"
-                                    value="{{ old('code', $project->code) }}" required />
-                                <x-input-error :messages="$errors->get('code')" class="mt-2" />
+                                <x-input-label for="code" :value="__('Código / Sigla')" :required="true" />
+                                <x-text-input id="code" name="code" type="text" class="block w-full"
+                                    :value="old('code', $project->code)" required placeholder="Ex: PRJ-ARM-2024" />
+                                <x-input-error :messages="$errors->get('code')" />
                             </div>
-                        </div> {{-- Fim do Grid --}}
 
-                        {{-- Descrição movida para fora do grid --}}
-                        <div>
-                            <x-input-label for="description" value="Descrição" />
-                            <textarea id="description" name="description"
-                                class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-primary dark:focus:border-primary focus:ring-primary dark:focus:ring-primary rounded-md shadow-sm"
-                                rows="4">{{ old('description', $project->description) }}</textarea>
-                            <x-input-error :messages="$errors->get('description')" class="mt-2" />
+                            <!-- Descrição -->
+                            <div class="md:col-span-2">
+                                <x-input-label for="description" :value="__('Descrição do Projeto')" />
+                                <x-textarea id="description" name="description" class="block w-full"
+                                    rows="4" placeholder="Descreva os objetivos, comissões envolvidas e escopo do projeto...">{{ old('description', $project->description) }}</x-textarea>
+                                <x-input-error :messages="$errors->get('description')" />
+                            </div>
                         </div>
+                    </x-ui.form-section>
 
-                        {{-- Botão movido para fora do grid --}}
-                        <div class="flex justify-end">
-                            <x-ui.button type="submit" variant="primary" icon="fas fa-save">
-                                Atualizar Projeto
+                    {{-- Ações do Formulário --}}
+                    <div class="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800">
+                        <a href="{{ route('projects.show', $project) }}" wire:navigate class="w-full sm:w-auto">
+                            <x-ui.button type="button" variant="secondary" class="w-full sm:w-auto justify-center">
+                                {{ __('Cancelar') }}
                             </x-ui.button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+                        </a>
+                        <x-ui.button type="submit" variant="primary" icon="fas fa-save" class="w-full sm:w-auto justify-center">
+                            {{ __('Atualizar Projeto') }}
+                        </x-ui.button>
+                    </div>
+                </form>
+            </x-ui.card>
         </div>
     </div>
 </x-app-layout>
