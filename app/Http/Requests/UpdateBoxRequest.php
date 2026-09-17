@@ -75,11 +75,18 @@ class UpdateBoxRequest extends FormRequest
     }
 
     /**
-     * Customiza mensagens de erro (opcional).
-     * Pode herdar do StoreBoxRequest ou definir aqui.
+     * Customiza mensagens de erro em português.
      */
-    // public function messages(): array
-    // {
-    //     return [ /* ... */ ];
-    // }
+    public function messages(): array
+    {
+        return [
+            'number.required' => 'O número da caixa é obrigatório.',
+            'number.unique' => 'Já existe uma caixa com este número.',
+            'project_id.exists' => 'O projeto selecionado é inválido.',
+            'commission_member_id.exists' => 'O conferente selecionado é inválido.',
+            'conference_date.required_with' => 'A data da conferência é obrigatória quando um conferente é selecionado.',
+            'conference_date.date' => 'A data da conferência não é válida.',
+            'conference_date.before_or_equal' => 'A data da conferência não pode ser no futuro.',
+        ];
+    }
 }

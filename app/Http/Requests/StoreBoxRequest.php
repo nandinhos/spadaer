@@ -50,6 +50,12 @@ class StoreBoxRequest extends FormRequest
                 'date',
                 'before_or_equal:today',
             ],
+            'box_quantity' => [
+                'nullable',
+                'integer',
+                'min:1',
+                'max:200',
+            ],
         ];
     }
 
@@ -62,10 +68,13 @@ class StoreBoxRequest extends FormRequest
             'number.required' => 'O número da caixa é obrigatório.',
             'number.unique' => 'Já existe uma caixa com este número.',
             'project_id.exists' => 'O projeto selecionado é inválido.',
-            'checker_member_id.exists' => 'O conferente selecionado é inválido.',
+            'commission_member_id.exists' => 'O conferente selecionado é inválido.',
             'conference_date.required_with' => 'A data da conferência é obrigatória quando um conferente é selecionado.',
             'conference_date.date' => 'A data da conferência não é válida.',
             'conference_date.before_or_equal' => 'A data da conferência não pode ser no futuro.',
+            'box_quantity.min' => 'A quantidade de caixas deve ser de no mínimo 1.',
+            'box_quantity.max' => 'A quantidade de caixas não pode exceder 200.',
+            'box_quantity.integer' => 'A quantidade de caixas deve ser um número inteiro.',
         ];
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreProjectRequest;
+use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
 use App\Support\SortHelper;
 use Illuminate\Http\RedirectResponse;
@@ -44,26 +46,19 @@ class ProjectController extends Controller
         return view('projects.create');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreProjectRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'code' => 'required|string|max:50|unique:projects',
-            'description' => 'nullable|string',
-            // 'status' => 'required|string|in:ativo,concluído,suspenso',
-            // 'start_date' => 'nullable|date',
-            // 'end_date' => 'nullable|date|after_or_equal:start_date'
-        ]);
-
-        Project::create($validated);
+        Project::create($request->validated());
 
         return redirect()->route('projects.index')
-            ->with('success', 'Projeto criado com sucesso.');
+            ->with('success', 'Projeto criado com sucesso!');
     }
 
     public function show(Project $project): View
     {
-        $project->load(['documents', 'boxes']);
+        $project->load(['boxes' => function ($query) {
+            $query->orderBy('number');
+        }]);
 
         return view('projects.show', compact('project'));
     }
@@ -73,21 +68,12 @@ class ProjectController extends Controller
         return view('projects.edit', compact('project'));
     }
 
-    public function update(Request $request, Project $project): RedirectResponse
+    public function update(UpdateProjectRequest $request, Project $project): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'code' => 'required|string|max:50|unique:projects,code,'.$project->id,
-            'description' => 'nullable|string',
-            // 'status' => 'required|string|in:ativo,concluído,suspenso',
-            // 'start_date' => 'nullable|date',
-            // 'end_date' => 'nullable|date|after_or_equal:start_date'
-        ]);
-
-        $project->update($validated);
+        $project->update($request->validated());
 
         return redirect()->route('projects.index')
-            ->with('success', 'Projeto atualizado com sucesso.');
+            ->with('success', 'Projeto atualizado com sucesso!');
     }
 
     public function destroy(Project $project): RedirectResponse

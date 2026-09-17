@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ImportDocumentRequest;
 use App\Imports\DocumentsBoxImport;
 use App\Imports\DocumentsImport; // Importar Document
 use App\Models\Box;
 use App\Models\Document;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request; // Para transação
+// Para transação
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -19,18 +20,8 @@ use Maatwebsite\Excel\Validators\ValidationException;
 
 class DocumentImportController extends Controller
 {
-    public function import(Request $request): RedirectResponse
+    public function import(ImportDocumentRequest $request): RedirectResponse
     {
-        // 1. Validação inicial do arquivo
-        $request->validate([
-            'csv_file' => 'required|file|mimes:csv,txt|max:5120', // Ex: Max 5MB
-        ], [
-            'csv_file.required' => 'Nenhum arquivo CSV foi selecionado.',
-            'csv_file.file' => 'O item enviado não é um arquivo válido.',
-            'csv_file.mimes' => 'O arquivo deve ser do tipo CSV ou TXT.',
-            'csv_file.max' => 'O arquivo CSV não pode ser maior que 5MB.',
-        ]);
-
         $file = $request->file('csv_file');
         $originalFilename = $file->getClientOriginalName(); // << Captura o nome original
         $userId = Auth::id();
@@ -133,18 +124,8 @@ class DocumentImportController extends Controller
      *
      * @param  Box  $box  A caixa onde importar (via Route Model Binding)
      */
-    public function importForBox(Request $request, Box $box): RedirectResponse
+    public function importForBox(ImportDocumentRequest $request, Box $box): RedirectResponse
     {
-        // 1. Validar o arquivo de upload (específico para este formulário)
-        $request->validate([
-            'csv_file' => 'required|file|mimes:csv,txt|max:5120', // Nome do campo de upload
-        ], [
-            'csv_file.required' => 'Nenhum arquivo CSV foi selecionado.',
-            'csv_file.file' => 'O item enviado não é um arquivo válido.',
-            'csv_file.mimes' => 'O arquivo deve ser do tipo CSV ou TXT.',
-            'csv_file.max' => 'O arquivo CSV não pode ser maior que 5MB.',
-        ]);
-
         $file = $request->file('csv_file');
         $userId = Auth::id();
 
